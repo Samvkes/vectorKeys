@@ -1,9 +1,21 @@
 [gd_scene load_steps=2 format=3 uid="uid://nq848ct5jjb0"]
 
-[ext_resource type="Script" uid="uid://b4vgjevhxyh7d" path="res://base.gd" id="1_nfj5t"]
+[ext_resource type="Script" uid="uid://yqctpog0b4qv" path="res://base.gd" id="1_nfj5t"]
 
 [node name="Base" type="Node2D"]
 script = ExtResource("1_nfj5t")
 
 [node name="Tex" type="Sprite2D" parent="."]
 centered = false
+
+[node name="Magnified" type="Sprite2D" parent="."]
+position = Vector2(859, 382)
+centered = false
+
+[node name="ColorRect" type="ColorRect" parent="."]
+z_index = -235
+offset_left = -161.0
+offset_top = -102.0
+offset_right = 1662.0
+offset_bottom = 1348.0
+color = Color(2.40654e-07, 0.425835, 0.608486, 1)
