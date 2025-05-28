@@ -3,6 +3,8 @@ extends Node2D
 enum PointType {WHOLE, BROKEN}
 enum SegmentType {STRAIGHT, CUBIC}
 
+# testing
+
 class Segment:
 	var type: SegmentType = SegmentType.STRAIGHT
 	var inPoint: Point
