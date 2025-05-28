@@ -1,9 +1,29 @@
 [gd_scene load_steps=2 format=3 uid="uid://nq848ct5jjb0"]
 
-[ext_resource type="Script" uid="uid://b4vgjevhxyh7d" path="res://base.gd" id="1_nfj5t"]
+[ext_resource type="Script" uid="uid://yqctpog0b4qv" path="res://base.gd" id="1_nfj5t"]
 
 [node name="Base" type="Node2D"]
 script = ExtResource("1_nfj5t")
 
 [node name="Tex" type="Sprite2D" parent="."]
 centered = false
+
+[node name="Magnified" type="Sprite2D" parent="."]
+position = Vector2(689, 292)
+centered = false
+
+[node name="ColorRect" type="ColorRect" parent="Magnified"]
+modulate = Color(1, 1, 1, 0.466667)
+z_index = -2
+offset_left = 2.0
+offset_right = 302.0
+offset_bottom = 300.0
+color = Color(0.208279, 0.208279, 0.208279, 1)
+
+[node name="Background" type="ColorRect" parent="."]
+z_index = -10
+offset_left = -162.0
+offset_top = -173.0
+offset_right = 1573.0
+offset_bottom = 933.0
+color = Color(0.114973, 0.343929, 1, 1)
