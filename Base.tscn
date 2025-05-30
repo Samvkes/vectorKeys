@@ -6,6 +6,7 @@
 script = ExtResource("1_nfj5t")
 
 [node name="Tex" type="Sprite2D" parent="."]
+z_index = -1
 centered = false
 
 [node name="Magnified" type="Sprite2D" parent="."]
@@ -25,5 +26,5 @@ z_index = -10
 offset_left = -162.0
 offset_top = -173.0
 offset_right = 1573.0
-offset_bottom = 933.0
-color = Color(0.114973, 0.343929, 1, 1)
+offset_bottom = 2515.0
+color = Color(0.603209, 0.501148, 0.431065, 1)
