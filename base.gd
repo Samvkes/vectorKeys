@@ -35,8 +35,6 @@ class Segment:
 
 	func setPos(change: Vector2i):
 		var allPoints = [inPoint, outPoint]
-		for h in handles:
-			allPoints.append(h)
 		for p in allPoints:
 			if p not in Globl.currently_selected and p not in already_affected_this_frame:
 				already_affected_this_frame.append(p)
@@ -95,6 +93,7 @@ class Handle:
 	var pos: Vector2i
 	var selection_key: String
 	var selectable: bool
+	var next_to_whole_point: bool
 
 	func c() -> String:
 		return "Handle"
@@ -146,7 +145,7 @@ class Point:
 					to_align_with = adjacent_segments[1]
 				else:
 					to_align_with = adjacent_segments[0]
-				h[0].setPos(Globl.project_point_on_line(h[0].getPos(), to_align_with.inPoint.pos, to_align_with.outPoint.pos))
+				h[0].pos = Globl.project_point_on_line(h[0].getPos(), to_align_with.inPoint.pos, to_align_with.outPoint.pos)
 				
 	func delete():
 		Globl.currently_selected.erase(self)
@@ -171,6 +170,9 @@ class Point:
 
 	func setPos(change: Vector2i):
 		pos += change
+		for h in adjacent_handles():
+			if h not in Globl.currently_selected:
+				h.setPos(change)
 
 
 class Shape:
@@ -488,7 +490,8 @@ func _draw() -> void:
 	draw_line(Vector2(origin.x, origin.y - grid_size*crosslength),Vector2(origin.x, origin.y+grid_size*crosslength),Color.from_rgba8(0,0,0,30),0.5,true);
 	
 	draw_circle(marker_pos, 10, Color.from_rgba8(200,0,0,150),false, 1.5,true)
-	draw_string(default_font, marker_pos, str(marker_pos - origin), HORIZONTAL_ALIGNMENT_LEFT, -1, default_font_size)
+	# draw_string(default_font, marker_pos, str(marker_pos - origin), HORIZONTAL_ALIGNMENT_LEFT, -1, default_font_size)
+	draw_string(default_font, marker_pos, str(marker_pos), HORIZONTAL_ALIGNMENT_LEFT, -1, default_font_size)
 
 	# for selectable in Globl.currently_selected:
 	# 	draw_circle(selectable.getPos() - Vector2i(-1,0), 10, Color.from_rgba8(250,250,250,150),true, -1.0,true)
