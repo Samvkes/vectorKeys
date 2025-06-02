@@ -264,7 +264,7 @@ class Shapes:
 const borders: Vector2i = Vector2i(0,0)
 const far_move_border: int = 2 * grid_size
 const grid_size: int = 12
-var grid_modifier: float = 2
+var grid_modifier: float = 8
 var back_color: Color = Color.from_ok_hsl(56/359.0, 23/100.0, 56/100.0)
 var back_color_preview: Color = Color.from_ok_hsl(261/359.0, 73/100.0, 30/100.0)
 # var back_color_preview: Color = Color.from_ok_hsl(264/359.0, 100/100.0, 47/100.0)
@@ -275,7 +275,7 @@ var im_magnified: Image
 var tex: Sprite2D
 var tex_magnified: Sprite2D
 var counter: float
-var window_size: Vector2i = Vector2i(60,80) * grid_size
+var window_size: Vector2i = Vector2i(64,80) * grid_size
 var marker_pos: Vector2i;
 var origin: Vector2i
 var shape: Shape = Shape.new() 
@@ -287,6 +287,10 @@ var zoom: float = 1
 var preview: bool = false
 var select_mode: bool = false
 var quit_select_mode: bool = false
+var show_point_select: bool = true
+var show_handle_select: bool = true
+var show_line_select: bool = true
+var show_shape_select: bool = true
 # var possible_selections_dict: Dictionary = {}
 # var currently_selected: Array = []
 
@@ -318,18 +322,32 @@ func _process(delta: float) -> void:
 	counter += delta
 	var radius: float = 40 * sin(counter)
 
-	if Input.is_action_just_pressed("toggle_preview"):
-		preview = !preview
-	if Input.is_key_pressed(KEY_BACKSPACE):
-		get_tree().quit()
+	if Input.is_action_just_pressed("select_mode"):
+		select_mode = true
+		keys_pressed_array = []
+	if Input.is_action_just_released("select_mode"):
+		select_mode = false
+	if !select_mode:
+		if Input.is_action_just_pressed("toggle_preview"):
+			preview = !preview
+		if Input.is_action_just_pressed("toggle_point_select"):
+			show_point_select = !show_point_select
+		if Input.is_action_just_pressed("toggle_handle_select"):
+			show_handle_select = !show_handle_select
+		if Input.is_action_just_pressed("toggle_line_select"):
+			show_line_select = !show_line_select
+		if Input.is_action_just_pressed("toggle_shape_select"):
+			show_shape_select = !show_shape_select
+		if Input.is_key_pressed(KEY_BACKSPACE):
+			get_tree().quit()
 
-	var back: ColorRect = $Background
-	if preview:
-		back.color = back_color_preview
-	else:
-		back.color = back_color
+		var back: ColorRect = $Background
+		if preview:
+			back.color = back_color_preview
+		else:
+			back.color = back_color
 
-	handle_input(delta)
+		handle_input(delta)
 
 	var sw: float = 2
 	var visible_point_size: int = 10
@@ -495,22 +513,36 @@ func _draw() -> void:
 
 	# for selectable in Globl.currently_selected:
 	# 	draw_circle(selectable.getPos() - Vector2i(-1,0), 10, Color.from_rgba8(250,250,250,150),true, -1.0,true)
-
-	if select_mode:
+	if true:
 		for sel_text in Globl.possible_selections_dict:
+			var a = clamp(((3*sin(2*counter) + 3) / 3.0),0,1)
 			var col: Color = Color.WHITE
 			var selectable = Globl.possible_selections_dict[sel_text]
+			if selectable.c() == "Point":
+				if !show_point_select:
+					continue
+			if selectable.c() == "Handle":
+				if !show_handle_select:
+					continue
+			if selectable.c() == "Segment":
+				if !show_line_select:
+					continue
+			if selectable.c() == "Shape":
+				if !show_shape_select:
+					continue
+
+			# var p: Vector2i = selectable.getPos()
 			var p: Vector2i = selectable.getPos()
 			p -= marker_pos
-			p = Vector2i(p.x * zoom, p.y * zoom)
+			p = Vector2(p.x * zoom, p.y * zoom)
 			p += marker_pos
 			p -= Vector2i(4,-5)
-			draw_line(p - Vector2i(-5,5), p,Color.from_rgba8(200,0,0,90),1.0,true);
-			draw_circle(p - Vector2i(-4,4), 7, Color.from_rgba8(50,50,50,150),true, -1.0,true)
+
+			draw_circle(p - Vector2i(-4,4), 7, Color.from_rgba8(50,50,50,150 * a),true, -1.0,true)
 			if selectable in Globl.currently_selected:
 				col = Color.BLACK
-			draw_string(default_font, p, sel_text, HORIZONTAL_ALIGNMENT_RIGHT, -1, default_font_size + 4, col)
-	else:
+			col = Color.from_rgba8(255,255,255,a * 255)
+			draw_string(default_font, p, sel_text.to_upper(), HORIZONTAL_ALIGNMENT_RIGHT, -1, default_font_size + 4, col)
 		for selectable in Globl.currently_selected:
 			var p: Vector2i = selectable.getPos()
 			p -= marker_pos
@@ -537,25 +569,26 @@ func check_borders(mpos: Vector2i) -> Vector2i:
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed:
+			if event.as_text() == 'Shift+Space' or event.as_text() == 'Space':
+				handle_selection_text(keys_pressed_array.duplicate())
+				keys_pressed_array= []
 			if select_mode:
-				if event.as_text() == 'Space':
-					handle_selection_text(keys_pressed_array.duplicate())
-					keys_pressed_array= []
-				elif event.as_text() == 'Semicolon':
-						select_mode = false
-						print("exiting select mode")
-						print("currently selected: " + str(Globl.currently_selected))
+				# elif event.as_text() == 'Semicolon':
+				# 		select_mode = false
+				# 		print("exiting select mode")
+				# 		print("currently selected: " + str(Globl.currently_selected))
 					
-				else:
+				if !event.as_text() =='Shift+Space' and !event.as_text() == 'Space':
 					quit_select_mode = false
-					keys_pressed_array.append(event.as_text())
+					if event.as_text().length() > 6:
+						keys_pressed_array.append(event.as_text()[6])
 				print(keys_pressed_array)
-			elif event.as_text() == 'Semicolon':
-				select_mode = true
-				keys_pressed_array = []
-				print("entering select mode")
+			# elif event.as_text() == 'Semicolon':
+			# 	select_mode = true
+			# 	keys_pressed_array = []
+			# 	print("entering select mode")
 
-			if event.as_text() == 'Shift+Semicolon':
+			if event.as_text() == 'Semicolon':
 				Globl.currently_selected = []
 				keys_pressed_array = []
 
@@ -584,8 +617,8 @@ func handle_input(delta: float):
 func hi_movement(delta: float):
 	var movement_amount: int = grid_size * grid_modifier
 	var moving_selected: Vector2i = Vector2i(0,0)
-	if Input.is_key_pressed(KEY_SHIFT):
-		movement_amount = grid_size * 12
+	# if Input.is_key_pressed(KEY_SHIFT):
+	# 	movement_amount = grid_size * 12
 
 	if Input.is_key_pressed(KEY_A):
 		movement_amount = 1
