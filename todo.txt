@@ -1,0 +1,43 @@
+(moving )
+[x] adjust selecting
+[x] negative space
+[] curv comb
+// [] measuring
+[] angles and lengths visible
+
+[] add point to line
+
+[] copy / paste
+
+[] add square & circle
+
+[] rounding
+    -  replace point with 2 new points, move them along 
+[] save / load
+[] multiple letters
+
+
+[] knife
+[] boolean
+
+[] mirroring
+[] skewing
+[] jumping to points
+
+
+[] sensible keymap
+NOVA - test
+
+[x] fix zooming
+[x] breaking points and connections
+[x] undo / redo
+
+voor selecteren:
+    alleen punten
+    max 50 punten per vorm
+        selecteren met alle letters behalve j (kleine en hoofdletter)
+    spatie ingedrukt voor selectmode?
+    j en J + letter van punt om handles van punt te selecteren
+    2 punten om een segment te selecteren en evt handles toe te voegen
+    0 - 9 om shape te focussen (en letters van punten zichtbaar te maken)
+    cijfer van gefocuste shape herhalen om hele shape te selecteren

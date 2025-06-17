@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://nq848ct5jjb0"]
+[gd_scene load_steps=6 format=3 uid="uid://nq848ct5jjb0"]
 
 [ext_resource type="Script" uid="uid://yqctpog0b4qv" path="res://base.gd" id="1_nfj5t"]
+[ext_resource type="Texture2D" uid="uid://c7pf2hdil4web" path="res://assets/DraftingMono/radio_button_unchecked_50dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.svg" id="2_b56jl"]
+[ext_resource type="Script" uid="uid://bxgca61n8ryny" path="res://undo_redo.gd" id="3_i812h"]
+
+[sub_resource type="Gradient" id="Gradient_b56jl"]
+offsets = PackedFloat32Array(0.474026, 0.724026, 1)
+colors = PackedColorArray(0.132632, 0.0659219, 0, 0, 0.154645, 0.0779312, 0, 0.200436, 0.184314, 0.0941176, 0, 0.611765)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_i812h"]
+gradient = SubResource("Gradient_b56jl")
+fill = 1
+fill_from = Vector2(0.516055, 0.458716)
+fill_to = Vector2(1, 1)
 
 [node name="Base" type="Node2D"]
 script = ExtResource("1_nfj5t")
@@ -27,4 +39,25 @@ offset_left = -162.0
 offset_top = -173.0
 offset_right = 1573.0
 offset_bottom = 2515.0
-color = Color(0.603209, 0.501148, 0.431065, 1)
+color = Color(0.755289, 0.522829, 0.376765, 1)
+
+[node name="Cursor" type="Sprite2D" parent="."]
+position = Vector2(100, 100)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_b56jl")
+
+[node name="Shad" type="Sprite2D" parent="Cursor"]
+modulate = Color(0.105614, 0.105614, 0.105614, 1)
+z_index = -1
+texture = ExtResource("2_b56jl")
+
+[node name="Overlay" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.482353)
+position = Vector2(755, 903.5)
+scale = Vector2(24.4375, 28.9219)
+texture = SubResource("GradientTexture2D_i812h")
+
+[node name="Player" type="Player" parent="."]
+
+[node name="UndoRedo" type="Node" parent="."]
+script = ExtResource("3_i812h")

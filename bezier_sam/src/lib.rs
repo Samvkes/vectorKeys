@@ -1,7 +1,9 @@
+use bezier_rs::TValueType;
 use godot::prelude::*;
 use godot::classes::Sprite2D;
 use godot::classes::ISprite2D;
 use bezier_rs::Bezier;
+use bezier_rs::TValue;
 
 struct MyExtension;
 
@@ -55,6 +57,27 @@ impl Player {
     fn increase_speed(&mut self, amount: f64) {
         self.speed += amount;
         self.base_mut().emit_signal("speed_increased", &[]);
+    }
+
+    #[func]
+    fn point_along_cubic_euclidean(&mut self, amount: f64, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> [f64; 2]  {
+        let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
+        let a = bez.evaluate(TValue::Euclidean(amount));
+        return [a[0], a[1]];
+    }
+
+    #[func]
+    fn point_along_cubic_parametric(&mut self, amount: f64, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> [f64; 2]  {
+        let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
+        let a = bez.evaluate(TValue::Parametric(amount));
+        return [a[0], a[1]];
+    }
+
+    #[func]
+    fn tangent_parametric(&mut self, amount: f64, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> [f64; 2]  {
+        let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
+        let a = bez.tangent(TValue::Parametric(amount));
+        return [a[0], a[1]];
     }
 
     #[signal]

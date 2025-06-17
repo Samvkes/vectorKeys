@@ -73,7 +73,7 @@ public partial class Manager : Node
 
 	public void PlaySound(string audioName, float volume=1.0f, float minPitch = 1.0f, float maxPitch = 1.0f)
 	{
-		GD.Print(audioName);
+		// GD.Print(audioName);
 		if (!soundFiles.ContainsKey(audioName))
 		{
 			GD.Print(audioName);
