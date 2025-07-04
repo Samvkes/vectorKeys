@@ -18,6 +18,9 @@ func undo():
             _current_state = get_parent().save_state()
         _redo_stack.append(_current_state)
         if len(_redo_stack) > MAX_STACK_SIZE:
+            for k in _redo_stack[0]:
+                if k == "shape" or k == "shapes":
+                    _redo_stack[0]["shape"].delete()
             _redo_stack.pop_front()
         var state = _undo_stack.pop_back()
         get_parent().load_state(state)
@@ -30,6 +33,9 @@ func redo():
         print("redoing")
         _undo_stack.append(_current_state)
         if len(_undo_stack) > MAX_STACK_SIZE:
+            for k in _undo_stack[0]:
+                if k == "shape" or k == "shapes":
+                    _undo_stack[0]["shape"].delete()
             _undo_stack.pop_front()
         var state = _redo_stack.pop_back()
         get_parent().load_state(state)
@@ -40,3 +46,8 @@ func redo():
 func add_to_undo_stack(state: Dictionary):
     _undo_stack.append(state)
     _redo_stack.clear()
+    if len(_undo_stack) > MAX_STACK_SIZE:
+        for k in _undo_stack[0]:
+            if k == "shape" or k == "shapes":
+                _undo_stack[0][k].delete()
+        _undo_stack.pop_front()

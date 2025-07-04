@@ -6,4 +6,4 @@ reloadable = true
 [libraries]
 windows.debug.x86_64 =   "res://bezier_sam/target/debug/bezier_sam.dll"
 windows.release.x86_64 = "res://bezier_sam/target/release/bezier_sam.dll"
-macos.debug = "res://bezier_sam/target/debug/libbezier_sam.dylib"
+macos.debug = "res://bezier_sam/target/release/libbezier_sam.dylib"

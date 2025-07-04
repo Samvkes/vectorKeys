@@ -25,6 +25,7 @@ name = "bezier_sam"
 version = "0.1.0"
 dependencies = [
  "bezier-rs",
+ "glam 0.24.2",
  "godot",
 ]
 

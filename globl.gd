@@ -1,19 +1,16 @@
 extends Node
 
-
-var select_label_pool: Array[String]
 var currently_selected_dict: Dictionary = {}
 var currently_selected_flat: Dictionary = {}
 var possible_selections_dict: Dictionary = {}
+var select_label_pool: Array = []
+# var select_string = "abcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+var select_string = "abcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	var file = FileAccess.open("res://pool.txt", FileAccess.READ)
-	var content = file.get_as_text()
-	select_label_pool.assign(content.split("\n"))
-	for i in range(0, len(select_label_pool)):
-		select_label_pool[i] = select_label_pool[i].strip_escapes()
-
+	for i in select_string:
+		select_label_pool.append(i)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
@@ -23,7 +20,7 @@ func get_label() -> String:
 	return select_label_pool.pop_front()
 
 func _add_to_possible_selections(to_add) -> String:
-	var label = select_label_pool.pop_front()
+	var label = get_label()
 	possible_selections_dict[label] = to_add
 	return label
 	# print("possible selections dict: " + str(Globl.possible_selections_dict))

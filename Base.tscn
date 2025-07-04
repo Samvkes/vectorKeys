@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://nq848ct5jjb0"]
+[gd_scene load_steps=7 format=3 uid="uid://nq848ct5jjb0"]
 
 [ext_resource type="Script" uid="uid://yqctpog0b4qv" path="res://base.gd" id="1_nfj5t"]
 [ext_resource type="Texture2D" uid="uid://c7pf2hdil4web" path="res://assets/DraftingMono/radio_button_unchecked_50dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.svg" id="2_b56jl"]
@@ -14,8 +14,14 @@ fill = 1
 fill_from = Vector2(0.516055, 0.458716)
 fill_to = Vector2(1, 1)
 
+[sub_resource type="SystemFont" id="SystemFont_i812h"]
+font_names = PackedStringArray("Sans-Serif")
+multichannel_signed_distance_field = true
+
 [node name="Base" type="Node2D"]
 script = ExtResource("1_nfj5t")
+
+[node name="Player" type="Player" parent="."]
 
 [node name="Tex" type="Sprite2D" parent="."]
 z_index = -1
@@ -26,6 +32,7 @@ position = Vector2(689, 292)
 centered = false
 
 [node name="ColorRect" type="ColorRect" parent="Magnified"]
+visible = false
 modulate = Color(1, 1, 1, 0.466667)
 z_index = -2
 offset_left = 2.0
@@ -39,7 +46,7 @@ offset_left = -162.0
 offset_top = -173.0
 offset_right = 1573.0
 offset_bottom = 2515.0
-color = Color(0.755289, 0.522829, 0.376765, 1)
+color = Color(0.998268, 0.925563, 0.776873, 1)
 
 [node name="Cursor" type="Sprite2D" parent="."]
 position = Vector2(100, 100)
@@ -52,12 +59,17 @@ z_index = -1
 texture = ExtResource("2_b56jl")
 
 [node name="Overlay" type="Sprite2D" parent="."]
-modulate = Color(1, 1, 1, 0.482353)
+modulate = Color(1, 1, 1, 0.309804)
 position = Vector2(755, 903.5)
 scale = Vector2(24.4375, 28.9219)
 texture = SubResource("GradientTexture2D_i812h")
 
-[node name="Player" type="Player" parent="."]
-
 [node name="UndoRedo" type="Node" parent="."]
 script = ExtResource("3_i812h")
+
+[node name="fps" type="RichTextLabel" parent="."]
+offset_right = 172.0
+offset_bottom = 66.0
+theme_override_fonts/normal_font = SubResource("SystemFont_i812h")
+theme_override_font_sizes/normal_font_size = 40
+text = "20"

@@ -1,24 +1,39 @@
 (moving )
 [x] adjust selecting
 [x] negative space
-[] curv comb
 // [] measuring
-[] angles and lengths visible
 
-[] add point to line
+[x] fix zooming
+[x] breaking points and connections
+[x] undo / redo
 
-[] copy / paste
-
-[] add square & circle
-
-[] rounding
+[x] fix selection
+[x] angles and lengths visible
+[x] point placing and converting
+[x] add point to shape
+[x] chamfer
+[x] rounding
     -  replace point with 2 new points, move them along 
+[] boolean
+    1. find intersections, split segment at intersection
+    2. start on any segment outside the shape, walk the shape, if you reach an instersection switch shape.
+    3. if you reach any segment for the second time, you have a loop. All segments you walked are new outline
+
+[] code cleaning - break up process for debugging
+
+[] division of shapes + shape selection
+[] add square & circle
+[] copy / paste
+[] curv comb
+
+
 [] save / load
 [] multiple letters
 
-
+[] auto obvious
+[] good scaling/rotating visually
+[] set mode for default placing whole or broken points, straight or cubic curve
 [] knife
-[] boolean
 
 [] mirroring
 [] skewing
@@ -26,11 +41,9 @@
 
 
 [] sensible keymap
+
 NOVA - test
 
-[x] fix zooming
-[x] breaking points and connections
-[x] undo / redo
 
 voor selecteren:
     alleen punten
@@ -41,3 +54,11 @@ voor selecteren:
     2 punten om een segment te selecteren en evt handles toe te voegen
     0 - 9 om shape te focussen (en letters van punten zichtbaar te maken)
     cijfer van gefocuste shape herhalen om hele shape te selecteren
+
+
+voor rounding
+    elk segment word in drieen verdeeld, waarbij de curv zo veel mogelijk behouden word.
+    de buitenste delen van de segmenten laten we weg, vervolgens verbind je de binnenste delen aan elkaar.
+    bij rounding is alles smooth verbonden, lengte van nieuwe handles nog uitzoeken, richting is hetzelfde als van handles van midden segmenten
+    misschien aanpassen zodat altijd 2 handles
+    misschien nieuwe class van 'simpele curves' waar alles naar gebakken wordt voor de rounding of boolean stap.
