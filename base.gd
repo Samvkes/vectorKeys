@@ -22,6 +22,17 @@ class FlatSegment:
 			outHandle = flatPositions[2]
 			outPoint = flatPositions[3]
 
+	func reverse_segment():
+		var tempPoint = inPoint
+		inPoint = outPoint
+		outPoint = tempPoint
+		tempPoint = inHandle
+		inHandle = outHandle
+		outHandle = tempPoint
+
+	func print():
+		print("flatseg: " + str(inPoint / 128) + str(inHandle / 128) + str(outHandle/128) + str(outPoint/128))
+
 	func addHandles():
 		var VectorBetweenPoints = inPoint - outPoint
 		inHandle = outPoint + VectorBetweenPoints.normalized()
@@ -400,11 +411,11 @@ class Shape:
 		return "Shape"
 
 	func reverse_shape():
-		pass
-		# points.reverse()
-		# segments.reverse()
-		# for s in segments:
-		# 	s.reverse_segment()
+		# pass
+		points.reverse()
+		segments.reverse()
+		for s in segments:
+			s.reverse_segment()
 
 	func print_segments(seg: Array[Segment]):
 		var prStr = "["
@@ -744,11 +755,15 @@ func _ready() -> void:
 	# tex_magnified = $Magnified
 	current_grid_visual_size = grid_modifier * grid_size * zoom
 	shape = Shape.new()
-	for i in range(1):
-		create_random_shape()
+	# for i in range(2):
+	# 	create_random_shape()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	# if (len(shapes.shapes)>1):
+	# 	print("\n\n")
+	# 	print(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
+
 	if len(deltaTimeArray) > 60:
 		deltaTimeArray.pop_front()
 	deltaTimeArray.append(delta)
@@ -820,12 +835,12 @@ func _process(delta: float) -> void:
 		last_point_placed += '<circle cx="{0}" cy="{1}" r="{2}" stroke="blue" fill-opacity=".0" stroke-width="{3}"/>'.format([shape.points[-1].pos.x, shape.points[-1].pos.y, visible_point_size-2, sw * .5])
 
 	var shape_closed_look: String = '
-		stroke="white"
-		fill="black"
+		stroke="black"
+		fill="gray"
 		# stroke-width="'+str(sw+1)+'"
 		stroke-width="2.0"
-		stroke-opacity="1.0"
-		fill-opacity="0.1"
+		stroke-opacity="0.5"
+		fill-opacity="0.5"
 	'
 	var shape_open_look: String = '
 		stroke="black"
@@ -898,18 +913,39 @@ func _process(delta: float) -> void:
 				s.shape_string()
 			)
 	else:
-		for realShape in shapes.shapes:
+		# for realShape in shapes.shapes:
+		if len(shapes.shapes) > 1:
+			var spes = merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1]))
+			print("\n\nlenspes:" + str(len(spes)))
 			svg_to_draw += (
-			'<path d="'
+			'<path fill-rule="nonzero" d="'
 			)
+			for spe in spes:
+				svg_to_draw += (
+					flatShapeToString(create_ghost_shape_flat(spe))
+					# flatShapeToString(spe)
+					# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
+				)
 			svg_to_draw += (
-				flatShapeToString(create_ghost_shape_flat(flattenShape(realShape)))
+				'"' + shape_closed_look + 
+				'/>'
 			)
-			svg_to_draw += (
-				'"' + shape_closed_look + '/>'
-			)
-			if !preview and false:
-				for fs: FlatSegment in create_ghost_shape_flat(flattenShape(realShape)):
+		# print(svg_to_draw)
+		if !preview:
+			for spe in shapes.shapes:
+				var gsf = create_ghost_shape_flat(flattenShape(spe))
+				svg_to_draw += (
+				'<path d="'
+				)
+				svg_to_draw += (
+					flatShapeToString(gsf)
+					# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
+				)
+
+				svg_to_draw += (
+					'"' + shape_closed_look + '/>'
+				)
+				for fs: FlatSegment in gsf:
 					var diff = fs.inPoint - fs.outPoint
 					var inpos = fs.inPoint - 0.01*diff
 					var outpos = fs.outPoint + 0.01*diff
@@ -1522,8 +1558,6 @@ func create_random_shape():
 	var s: Shape = Shape.new()
 	for i in range(randi_range(3,10)):
 		s.add_point(cent + Globl.rand_vector2(variation))
-	print("this many points:")
-	print(len(s.points))
 	for seg in s.segments:
 		if randf() > .8:
 			seg.switch_segment_type()
@@ -1560,22 +1594,67 @@ func flattenShape(shape: Shape) -> Array:
 		flatShape.append(fseg)
 	return flatShape
 
+func flatShapeToPoints(fs: Array) -> Array[float]:
+	var outAr: Array[float] = []
+	for flatseg: FlatSegment in fs:
+		var p = flatseg.pointPositionsFlat()
+		for ppp in p:
+			outAr.append(ppp)
+	return outAr
+
 func flatShapeToString(fs: Array) -> String:
 	var shape_str: String = ""
 	for s in fs:
 		if shape_str.length() == 0:
 			shape_str += "M {0} {1} ".format([s.inPoint.x, s.inPoint.y])
 		shape_str += s.toSVG()
-	shape_str += 'Z\n'
+	shape_str += 'Z '
 	return shape_str
 
-func merge_flat_shapes(flatShape: Array) -> Array:
-	return flatShape	
+func merge_flat_shapes(flatShapeA: Array, flatShapeB: Array) -> Array:
+	var inters = $Player.find_intersections(flatShapeToPoints(flatShapeA), flatShapeToPoints(flatShapeB))
+	# print("wat er in inters zit:")
+	# for i in inters:
+	# 	print(i)
+	# print(len(inters))
+	var outAr = []
+	var segAr = []
+
+	var cc = 0
+	print(len(inters))
+	for i in range(0,len(inters)): 
+		if inters[i] == -9999.0:
+			print("\ngap\n")
+			cc = 0
+			outAr.append(segAr.duplicate())
+			segAr = []
+			continue	
+		else:
+			# print(inters[i])
+			if cc == 7:
+				cc = 0
+				var j = i - 7
+				var p1 = Vector2(inters[j], inters[j+1])
+				var p2 = Vector2(inters[j+2], inters[j+3])
+				var p3 = Vector2(inters[j+4], inters[j+5])
+				var p4 = Vector2(inters[j+6], inters[j+7])
+				var vs = FlatSegment.new([p1,p2,p3,p4])
+				segAr.append(vs)
+			else:
+				cc += 1
+		# vs.print()
+	# print(outAr)
+	# print(len(outAr[0]))
+	# print(len(outAr[1]))
+	# for s in outAr[1]:
+	# 	s.reverse_segment()
+	# outAr[1].reverse()
+	return outAr
 
 func create_ghost_shape_flat(realShape: Array) -> Array:
 	var ROUNDED = false
-	var amount_in_len = 60
-	var handle_dist = 30
+	var amount_in_len = 20
+	var handle_dist = 10
 	var trimmedSegList = []
 	for seg in realShape:
 		if length_cubic(seg) < 2 * amount_in_len:

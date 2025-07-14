@@ -15,26 +15,39 @@
 [x] rounding
     -  replace point with 2 new points, move them along 
 [] boolean
-    1. find intersections, split segment at intersection
-    2. start on any segment outside the shape, walk the shape, if you reach an instersection switch shape.
-    3. if you reach any segment for the second time, you have a loop. All segments you walked are new outline
+    0. Zorg dat vormen of "normale vormen" of "Booleans" kunnen zijn.
+    1. voor elke boolean check met bounding boxes met welke vormen ze mogelijk overlappen
+    2. voor elke mogelijke overlappende vorm: loop voor zowel de boolean als de vorm door elk segment van de andere vorm, 
+        vind alle intersections, split bijde vormen aan het einde op op basis van de intersections
+    4. Onthoud lijst met intersections, bij 0 intersections stoppen we en voegen we de originele vorm aan de tekenpool toe.
+    UNION
+    5. maak een lijst van vorm-segmenten die buiten de boolean liggen.
+    6. Voor de vorm, vind een segment buiten de boolean. Beloop de vorm, in een speci richting
+        bij een intersectie switch van vorm naar boolean of omgekeerd. Behoud looprichting
+    7. houd belopen segmenten bij. Als er eenmaal geloopd is, zijn de belopen segmenten de outline van de nieuwe vorm
+    8. Als niet alle buiten-de-boolean segmenten in de nieuwe vorm zitten, start je het proces over om nog een vorm te vinden.
+    9. Als er nieuwe vormen gevonden zijn, worden die aan de tekenpool toegevoegd, de originele vorm en boolean niet.
+        vormen die niet betrokken waren bij booleans worden ook toegevoegd, booleans worden op een andere plek getekend
+    10. er op na volgende booleans worden op de nieuwe tekenpool losgelaten, dus ook op nieuwe vormen
+        boolean volgorde maakt uit!
 
-[] code cleaning - break up process for debugging
+    zorg dat booleans met meerder vormen werken
+    zorg dat booleans met meerder gaten werken
 
-[] division of shapes + shape selection
-[] add square & circle
 [] copy / paste
 [] curv comb
-
-
+[] add square & circle
+[] division of shapes + shape selection
+[] code cleaning - break up process for debugging
 [] save / load
-[] multiple letters
+
 
 [] auto obvious
 [] good scaling/rotating visually
 [] set mode for default placing whole or broken points, straight or cubic curve
 [] knife
 
+[] multiple letters
 [] mirroring
 [] skewing
 [] jumping to points
