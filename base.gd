@@ -35,6 +35,7 @@ class FlatSegment:
 
 	func addHandles():
 		var VectorBetweenPoints = inPoint - outPoint
+
 		inHandle = outPoint + VectorBetweenPoints.normalized()
 		outHandle = inPoint - VectorBetweenPoints.normalized()
 
@@ -46,8 +47,8 @@ class FlatSegment:
 			inHandle = hands[1].pos
 			outHandle = hands[0].pos
 		else:
-			inHandle = outPoint + VectorBetweenPoints.normalized() * 100
-			outHandle = inPoint - VectorBetweenPoints.normalized() * 100
+			inHandle = outPoint + VectorBetweenPoints.normalized() * .1
+			outHandle = inPoint - VectorBetweenPoints.normalized() * .1
 
 	func toSVG() -> String:
 		var s: String = ''
@@ -59,6 +60,7 @@ class FlatSegment:
 
 	func pointPositionsFlat() -> Array[float]:
 		var pps: Array[float] = [inPoint[0], inPoint[1]]
+		# assert(inPoint.distance_to(outPoint) > 0.0)
 		var hInverse: Array[Vector2] = [inHandle, outHandle]
 		for h: Vector2 in hInverse:
 			pps.append(h[0])
@@ -71,7 +73,7 @@ class Segment:
 	var selected: bool = false
 	# var select_label: String = ""
 	var myShape: Shape
-	var type: SegmentType = SegmentType.STRAIGHT
+	var type: SegmentType = SegmentType.CUBIC
 	var inPoint: Point
 	var outPoint: Point
 	var handles: Array[Handle] = []
@@ -490,7 +492,7 @@ class Shape:
 			else:
 				points.append(p)
 				if len(points) > 1:
-					var s: Segment = Segment.new(self, points[-2], p, SegmentType.STRAIGHT)
+					var s: Segment = Segment.new(self, points[-2], p, SegmentType.CUBIC)
 					segments.append(s)
 				if len(points) > 2:
 					points[-2].switch_point_type()
@@ -734,6 +736,7 @@ func _ready() -> void:
 		
 	light_font = load("res://assets/DraftingMono/DraftingMono-Light.otf")
 	medium_font = load("res://assets/DraftingMono/DraftingMono-Medium.otf")
+	# medium_font = load("res://assets/DepartureMono-Regular.otf")
 	italic_font = load("res://assets/DraftingMono/DraftingMono-LightItalic.otf")
 	bold_font = load("res://assets/DraftingMono/DraftingMono-Bold.otf")
 	# default_font = ThemeDB.fallback_font
@@ -764,7 +767,7 @@ func _process(delta: float) -> void:
 	# 	print("\n\n")
 	# 	print(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
 
-	if len(deltaTimeArray) > 60:
+	if len(deltaTimeArray) > 3:
 		deltaTimeArray.pop_front()
 	deltaTimeArray.append(delta)
 	var totalDelta = 0
@@ -834,13 +837,31 @@ func _process(delta: float) -> void:
 	if len(shape.points) > 0:
 		last_point_placed += '<circle cx="{0}" cy="{1}" r="{2}" stroke="blue" fill-opacity=".0" stroke-width="{3}"/>'.format([shape.points[-1].pos.x, shape.points[-1].pos.y, visible_point_size-2, sw * .5])
 
-	var shape_closed_look: String = '
+	var shape_closed_look_seperate_negative: String = '
+		stroke="red"
+		fill="red"
+		# stroke-width="'+str(sw+1)+'"
+		stroke-width="1.0"
+		stroke-opacity="0.5"
+		fill-opacity="0.1"
+	' 
+
+	var shape_closed_look_seperate: String = '
+		stroke="black"
+		fill="gray"
+		stroke-dasharray="8,8"
+		# stroke-width="'+str(sw+1)+'"
+		stroke-width="1.0"
+		stroke-opacity="0.5"
+		fill-opacity="0.1"
+	' 
+	var shape_closed_look_merged: String = '
 		stroke="black"
 		fill="gray"
 		# stroke-width="'+str(sw+1)+'"
-		stroke-width="2.0"
-		stroke-opacity="0.5"
-		fill-opacity="0.5"
+		stroke-width="3.0"
+		stroke-opacity="1.5"
+		fill-opacity="0.7"
 	'
 	var shape_open_look: String = '
 		stroke="black"
@@ -855,7 +876,7 @@ func _process(delta: float) -> void:
 			stroke-width="0"
 			fill-opacity="2"
 		'
-		shape_closed_look = shape_look
+		shape_closed_look_merged = shape_look
 		shape_open_look = shape_look
 	var tslating = origin	
 	if zoom > 1:
@@ -864,7 +885,8 @@ func _process(delta: float) -> void:
 # svg 
 '<svg xmlns="http://www.w3.org/2000/svg" width="{0}" height="{1}">'.format([window_size.x,window_size.y]) + 
 '<g transform="scale({0}) translate({1},{2}) rotate({3})">'.format([1,tslating.x,tslating.y,0]) + 
-'<g transform="scale({0}) translate({1},{2}) rotate({3})">'.format([zoom,-tslating.x,-tslating.y,0])) 
+'<g transform="scale({0}) translate({1},{2}) rotate({3})">'.format([zoom,-tslating.x,-tslating.y,0]))
+	#   <feDropShadow dx="12" dy="14" stdDeviation="1" flood-opacity="0.7"/>
 	if !preview and !select_mode:
 		var guideLinesH: int = 24
 		var guideLinesV: int = 24
@@ -885,7 +907,7 @@ func _process(delta: float) -> void:
 		'.format([origin.x + guideLinesV*grid_size, 8 * grid_size * 14, guid_op])
 		+ 
 		'
-		<path d="M 0 {0} H {1}" stroke="black" stroke-opacity={2} stroke-width="2"/>
+		<path d="M 0 {0} H {1}" stroke="black" stroke-opacity={2} stroke-width="2" filter="#blurme"/>
 		'.format([origin.y - guideLinesH*grid_size,  8*grid_size*12, guid_op])
 		+ 
 		'
@@ -901,68 +923,79 @@ func _process(delta: float) -> void:
 		'.format([origin.y + guideLinesH*2*grid_size,8 * grid_size*12, guid_op])
 		)
 	var marker_min_dist_to_points = 10000
-	var ghostList = []
-	var ghostsegs = []
-	# for s in shapes.shapes:
-	# 	svg_to_draw += (
-	# 		s.shape_string()
-	# 	)
-	if false:
-		for s in shapes.shapes:
+	if len(shapes.shapes) > 1:
+		var spes = flattenShape(shapes.shapes[0])
+		var shapeCollection = [spes]
+		var boolbool: bool = false
+	
+		for shapeIndex in range(1,len(shapes.shapes)):
+			print("\nshapeIndex:: " + str(shapeIndex - 1) + "\n")
+			if shapeIndex % 2 == 0:
+				boolbool = true
+			else:
+				boolbool = false
+			var newShapes = []
+			var scount = 0
+			for s in shapeCollection:
+				print("\nshapecol count:: " + str(scount) + "\n")
+				newShapes.append_array(merge_flat_shapes(s, flattenShape(shapes.shapes[shapeIndex]),boolbool))
+				scount += 1
+			shapeCollection = newShapes
+			# print("\n\nlenspes:" + str(len(spes)))
+		svg_to_draw += (
+		'<path filter="url(#f1)" fill-rule="nonzero" d="'
+		)
+		# print("\n\n\n")
+		for spe in shapeCollection:
 			svg_to_draw += (
-				s.shape_string()
+				flatShapeToString(create_ghost_shape_flat(spe))
+				# flatShapeToString(spe)
+				# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
 			)
-	else:
-		# for realShape in shapes.shapes:
-		if len(shapes.shapes) > 1:
-			var spes = merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1]))
-			print("\n\nlenspes:" + str(len(spes)))
+		svg_to_draw += (
+			'"' + shape_closed_look_merged + 
+			'/>'
+		)
+	# print(svg_to_draw)
+	if !preview:
+		var scount = 0
+		for spe in shapes.shapes:
+			var gsf = create_ghost_shape_flat(flattenShape(spe))
 			svg_to_draw += (
-			'<path fill-rule="nonzero" d="'
+			'<path d="'
 			)
-			for spe in spes:
-				svg_to_draw += (
-					flatShapeToString(create_ghost_shape_flat(spe))
-					# flatShapeToString(spe)
-					# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
-				)
 			svg_to_draw += (
-				'"' + shape_closed_look + 
-				'/>'
+				flatShapeToString(gsf)
+				# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
 			)
-		# print(svg_to_draw)
-		if !preview:
-			for spe in shapes.shapes:
-				var gsf = create_ghost_shape_flat(flattenShape(spe))
-				svg_to_draw += (
-				'<path d="'
-				)
-				svg_to_draw += (
-					flatShapeToString(gsf)
-					# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
-				)
 
+			if scount == 0 or scount % 2 != 0:
 				svg_to_draw += (
-					'"' + shape_closed_look + '/>'
+					'"' + shape_closed_look_seperate + '/>'
 				)
-				for fs: FlatSegment in gsf:
-					var diff = fs.inPoint - fs.outPoint
-					var inpos = fs.inPoint - 0.01*diff
-					var outpos = fs.outPoint + 0.01*diff
-					var inhos = fs.inHandle
-					var outhos = fs.outHandle
-					svg_to_draw += (
-						'<circle cx="' + str(inpos.x) + '" cy="' + str(inpos.y) + '" r="' + str(visible_point_size / 2.) + '" fill-opacity="0.1" fill="yellow" stroke="yellow" stroke-opacity="0.3" stroke-width="'+str(sw+3)+'"/>'
-					)
-					svg_to_draw += (
-						'<circle cx="' + str(outpos.x) + '" cy="' + str(outpos.y) + '" r="' + str(visible_point_size / 2.) + '" fill-opacity="0.1" fill="blue" stroke="blue" stroke-opacity="0.3" stroke-width="'+str(sw+3)+'"/>'
-					)
-					svg_to_draw += (
-						'<circle cx="' + str(inhos.x) + '" cy="' + str(inhos.y) + '" r="' + str(visible_point_size / 3.) + '" fill-opacity="0.2" fill="yellow" stroke="yellow" stroke-opacity="0.3" stroke-width="'+str(sw-1)+'"/>'
-					)
-					svg_to_draw += (
-						'<circle cx="' + str(outhos.x) + '" cy="' + str(outhos.y) + '" r="' + str(visible_point_size / 3.) + '" fill-opacity="0.2" fill="blue" stroke="blue" stroke-opacity="0.3" stroke-width="'+str(sw-1)+'"/>'
-					)
+			else:
+				svg_to_draw += (
+					'"' + shape_closed_look_seperate_negative + '/>'
+				)
+			scount += 1
+			# for fs: FlatSegment in gsf:
+			# 	var diff = fs.inPoint - fs.outPoint
+			# 	var inpos = fs.inPoint - 0.01*diff
+			# 	var outpos = fs.outPoint + 0.01*diff
+			# 	var inhos = fs.inHandle
+			# 	var outhos = fs.outHandle
+			# 	svg_to_draw += (
+			# 		'<circle cx="' + str(inpos.x) + '" cy="' + str(inpos.y) + '" r="' + str(visible_point_size / 2.) + '" fill-opacity="0.1" fill="yellow" stroke="yellow" stroke-opacity="0.3" stroke-width="'+str(sw+3)+'"/>'
+			# 	)
+			# 	svg_to_draw += (
+			# 		'<circle cx="' + str(outpos.x) + '" cy="' + str(outpos.y) + '" r="' + str(visible_point_size / 2.) + '" fill-opacity="0.1" fill="blue" stroke="blue" stroke-opacity="0.3" stroke-width="'+str(sw+3)+'"/>'
+			# 	)
+			# 	svg_to_draw += (
+			# 		'<circle cx="' + str(inhos.x) + '" cy="' + str(inhos.y) + '" r="' + str(visible_point_size / 3.) + '" fill-opacity="0.2" fill="yellow" stroke="yellow" stroke-opacity="0.3" stroke-width="'+str(sw-1)+'"/>'
+			# 	)
+			# 	svg_to_draw += (
+			# 		'<circle cx="' + str(outhos.x) + '" cy="' + str(outhos.y) + '" r="' + str(visible_point_size / 3.) + '" fill-opacity="0.2" fill="blue" stroke="blue" stroke-opacity="0.3" stroke-width="'+str(sw-1)+'"/>'
+			# 	)
 
 
 	for s in shapes.shapes:
@@ -978,7 +1011,7 @@ func _process(delta: float) -> void:
 
 				if p.selected:
 					svg_to_draw += (
-						'<circle cx="' + str(p.pos.x) + '" cy="' + str(p.pos.y) + '" r="' + str(visible_point_size / 2.) + '" fill-opacity="0.2" fill="red" stroke="black" stroke-opacity="0.5" stroke-width="'+str(sw+1)+'" stroke="black"/>'
+						'<circle cx="' + str(p.pos.x) + '" cy="' + str(p.pos.y) + '" r="' + str(visible_point_size / 2.) + '" fill-opacity="0.3" fill="red" stroke="black" stroke-opacity="0.0" stroke-width="'+str(sw+1)+'" stroke="black"/>'
 					)
 				if p.type == PointType.WHOLE:
 					pass
@@ -1002,17 +1035,19 @@ func _process(delta: float) -> void:
 						var p3 = h.pos - vn.rotated(1)*-15
 						
 						svg_to_draw += (
-							'<path d="M {0} {1} L {2} {3} L {4} {5}" stroke="black" fill-opacity="0.0" stroke-opacity=".2" stroke-width="2.0"/>'.format([str(p1.x), str(p1.y), str(p2.x), str(p2.y), str(p3.x), str(p3.y)]) 
+							'<path d="M {0} {1} L {2} {3} L {4} {5}" stroke="black" fill-opacity="0.0" stroke-opacity=".9" stroke-width="1.0"/>'.format([str(p1.x), str(p1.y), str(p2.x), str(p2.y), str(p3.x), str(p3.y)]) 
 						)
 
 
 						var opa = .3
 						var opaf = 0.0
 						var ring_thickness = sw + 2
+						var point_size_off = 5
 						if h.selected:
 							opa = 1.0
 							opaf = 0.5
 							ring_thickness = sw
+							point_size_off = 3
 						var dotline_opa = .3
 						var dotline_width = 3.0
 						var stroke_string = 'stroke-dasharray="7,5"' 
@@ -1027,25 +1062,25 @@ func _process(delta: float) -> void:
 								# if highlight_k:
 								if true:
 									svg_to_draw += (
-										'<path d="M {0} {1} L {2} {3}" stroke="black" stroke-opacity="{4}" {5} stroke-width="{6}"/>'.format([str(h.pos.x), str(h.pos.y), str(p.pos.x), str(p.pos.y), str(dotline_opa), stroke_string, str(dotline_width)]) + 
-										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / 3.) + '" fill-opacity="'+ str(opaf)+'" stroke-opacity="'+ str(opa) +'" stroke-width="'+str(ring_thickness+3)+'" fill="blue" stroke="'+inHCol+'"/>'
+										'<path d="M {0} {1} L {2} {3}" stroke="black" stroke-opacity="{4}" {5} stroke-width="{6}"/>'.format([str(h.pos.x), str(h.pos.y), str(p.pos.x), str(p.pos.y), str(dotline_opa), stroke_string, str(dotline_width-1)]) + 
+										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / point_size_off) + '" fill-opacity="'+ str(opaf)+'" stroke-opacity="'+ str(opa+.2) +'" stroke-width="'+str(ring_thickness-1)+'" fill="blue" stroke="'+inHCol+'"/>'
 									)
 								else:
 									svg_to_draw += (
 										'<path d="M {0} {1} L {2} {3}" stroke="black" stroke-opacity="{4}" {5} stroke-width="{6}"/>'.format([str(h.pos.x), str(h.pos.y), str(p.pos.x), str(p.pos.y), str(dotline_opa), stroke_string, str(dotline_width)]) + 
-										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / 4.) + '" fill-opacity="'+ str(opaf)+'" stroke-opacity="'+ str(opa) +'" stroke-width="'+str(ring_thickness)+'" fill="blue" stroke="'+inHCol+'"/>'
+										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / 4.) + '" fill-opacity="'+ str(opaf)+'" stroke-opacity="'+ str(opa) +'" stroke-width="'+str(ring_thickness-2)+'" fill="blue" stroke="'+inHCol+'"/>'
 									)
 							else:
 								if true:
 								# if highlight_j:
 									svg_to_draw += (
-										'<path d="M {0} {1} L {2} {3}" stroke="black" stroke-opacity="{4}" {5} stroke-width="{6}"/>'.format([str(h.pos.x), str(h.pos.y), str(p.pos.x), str(p.pos.y), str(dotline_opa), stroke_string, str(dotline_width)]) + 
-										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / 3.) + '" fill-opacity="'+str(opaf)+'" stroke-opacity="' + str(opa) + '" stroke-width="'+str(ring_thickness+3)+'" fill="red" stroke="'+outHCol+'"/>'
+										'<path d="M {0} {1} L {2} {3}" stroke="black" stroke-opacity="{4}" {5} stroke-width="{6}"/>'.format([str(h.pos.x), str(h.pos.y), str(p.pos.x), str(p.pos.y), str(dotline_opa), stroke_string, str(dotline_width-1)]) + 
+										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / point_size_off) + '" fill-opacity="'+str(opaf)+'" stroke-opacity="' + str(opa+.2) + '" stroke-width="'+str(ring_thickness-1)+'" fill="red" stroke="'+outHCol+'"/>'
 									)
 								else:
 									svg_to_draw += (
 										'<path d="M {0} {1} L {2} {3}" stroke="black" stroke-opacity="{4}" {5} stroke-width="{6}"/>'.format([str(h.pos.x), str(h.pos.y), str(p.pos.x), str(p.pos.y), str(dotline_opa), stroke_string, str(dotline_width)]) + 
-										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / 4.) + '" fill-opacity="'+str(opaf)+'" stroke-opacity="' + str(opa) + '" stroke-width="'+str(ring_thickness)+'" fill="red" stroke="'+outHCol+'"/>'
+										'<circle cx="' + str(h.pos.x) + '" cy="' + str(h.pos.y) + '" r="' + str(visible_point_size / 4.) + '" fill-opacity="'+str(opaf)+'" stroke-opacity="' + str(opa) + '" stroke-width="'+str(ring_thickness-2)+'" fill="red" stroke="'+outHCol+'"/>'
 									)
 
 	svg_to_draw += (
@@ -1056,7 +1091,6 @@ func _process(delta: float) -> void:
 	)
 	svg_to_draw += last_point_placed
 	svg_to_draw += '</g></g></svg>'
-		
 	im.load_svg_from_string(svg_to_draw)
 	tex.texture = ImageTexture.create_from_image(im)
 	
@@ -1125,10 +1159,10 @@ func _draw() -> void:
 				draw_set_transform(Vector2(0,0),0)
 					# draw_string(light_font, (wa_vec * zoom)+ (origin *(1 -  zoom)) + Vector2(5,25), str(int(seg.length()/10)) + " mm", HORIZONTAL_ALIGNMENT_LEFT, -1, default_font_size + 8)
 			
-	if true:
+	if select_mode:
 		for sel_text in Globl.possible_selections_dict:
 			# var a = clamp(((3*sin(2*counter) + 3) / 3.0),0,1.0)
-			var font_size_to_use = default_font_size + 12
+			var font_size_to_use = default_font_size + 14
 			var a = 1.0
 			# if a <= 0:
 			# 	continue
@@ -1170,9 +1204,10 @@ func _draw() -> void:
 			if !select_mode:
 				font_size_to_use -= 3
 				a = .9
-			col = Color.from_rgba8(80,80,80,a * 100)
-			var offVector: Vector2 = 10*Vector2(cos(counter*2+hash(sel_text)), sin(counter*2 + hash(sel_text))) - Vector2(10,-10)
-			draw_string_outline(font_to_use, (p - offVector) + off, sel_text,HORIZONTAL_ALIGNMENT_CENTER,-1, 20, font_size_to_use,col)
+			col = Color.from_rgba8(80,80,80,a * 50)
+			# var offVector: Vector2 = 6*Vector2(cos(counter*2+hash(sel_text)), sin(counter*2 + hash(sel_text))) - Vector2(6,-20)
+			var offVector: Vector2 = Vector2(-3,+8)
+			draw_string_outline(font_to_use, (p - offVector + Vector2(2,-2)) + off, sel_text,HORIZONTAL_ALIGNMENT_CENTER,-1, 20, font_size_to_use,col)
 			col = Color.from_rgba8(255,255,255,a * 255)
 			draw_string(font_to_use, (p - offVector) + off, sel_text,HORIZONTAL_ALIGNMENT_CENTER, -1, font_size_to_use, col)
 
@@ -1324,6 +1359,7 @@ func hi_rotation(delta: float):
 			ang *= -1
 		var displacement: Vector2
 		for sel in Globl.currently_selected_flat:
+			 
 			var spot: Vector2 = sel.getPos() - marker_pos
 			displacement = Vector2(cos(ang)*spot[0] - sin(ang)*spot[1], sin(ang)*spot[0] + cos(ang)*spot[1])
 			sel.setPos(Vector2(displacement-(spot)))
@@ -1349,7 +1385,7 @@ func hi_movement(delta: float):
 	# 	movement_amount = grid_size * 12
 
 	if Input.is_key_pressed(KEY_A):
-		movement_amount = 1
+		movement_amount = 2
 		# $Magnified.visible = true
 
 	if !Input.is_action_pressed("ui_left") and !Input.is_action_pressed("ui_right") and !Input.is_action_pressed("ui_down") and !Input.is_action_pressed("ui_up"): 
@@ -1602,6 +1638,14 @@ func flatShapeToPoints(fs: Array) -> Array[float]:
 			outAr.append(ppp)
 	return outAr
 
+func expandFlatShape(fs: Array) -> Array[float]:
+	var outAr: Array[float] = []
+	for flatseg: FlatSegment in fs:
+		var p = flatseg.pointPositionsFlat()
+		for ppp in p:
+			outAr.append(ppp)
+	return outAr
+
 func flatShapeToString(fs: Array) -> String:
 	var shape_str: String = ""
 	for s in fs:
@@ -1611,17 +1655,36 @@ func flatShapeToString(fs: Array) -> String:
 	shape_str += 'Z '
 	return shape_str
 
-func merge_flat_shapes(flatShapeA: Array, flatShapeB: Array) -> Array:
-	var inters = $Player.find_intersections(flatShapeToPoints(flatShapeA), flatShapeToPoints(flatShapeB))
+# voor elke plus boolean, check met welke vormen ze overlappen.
+# dan merge je ze eerst met de eerse vorm, daarna merge je de uitkomst daarvan met de tweede etc.
+# of nee, misschien kan je gewoon transities kiezen, dus je selecteerd het per 2 vormen. en 
+func merge_flat_shapes(flatShapeA: Array, flatShapeB: Array, negative: bool) -> Array:
+	var rr = randf_range(0.0,0.94)
+	var fstpA = flatShapeToPoints(flatShapeA)
+	var fstpB = flatShapeToPoints(flatShapeB)
+	# for i in range(len(fstpA)):
+	# 	fstpA[i] = round(fstpA[i])
+	# if negative:
+	# 	for i in range(len(fstpB)):
+	# 		fstpB[i] = fstpB[i] + .6
+	if len(fstpB) <= 16 or len(fstpA) <= 16:
+		return [flatShapeA, flatShapeB];
+	var inters = $Player.better_vector_boolean(fstpA, fstpB, negative)
+	# var fsA = flatShapeToString(flatShapeA)
+	# var fsB = flatShapeToString(flatShapeB)
+	# var inters = $Player.better_vector_boolean(fsA, fsB, negative)
 	# print("wat er in inters zit:")
 	# for i in inters:
 	# 	print(i)
 	# print(len(inters))
 	var outAr = []
 	var segAr = []
+	if len(inters) == 0:
+		return [flatShapeA, flatShapeB];
+		# return []
 
 	var cc = 0
-	print(len(inters))
+	# print("leninters: " + str(len(inters)))
 	for i in range(0,len(inters)): 
 		if inters[i] == -9999.0:
 			print("\ngap\n")
@@ -1648,11 +1711,12 @@ func merge_flat_shapes(flatShapeA: Array, flatShapeB: Array) -> Array:
 	# print(len(outAr[1]))
 	# for s in outAr[1]:
 	# 	s.reverse_segment()
+	outAr.append(segAr)
 	# outAr[1].reverse()
 	return outAr
 
 func create_ghost_shape_flat(realShape: Array) -> Array:
-	var ROUNDED = false
+	var ROUNDED = true
 	var amount_in_len = 20
 	var handle_dist = 10
 	var trimmedSegList = []
@@ -1699,55 +1763,12 @@ func create_ghost_shape_flat(realShape: Array) -> Array:
 		c+=1
 	return ghostFlat
 
-func create_ghost_shape2(realShape: Shape) -> String:
-	var ROUNDED = false
-	var amount_in_len = 80
-	var handle_dist = 20
-	var trimmedSegList = []
-	for seg in realShape.segments:
-		if seg.length() < 2 * amount_in_len:
-			continue
-		var amount = (amount_in_len / length_cubic(seg))
-		trimmedSegList.append(trimmed_tangent_and_pos(seg,amount, 1.0 - amount))
-	if len(trimmedSegList) == 0:
-		return realShape.shape_string()
-	var c = 0
-	var svgstring = "M "
-	var trimmedSeg1 = trimmedSegList[0][0]
-
-	svgstring += (str(trimmedSeg1[0]) + " " + str(trimmedSeg1[1]) + " ")
-	for s in trimmedSegList:
-		svgstring += "C "
-
-		var tr1 = s[0]
-		var tan1 = s[2]
-		var tr2
-		var tan2
-		if c < len(trimmedSegList) - 1:
-			tr2 = trimmedSegList[c+1][0]
-			tan2 = trimmedSegList[c+1][1]
-		else:
-			tr2 = trimmedSegList[0][0]
-			tan2 = trimmedSegList[0][1]
-		svgstring += (str(tr1[2]) + " " + str(tr1[3]) + ",")
-		svgstring += (str(tr1[4]) + " " + str(tr1[5]) + ",")
-		svgstring += (str(tr1[6]) + " " + str(tr1[7]) + " ")
-		if !ROUNDED:
-			svgstring += ("L " + str(tr2[0]) + " " + str(tr2[1]) + " ")
-		else:
-			svgstring += "C "
-			var newPos1 = Vector2(tr1[6],tr1[7]) + tan1.normalized() * handle_dist
-			var newPos2 = Vector2(tr2[0], tr2[1]) - tan2.normalized() * handle_dist
-			svgstring += (str(newPos1[0]) + " " + str(newPos1[1]) + ",")
-			svgstring += (str(newPos2[0]) + " " + str(newPos2[1]) + ",")
-			svgstring += (str(tr2[0]) + " " + str(tr2[1]) + ",")
-		c+=1
-	svgstring += " Z\n"
-	# return realShape.to_string()
-	return svgstring
-
 func trimmed_tangent_and_pos(seg, trim1: float, trim2: float):
+	assert(trim1 <= 1.0 and trim1 >= 0.0)
+	assert(trim2 <= 1.0 and trim2 >= 0.0)
 	var pps = seg.pointPositionsFlat()
+	
+	# print(pps)
 	var tan_pos = $Player.trimmed_tangent_parametric(pps[0],pps[1],pps[2],pps[3],pps[4],pps[5],pps[6],pps[7], trim1, trim2)
 	var trimmed: Array = tan_pos.slice(0,8)
 	var tang_vector_start = Vector2(tan_pos[8+0], tan_pos[8+1])

@@ -31,23 +31,35 @@
     10. er op na volgende booleans worden op de nieuwe tekenpool losgelaten, dus ook op nieuwe vormen
         boolean volgorde maakt uit!
 
-    zorg dat booleans met meerder vormen werken
-    zorg dat booleans met meerder gaten werken
+    --negatieve booleans
+    --zorg dat booleans met meerder gaten werken
 
-[] copy / paste
-[] curv comb
-[] add square & circle
+    parse cubic bez (f64) input naar paths.-> lees path_boolean en path/path_segments
+    doe boolean add op paths
+    parse paths terug naar reeks cubic bez 
+[x] zorg dat booleans met meerder vormen werken
+
+// detecteer als een vorm hetzelfde punt 2 keer beloopt, zodat je self-intersects kan vinden.
+het probleem is vormen die een punt delen. maar niet altijd. 
+    Log de posities van de punten op het scherm, voeg winding info toe. 
+    Het is een hoop werk, maar werkende booleans zouden wel cool zijn.
+[] maak booleans leesbaarder
 [] division of shapes + shape selection
-[] code cleaning - break up process for debugging
+[] copy / paste
 [] save / load
+[] curv comb
 
 
+[] multiple letters
+[] code cleaning - break up process for debugging
+
+-- niceties and visuals!!
+[] add square & circle
 [] auto obvious
 [] good scaling/rotating visually
 [] set mode for default placing whole or broken points, straight or cubic curve
 [] knife
 
-[] multiple letters
 [] mirroring
 [] skewing
 [] jumping to points

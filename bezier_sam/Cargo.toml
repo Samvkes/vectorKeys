@@ -8,5 +8,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 godot = "0.2.4"
+glam = "0.28.0"
 bezier-rs = "0.4.0"
-glam = "0.24.2"
+regex = "1.10.6"
+slotmap = "1.0.7"
+
+[features]
+logging = ["parsing"]
+parsing = []
+default = ["parsing"]
