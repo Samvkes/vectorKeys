@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://nq848ct5jjb0"]
+[gd_scene load_steps=8 format=3 uid="uid://nq848ct5jjb0"]
 
 [ext_resource type="Script" uid="uid://yqctpog0b4qv" path="res://base.gd" id="1_nfj5t"]
 [ext_resource type="Texture2D" uid="uid://c7pf2hdil4web" path="res://assets/DraftingMono/radio_button_unchecked_50dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.svg" id="2_b56jl"]
 [ext_resource type="Script" uid="uid://bxgca61n8ryny" path="res://undo_redo.gd" id="3_i812h"]
+[ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://Base.cs" id="5_nopgj"]
 
 [sub_resource type="Gradient" id="Gradient_b56jl"]
 offsets = PackedFloat32Array(0.474026, 0.724026, 1)
@@ -73,3 +74,6 @@ offset_bottom = 66.0
 theme_override_fonts/normal_font = SubResource("SystemFont_i812h")
 theme_override_font_sizes/normal_font_size = 40
 text = "20"
+
+[node name="BaseTest" type="Node" parent="."]
+script = ExtResource("5_nopgj")

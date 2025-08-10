@@ -882,11 +882,11 @@ func _process(delta: float) -> void:
 	if zoom > 1:
 		tslating = origin + 1.333*(marker_pos - origin)
 	var svg_to_draw: String = (
-# svg 
-'<svg xmlns="http://www.w3.org/2000/svg" width="{0}" height="{1}">'.format([window_size.x,window_size.y]) + 
-'<g transform="scale({0}) translate({1},{2}) rotate({3})">'.format([1,tslating.x,tslating.y,0]) + 
-'<g transform="scale({0}) translate({1},{2}) rotate({3})">'.format([zoom,-tslating.x,-tslating.y,0]))
-	#   <feDropShadow dx="12" dy="14" stdDeviation="1" flood-opacity="0.7"/>
+		# svg 
+		'<svg xmlns="http://www.w3.org/2000/svg" width="{0}" height="{1}">'.format([window_size.x,window_size.y]) + 
+		'<g transform="scale({0}) translate({1},{2}) rotate({3})">'.format([1,tslating.x,tslating.y,0]) + 
+		'<g transform="scale({0}) translate({1},{2}) rotate({3})">'.format([zoom,-tslating.x,-tslating.y,0]))
+		#   <feDropShadow dx="12" dy="14" stdDeviation="1" flood-opacity="0.7"/>
 	if !preview and !select_mode:
 		var guideLinesH: int = 24
 		var guideLinesV: int = 24
@@ -1444,8 +1444,10 @@ func hi_movement(delta: float):
 						cur_angle += int(sign(moving_selected.x)) * (step_size + 5*int(sign(moving_selected.x))*sign(cur_angle))
 						var closest_whole_angle = cur_angle - ((cur_angle) % step_size)
 						adjp.set_handle_line(sel,Vector2.from_angle(deg_to_rad(closest_whole_angle)))
+						manager_node.PlaySound("Rattle3.wav", 0.07, 0.8, 1.3)
 					else:
-						adjp.set_handle_line(sel,adjp.get_handle_line(sel).rotated((moving_selected.x/movement_amount) * .04))
+						adjp.set_handle_line(sel,adjp.get_handle_line(sel).rotated((moving_selected.x/movement_amount) * .07))
+						manager_node.PlaySound("Rattle3.wav", 0.07, 1.5, 2.5)
 					mended_point_list.append(sel.adjacent_point)
 				if sel.c() == "Point" and len(sel.adjacent_handles()) > 0 and sel not in auto_adjusted_list:
 					ms = sel.myShape()

@@ -1,21 +1,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Diagnostics;
-using System.Globalization;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Xml.Serialization;
-using System.Security.Cryptography.X509Certificates;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Metrics;
+using V2 = System.Numerics.Vector2;
 
-namespace WordTools;
+namespace Vectordrawing;
 
 static class Fun
 {
@@ -46,5 +34,18 @@ static class Fun
     {
         int choice = GD.RandRange(0, a.Count - 1);
         return a[choice];
+    }
+
+    public static V2 ProjectPointOnLine(V2 toProject, V2 lineStart, V2 lineEnd)
+    {
+        V2 diff = lineEnd - lineStart;
+        V2 A = toProject - lineStart;
+        float t = V2.Dot(A, diff) / (diff.Length() * diff.Length());
+        return lineStart + (t * diff);
+    }
+
+    public static V2 RandomVector(float xVariation, float yVariation)
+    {
+        return new((float)GD.RandRange(-1 * xVariation, xVariation), (float)GD.RandRange(-1* yVariation, yVariation));
     }
 }
