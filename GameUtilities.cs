@@ -1,9 +1,16 @@
 using Godot;
 using System;
+using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using V2 = System.Numerics.Vector2;
+using GV2 = Godot.Vector2;
 
 namespace Vectordrawing;
+
+static class C
+{
+    public const string Alfabet = "abcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+}
 
 static class Fun
 {
@@ -46,6 +53,40 @@ static class Fun
 
     public static V2 RandomVector(float xVariation, float yVariation)
     {
-        return new((float)GD.RandRange(-1 * xVariation, xVariation), (float)GD.RandRange(-1* yVariation, yVariation));
+        return new((float)GD.RandRange(-1 * xVariation, xVariation), (float)GD.RandRange(-1 * yVariation, yVariation));
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static V2 Vtv(GV2 v1)
+    {
+        V2 v2 = new V2(v1.X, v1.Y);
+        return v2;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static GV2 Vtv(V2 v1)
+    {
+        GV2 v2 = new GV2(v1.X, v1.Y);
+        return v2;
+    }
+}
+
+static class StringNamesList
+{
+    public static readonly StringName left = "ui_left";
+    public static readonly StringName right = "ui_right";
+    public static readonly StringName up = "ui_up";
+    public static readonly StringName down = "ui_down";
+    public static readonly StringName increase_zoom = "increase_zoom";
+    public static readonly StringName decrease_zoom = "decrease_zoom";
+    public static readonly StringName snap_selected = "snap_selected";
+    public static readonly StringName increase_grid_modifier = "increase_grid_modifier";
+    public static readonly StringName decrease_grid_modifier = "decrease_grid_modifier";
+    public static readonly StringName switch_segment_style = "switch_segment_style";
+    public static readonly StringName switch_point_style = "switch_point_style";
+    public static readonly StringName insert_point = "insert_point";
+    public static readonly StringName add_new_point = "add_new_point";
+    public static readonly StringName finish_shape = "finish_shape";
+    public static readonly StringName undo = "undo";
+    public static readonly StringName redo = "redo";
 }

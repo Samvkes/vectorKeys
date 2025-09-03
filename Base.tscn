@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://nq848ct5jjb0"]
 
-[ext_resource type="Script" uid="uid://yqctpog0b4qv" path="res://base.gd" id="1_nfj5t"]
 [ext_resource type="Texture2D" uid="uid://c7pf2hdil4web" path="res://assets/DraftingMono/radio_button_unchecked_50dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.svg" id="2_b56jl"]
+[ext_resource type="Script" uid="uid://mlikt7xk4omk" path="res://Player.cs" id="2_nopgj"]
 [ext_resource type="Script" uid="uid://bxgca61n8ryny" path="res://undo_redo.gd" id="3_i812h"]
 [ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://Base.cs" id="5_nopgj"]
 
@@ -20,26 +20,13 @@ font_names = PackedStringArray("Sans-Serif")
 multichannel_signed_distance_field = true
 
 [node name="Base" type="Node2D"]
-script = ExtResource("1_nfj5t")
 
 [node name="Player" type="Player" parent="."]
+script = ExtResource("2_nopgj")
 
 [node name="Tex" type="Sprite2D" parent="."]
 z_index = -1
 centered = false
-
-[node name="Magnified" type="Sprite2D" parent="."]
-position = Vector2(689, 292)
-centered = false
-
-[node name="ColorRect" type="ColorRect" parent="Magnified"]
-visible = false
-modulate = Color(1, 1, 1, 0.466667)
-z_index = -2
-offset_left = 2.0
-offset_right = 302.0
-offset_bottom = 300.0
-color = Color(0.208279, 0.208279, 0.208279, 1)
 
 [node name="Background" type="ColorRect" parent="."]
 z_index = -10
@@ -65,15 +52,15 @@ position = Vector2(755, 903.5)
 scale = Vector2(24.4375, 28.9219)
 texture = SubResource("GradientTexture2D_i812h")
 
-[node name="UndoRedo" type="Node" parent="."]
-script = ExtResource("3_i812h")
-
-[node name="fps" type="RichTextLabel" parent="."]
-offset_right = 172.0
-offset_bottom = 66.0
+[node name="FpsLabel" type="RichTextLabel" parent="."]
+offset_right = 1503.0
+offset_bottom = 118.0
 theme_override_fonts/normal_font = SubResource("SystemFont_i812h")
 theme_override_font_sizes/normal_font_size = 40
 text = "20"
 
-[node name="BaseTest" type="Node" parent="."]
+[node name="UndoRedo" type="Node" parent="."]
+script = ExtResource("3_i812h")
+
+[node name="BaseTest" type="Node2D" parent="."]
 script = ExtResource("5_nopgj")

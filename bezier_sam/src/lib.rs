@@ -245,7 +245,7 @@ impl Player {
     }
 
     #[func]
-    fn point_along_cubic_parametric(&mut self, amount: f64, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> [f64; 2]  {
+    fn point_along_cubic_parametric(&mut self, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64, amount: f64) -> [f64; 2]  {
         let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
         let a = bez.evaluate(TValue::Parametric(amount));
         return [a[0], a[1]];
@@ -620,7 +620,7 @@ impl Player {
 
 
     #[func]
-    fn tangent_parametric(&mut self, amount: f64, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> [f64; 2]  {
+    fn tangent_parametric(&mut self, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64, amount: f64) -> [f64; 2]  {
         let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
         let a = bez.tangent(TValue::Parametric(amount));
         return [a[0], a[1]];
@@ -632,31 +632,31 @@ impl Player {
     #[func]
     fn better_vector_boolean(&mut self, a:Array<f64>, b:Array<f64>, negative: bool) -> Vec<f64>  {
         // check of 1 van de vormen self-intersects of colinear is (alle punten van de vorm liggen op 1 lijn)
-        for j in 0..a.len()/8 {
-            let i = j * 8;
-            let a1 = a.at(i) / 128.0;
-            let a2 = a.at(i+1)/128.0;
-            let a3 = a.at(i+2)/128.0;
-            let a4 = a.at(i+3)/128.0;
-            let a5 = a.at(i+4)/128.0;
-            let a6 = a.at(i+5)/128.0;
-            let a7 = a.at(i+6)/128.0;
-            let a8 = a.at(i+7)/128.0;
-            godot_print!("{i}: {a1};{a2}  {a3};{a4}  {a5};{a6}  {a7};{a8}")
-        }
-        for j in 0..b.len()/8 {
-            let i = j * 8;
-            let a1 = b.at(i) / 128.0;
-            let a2 = b.at(i+1)/128.0;
-            let a3 = b.at(i+2)/128.0;
-            let a4 = b.at(i+3)/128.0;
-            let a5 = b.at(i+4)/128.0;
-            let a6 = b.at(i+5)/128.0;
-            let a7 = b.at(i+6)/128.0;
-            let a8 = b.at(i+7)/128.0;
-            godot_print!("{i}: {a1};{a2}  {a3};{a4}  {a5};{a6}  {a7};{a8}")
-        }
-        godot_print!("\n");
+        // for j in 0..a.len()/8 {
+        //     let i = j * 8;
+        //     let a1 = a.at(i) / 128.0;
+        //     let a2 = a.at(i+1)/128.0;
+        //     let a3 = a.at(i+2)/128.0;
+        //     let a4 = a.at(i+3)/128.0;
+        //     let a5 = a.at(i+4)/128.0;
+        //     let a6 = a.at(i+5)/128.0;
+        //     let a7 = a.at(i+6)/128.0;
+        //     let a8 = a.at(i+7)/128.0;
+            // godot_print!("{i}: {a1};{a2}  {a3};{a4}  {a5};{a6}  {a7};{a8}")
+        // }
+        // for j in 0..b.len()/8 {
+        //     let i = j * 8;
+        //     let a1 = b.at(i) / 128.0;
+        //     let a2 = b.at(i+1)/128.0;
+        //     let a3 = b.at(i+2)/128.0;
+        //     let a4 = b.at(i+3)/128.0;
+        //     let a5 = b.at(i+4)/128.0;
+        //     let a6 = b.at(i+5)/128.0;
+        //     let a7 = b.at(i+6)/128.0;
+        //     let a8 = b.at(i+7)/128.0;
+            // godot_print!("{i}: {a1};{a2}  {a3};{a4}  {a5};{a6}  {a7};{a8}")
+        // }
+        // godot_print!("\n");
         let mut return_vec: Vec<f64> = Vec::new();
         let mut a_path: Path = Path::new();
         let mut b_path: Path = Path::new();
@@ -668,10 +668,10 @@ impl Player {
             let x2 = a.at(i+2); let y2 = a.at(i+3);
             let x3 = a.at(i+4); let y3 = a.at(i+5);
             let x4 = a.at(i+6); let y4 = a.at(i+7);
-            let d1 = DVec2::new(x1,y1) * 1.0;
-            let d2 = DVec2::new(x2,y2) * 1.0;
-            let d3 = DVec2::new(x3,y3) * 1.0;
-            let d4 = DVec2::new(x4,y4) * 1.0;
+            let d1 = DVec2::new(x1,y1).ceil();
+            let d2 = DVec2::new(x2,y2).ceil();
+            let d3 = DVec2::new(x3,y3).ceil();
+            let d4 = DVec2::new(x4,y4).ceil();
             let new_segment = PathSegment::Cubic(d1,d2,d3,d4);
             a_path.push(new_segment);
 
@@ -686,25 +686,28 @@ impl Player {
             let x2 = b.at(i+2); let y2 = b.at(i+3);
             let x3 = b.at(i+4); let y3 = b.at(i+5);
             let x4 = b.at(i+6); let y4 = b.at(i+7);
-            let d1 = DVec2::new(x1,y1) * 1.0;
-            let d2 = DVec2::new(x2,y2) * 1.0;
-            let d3 = DVec2::new(x3,y3) * 1.0;
-            let d4 = DVec2::new(x4,y4) * 1.0;
+            let d1 = DVec2::new(x1,y1).ceil();
+            let d2 = DVec2::new(x2,y2).ceil();
+            let d3 = DVec2::new(x3,y3).ceil();
+            let d4 = DVec2::new(x4,y4).ceil();
             let new_segment = PathSegment::Cubic(d1,d2,d3,d4);
             b_path.push(new_segment);
+
             let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
             bezb_list.push(bez);
         }
         let sp2: Subpath<NoId> = Subpath::<NoId>::from_beziers(&bezb_list[..], true);
+
         if 
             sp1.area(Some(0.1), Some(0.1)) < 0.99 
             || sp2.area(Some(0.1), Some(0.1)) < 0.99 
             || sp1.all_self_intersections(Some(0.1), Some(0.1)).len() > 0 
             || sp2.all_self_intersections(Some(0.1), Some(0.1)).len() > 0 
         {
-            return return_vec
+            // return return_vec
         }
 
+        // hier beginnen we
         let mut oper = PathBooleanOperation::Union;
         if negative {
             oper = PathBooleanOperation::Difference;
@@ -717,14 +720,21 @@ impl Player {
             oper
         ).unwrap();
 
-        godot_print!("\nboolean:  ");
+        // godot_print!("\nboolean:  ");
         let res_1 = &result[0];
         let mut bez_list: Vec<Bezier> = Vec::new();
         for ps in res_1 {
             let bb = ps.to_cubic();
             let bez = Bezier::from_cubic_dvec2(bb[0], bb[1], bb[2], bb[3]);
             bez_list.push(bez);
+            return_vec.push(bb[0].x); return_vec.push(bb[0].y);
+            return_vec.push(bb[1].x); return_vec.push(bb[1].y);
+            return_vec.push(bb[2].x); return_vec.push(bb[2].y);
+            return_vec.push(bb[3].x); return_vec.push(bb[3].y);
         }
+
+        return return_vec;
+
         let sp: Subpath<NoId> = Subpath::<NoId>::from_beziers(&bez_list, true);
         let sis = sp.all_self_intersections(Some(0.01), Some(0.01));
 
@@ -742,7 +752,7 @@ impl Player {
             old_res = ps.end();
         }
         if !big_gap && sis.len() > 0 {
-            godot_print!("newschool way");
+            // godot_print!("newschool way");
             // let sp_split = sp.split(SubpathTValue:: Parametric{segment_index: sis[0].0, t: sis[0].1}); 
             // let fsp = sp_split.0;
             // let ssp = sp_split.1;
@@ -765,52 +775,15 @@ impl Player {
                 for p in temp_bez {
                     let aaa = p[0] / 128.0;
                     let bbb = p[1] / 128.0;
-                    godot_print!("{aaa} {bbb}");
+                    // godot_print!("{aaa} {bbb}");
                     return_vec.push(p[0]/1.0);
                     return_vec.push(p[1]/1.0);
                 }
             }
-            // let mut old_res: DVec2 = fsp.get_segment(0).unwrap().start;
-            // for i in 0..fsp.len()-1{
-            //     let seg = fsp.get_segment(i).unwrap().to_cubic();
-            //     let start = seg.start;
-            //     let end = seg.end;
-            //     let start_handle = seg.handle_start().unwrap();
-            //     let end_handle = seg.handle_end().unwrap();
-            //     if old_res.distance(start) >0.99 || end.distance(sispos) < 0.99{
-            //         return_vec.push(-9999.0);
-            //     }
-            //     for p in [start, start_handle, end_handle, end] {
-            //         return_vec.push(p.x);
-            //         return_vec.push(p.y);
-            //     }
-            //     old_res = end;
-            // }
-            // return_vec.push(-9999.0);
-            // if ssp.is_some() {
-            //     godot_print!(" not none!!!!! ");
-            //     let ssp = ssp.unwrap();
-            //     let mut old_res: DVec2 = ssp.get_segment(0).unwrap().start;
-            //     for i in 0..fsp.len()-1{
-            //         let seg = ssp.get_segment(i).unwrap().to_cubic();
-            //         let start = seg.start;
-            //         let end = seg.end;
-            //         let start_handle = seg.handle_start().unwrap();
-            //         let end_handle = seg.handle_end().unwrap();
-            //         if old_res.distance(start) >0.99 {
-            //             return_vec.push(-9999.0);
-            //         }
-            //         for p in [start, start_handle, end_handle, end] {
-            //             return_vec.push(p.x);
-            //             return_vec.push(p.y);
-            //         }
-            //         old_res = end;
-            //     }
-            // }
         }
         else {
 
-            godot_print!("oldschool way");
+            // godot_print!("oldschool way");
             let mut old_res: DVec2 = res_1[0].start();
 
             for ps in res_1 {
@@ -827,7 +800,7 @@ impl Player {
                 for p in temp_bez {
                     let aaa = p[0] / 128.0;
                     let bbb = p[1] / 128.0;
-                    godot_print!("{aaa} {bbb}");
+                    // godot_print!("{aaa} {bbb}");
                     return_vec.push(p[0]/1.0);
                     return_vec.push(p[1]/1.0);
                 }
@@ -846,9 +819,9 @@ impl Player {
             let a6 = a[i+5]/128.0;
             let a7 = a[i+6]/128.0;
             let a8 = a[i+7]/128.0;
-            godot_print!("{i}: {a1};{a2}  {a7};{a8}")
+            // godot_print!("{i}: {a1};{a2}  {a7};{a8}")
         }
-        godot_print!("end\n  ");
+        // godot_print!("end\n  ");
         a
 
     }

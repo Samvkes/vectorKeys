@@ -6,7 +6,7 @@ enum PointSubdiv {NONE, CHAMFER, ROUNDED}
 
 # testing
 
-class FlatSegment:
+class  FlatSegment:
 	var inPoint: Vector2
 	var outPoint: Vector2
 	var inHandle: Vector2
@@ -758,14 +758,14 @@ func _ready() -> void:
 	# tex_magnified = $Magnified
 	current_grid_visual_size = grid_modifier * grid_size * zoom
 	shape = Shape.new()
-	# for i in range(2):
+	# for i in range(3):
 	# 	create_random_shape()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	# if (len(shapes.shapes)>1):
 	# 	print("\n\n")
-	# 	print(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
+	# 	print(boolean_merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
 
 	if len(deltaTimeArray) > 3:
 		deltaTimeArray.pop_front()
@@ -776,7 +776,6 @@ func _process(delta: float) -> void:
 		totalDelta += t
 	for s in shapes.shapes:
 		totPoints += len(s.points)
-	$fps.text = str(roundi(1.0 / (totalDelta / len(deltaTimeArray)))) + " : " + str(totPoints)
 	# a = clamp(a- (2.1 - a)*delta, 0,1)
 	# if select_mode:
 	# 	a = 1
@@ -938,7 +937,7 @@ func _process(delta: float) -> void:
 			var scount = 0
 			for s in shapeCollection:
 				print("\nshapecol count:: " + str(scount) + "\n")
-				newShapes.append_array(merge_flat_shapes(s, flattenShape(shapes.shapes[shapeIndex]),boolbool))
+				newShapes.append_array(boolean_merge_flat_shapes(s, flattenShape(shapes.shapes[shapeIndex]),boolbool))
 				scount += 1
 			shapeCollection = newShapes
 			# print("\n\nlenspes:" + str(len(spes)))
@@ -948,9 +947,9 @@ func _process(delta: float) -> void:
 		# print("\n\n\n")
 		for spe in shapeCollection:
 			svg_to_draw += (
-				flatShapeToString(create_ghost_shape_flat(spe))
+				flatShapeToString(round_corners_flat_shape(spe))
 				# flatShapeToString(spe)
-				# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
+				# flatShapeToString(boolean_merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
 			)
 		svg_to_draw += (
 			'"' + shape_closed_look_merged + 
@@ -960,13 +959,13 @@ func _process(delta: float) -> void:
 	if !preview:
 		var scount = 0
 		for spe in shapes.shapes:
-			var gsf = create_ghost_shape_flat(flattenShape(spe))
+			var gsf = round_corners_flat_shape(flattenShape(spe))
 			svg_to_draw += (
 			'<path d="'
 			)
 			svg_to_draw += (
 				flatShapeToString(gsf)
-				# flatShapeToString(merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
+				# flatShapeToString(boolean_merge_flat_shapes(flattenShape(shapes.shapes[0]), flattenShape(shapes.shapes[1])))
 			)
 
 			if scount == 0 or scount % 2 != 0:
@@ -1001,9 +1000,9 @@ func _process(delta: float) -> void:
 	for s in shapes.shapes:
 		if !preview:
 			for p in s.points:
-				var dist = marker_pos.distance_to(p.getPos())
-				if dist < marker_min_dist_to_points:
-					marker_min_dist_to_points = dist
+				# var dist = marker_pos.distance_to(p.getPos())
+				# if dist < marker_min_dist_to_points:
+				# 	marker_min_dist_to_points = dist
 				# if show_shape_select:
 					# svg_to_draw += (
 					# 	'<path d="M {0} {1} L {2} {3}" stroke="white" stroke-opacity=".30" stroke-dasharray="20,20" stroke-width="2.0"/>'.format([str(s.getPos().x), str(s.getPos().y), str(p.pos.x), str(p.pos.y)])
@@ -1093,6 +1092,8 @@ func _process(delta: float) -> void:
 	svg_to_draw += '</g></g></svg>'
 	im.load_svg_from_string(svg_to_draw)
 	tex.texture = ImageTexture.create_from_image(im)
+
+	$FpsLabel.text = str(roundi(1.0 / (totalDelta / len(deltaTimeArray)))) + " : " + str(totPoints) + " : " + str(svg_to_draw.length())
 	
 	if on_border() and sticky_border_bool:
 		movement_timer.wait_time = .2
@@ -1242,47 +1243,33 @@ func check_borders(mpos: Vector2) -> Vector2:
 		
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		if event.pressed:
-			highlight_j = false
-			highlight_k = false
-			# if event.as_text() == 'Shift+Space' or event.as_text() == 'Space':
-			# 	handle_selection_text(keys_pressed_array.duplicate())
-			# 	keys_pressed_array= []
-			if select_mode:
-				if !event.as_text() =='Shift+Space' and !event.as_text() == 'Space' and !event.as_text() == 'Semicolon':
-					if event.as_text().length() > 0:
-						if event.as_text().begins_with('Shift'):
-							if event.as_text().length() > 6:
-								keys_pressed_array.append(event.as_text()[6])
-								handle_selection_text(keys_pressed_array.duplicate())
-								keys_pressed_array = []
+	if event is InputEventKey and event.pressed:
+		highlight_j = false
+		highlight_k = false
+		if select_mode:
+			if !event.as_text() =='Shift+Space' and !event.as_text() == 'Space' and !event.as_text() == 'Semicolon':
+				if event.as_text().length() > 0:
+					if event.as_text().begins_with('Shift'):
+						if event.as_text().length() > 6:
+							keys_pressed_array.append(event.as_text()[6])
+							handle_selection_text(keys_pressed_array.duplicate())
+							keys_pressed_array = []
+					else:
+						if event.as_text().to_lower() == 'j' or event.as_text().to_lower() == 'k':
+							if event.as_text().to_lower() == 'j':
+								highlight_j = true
+							if event.as_text().to_lower() == 'k':
+								highlight_k = true
+							keys_pressed_array.append(event.as_text()[0].to_lower())
 						else:
-							if event.as_text().to_lower() == 'j' or event.as_text().to_lower() == 'k':
-								if event.as_text().to_lower() == 'j':
-									highlight_j = true
-								if event.as_text().to_lower() == 'k':
-									highlight_k = true
-								keys_pressed_array.append(event.as_text()[0].to_lower())
-							else:
-								keys_pressed_array.append(event.as_text()[0].to_lower())
-								handle_selection_text(keys_pressed_array.duplicate())
-								keys_pressed_array = []
-							# keys_pressed_array.append(event.as_text()[0])
-				# if len(keys_pressed_array) > 1:
-				# 	handle_selection_text(keys_pressed_array.duplicate())
-				# 	keys_pressed_array = []
-				# elif event.as_text() == 'Semicolon':
-				# 		select_mode = false
-					
-			# elif event.as_text() == 'Semicolon':
-			# 	select_mode = true
-			# 	keys_pressed_array = []
+							keys_pressed_array.append(event.as_text()[0].to_lower())
+							handle_selection_text(keys_pressed_array.duplicate())
+							keys_pressed_array = []
 
-			if event.as_text() == 'Semicolon':
-				for sel in Globl.currently_selected_dict:
-					sel.selected = false
-				keys_pressed_array = []
+		if event.as_text() == 'Semicolon':
+			for sel in Globl.currently_selected_dict:
+				sel.selected = false
+			keys_pressed_array = []
 
 
 func handle_selection_text(kpa: Array[String]):
@@ -1620,10 +1607,6 @@ func on_border() -> bool:
 		return false
 	# if marker_pos.x == 
 
-func create_merged_shape(realShape: Shape) -> Shape:
-	var to_merge = realShape.dup()
-	return to_merge
-
 func flattenShape(shape: Shape) -> Array:
 	var flatShape = []
 	for seg in shape.segments:
@@ -1660,33 +1643,18 @@ func flatShapeToString(fs: Array) -> String:
 # voor elke plus boolean, check met welke vormen ze overlappen.
 # dan merge je ze eerst met de eerse vorm, daarna merge je de uitkomst daarvan met de tweede etc.
 # of nee, misschien kan je gewoon transities kiezen, dus je selecteerd het per 2 vormen. en 
-func merge_flat_shapes(flatShapeA: Array, flatShapeB: Array, negative: bool) -> Array:
-	var rr = randf_range(0.0,0.94)
+func boolean_merge_flat_shapes(flatShapeA: Array, flatShapeB: Array, negative: bool) -> Array:
 	var fstpA = flatShapeToPoints(flatShapeA)
 	var fstpB = flatShapeToPoints(flatShapeB)
-	# for i in range(len(fstpA)):
-	# 	fstpA[i] = round(fstpA[i])
-	# if negative:
-	# 	for i in range(len(fstpB)):
-	# 		fstpB[i] = fstpB[i] + .6
 	if len(fstpB) <= 16 or len(fstpA) <= 16:
 		return [flatShapeA, flatShapeB];
 	var inters = $Player.better_vector_boolean(fstpA, fstpB, negative)
-	# var fsA = flatShapeToString(flatShapeA)
-	# var fsB = flatShapeToString(flatShapeB)
-	# var inters = $Player.better_vector_boolean(fsA, fsB, negative)
-	# print("wat er in inters zit:")
-	# for i in inters:
-	# 	print(i)
-	# print(len(inters))
 	var outAr = []
 	var segAr = []
 	if len(inters) == 0:
 		return [flatShapeA, flatShapeB];
-		# return []
 
 	var cc = 0
-	# print("leninters: " + str(len(inters)))
 	for i in range(0,len(inters)): 
 		if inters[i] == -9999.0:
 			print("\ngap\n")
@@ -1695,7 +1663,6 @@ func merge_flat_shapes(flatShapeA: Array, flatShapeB: Array, negative: bool) -> 
 			segAr = []
 			continue	
 		else:
-			# print(inters[i])
 			if cc == 7:
 				cc = 0
 				var j = i - 7
@@ -1707,17 +1674,10 @@ func merge_flat_shapes(flatShapeA: Array, flatShapeB: Array, negative: bool) -> 
 				segAr.append(vs)
 			else:
 				cc += 1
-		# vs.print()
-	# print(outAr)
-	# print(len(outAr[0]))
-	# print(len(outAr[1]))
-	# for s in outAr[1]:
-	# 	s.reverse_segment()
 	outAr.append(segAr)
-	# outAr[1].reverse()
 	return outAr
 
-func create_ghost_shape_flat(realShape: Array) -> Array:
+func round_corners_flat_shape(realShape: Array) -> Array:
 	var ROUNDED = true
 	var amount_in_len = 20
 	var handle_dist = 10
@@ -1765,6 +1725,7 @@ func create_ghost_shape_flat(realShape: Array) -> Array:
 		c+=1
 	return ghostFlat
 
+
 func trimmed_tangent_and_pos(seg, trim1: float, trim2: float):
 	assert(trim1 <= 1.0 and trim1 >= 0.0)
 	assert(trim2 <= 1.0 and trim2 >= 0.0)
@@ -1780,6 +1741,19 @@ func trimmed_tangent_and_pos(seg, trim1: float, trim2: float):
 	# var tang_vector_end = Vector2(tan_pos[0], tan_pos[1])
 	return [trimmed, tang_vector_start, tang_vector_end]
 
+
+func length_cubic(seg) -> float:
+	var pps = seg.pointPositionsFlat()
+	return $Player.length_cubic(pps[0],pps[1],pps[2],pps[3],pps[4],pps[5],pps[6],pps[7])
+
+
+
+# not used
+func trim(seg, t1,t2, parametric: bool) -> Array:
+	var pps = seg.pointPositionsFlat()
+	var trimmed: Array =  $Player.bezier_trimmed(pps[0],pps[1],pps[2],pps[3],pps[4],pps[5],pps[6],pps[7], t1,t2, parametric)
+	return trimmed
+
 func tangent_and_pos(seg: Segment, t: float, par: bool = true):
 	var pps = seg.pointPositionsFlat()
 	var where_along: Array
@@ -1791,15 +1765,6 @@ func tangent_and_pos(seg: Segment, t: float, par: bool = true):
 	var tang: Array = $Player.tangent_parametric(t,pps[0],pps[1],pps[2],pps[3],pps[4],pps[5],pps[6],pps[7])
 	var tang_vector = Vector2(tang[0], tang[1])
 	return [tang_vector, wa_vec]
-
-func length_cubic(seg) -> float:
-	var pps = seg.pointPositionsFlat()
-	return $Player.length_cubic(pps[0],pps[1],pps[2],pps[3],pps[4],pps[5],pps[6],pps[7])
-
-func trim(seg, t1,t2, parametric: bool):
-	var pps = seg.pointPositionsFlat()
-	var trimmed: Array =  $Player.bezier_trimmed(pps[0],pps[1],pps[2],pps[3],pps[4],pps[5],pps[6],pps[7], t1,t2, parametric)
-	return trimmed
 	# return pps
 	# seg.inPoint.pos.x = trimmed[0]
 	# seg.inPoint.pos.y = trimmed[1]
