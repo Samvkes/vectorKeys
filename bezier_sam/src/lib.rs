@@ -4,7 +4,7 @@ mod util {
 	pub(crate) mod aabb;
 	pub(crate) mod epsilons;
 	pub(crate) mod math;
-	pub(crate) mod quad_tree;
+	pub(crate) mod grid;
 }
 mod path;
 
@@ -629,35 +629,16 @@ impl Player {
     #[signal]
     fn speed_increased();
 
+    fn floats_to_paths(a:Array<f64>) -> Path {
+        let mut a_path: Path = Path::new();
+        a_path
+    }
+
     #[func]
     fn better_vector_boolean(&mut self, a:Array<f64>, b:Array<f64>, negative: bool) -> Vec<f64>  {
         // check of 1 van de vormen self-intersects of colinear is (alle punten van de vorm liggen op 1 lijn)
-        // for j in 0..a.len()/8 {
-        //     let i = j * 8;
-        //     let a1 = a.at(i) / 128.0;
-        //     let a2 = a.at(i+1)/128.0;
-        //     let a3 = a.at(i+2)/128.0;
-        //     let a4 = a.at(i+3)/128.0;
-        //     let a5 = a.at(i+4)/128.0;
-        //     let a6 = a.at(i+5)/128.0;
-        //     let a7 = a.at(i+6)/128.0;
-        //     let a8 = a.at(i+7)/128.0;
-            // godot_print!("{i}: {a1};{a2}  {a3};{a4}  {a5};{a6}  {a7};{a8}")
-        // }
-        // for j in 0..b.len()/8 {
-        //     let i = j * 8;
-        //     let a1 = b.at(i) / 128.0;
-        //     let a2 = b.at(i+1)/128.0;
-        //     let a3 = b.at(i+2)/128.0;
-        //     let a4 = b.at(i+3)/128.0;
-        //     let a5 = b.at(i+4)/128.0;
-        //     let a6 = b.at(i+5)/128.0;
-        //     let a7 = b.at(i+6)/128.0;
-        //     let a8 = b.at(i+7)/128.0;
-            // godot_print!("{i}: {a1};{a2}  {a3};{a4}  {a5};{a6}  {a7};{a8}")
-        // }
-        // godot_print!("\n");
         let mut return_vec: Vec<f64> = Vec::new();
+        return return_vec;
         let mut a_path: Path = Path::new();
         let mut b_path: Path = Path::new();
         let mut beza_list: Vec<Bezier> = Vec::new();
@@ -704,7 +685,7 @@ impl Player {
             || sp1.all_self_intersections(Some(0.1), Some(0.1)).len() > 0 
             || sp2.all_self_intersections(Some(0.1), Some(0.1)).len() > 0 
         {
-            // return return_vec
+            return return_vec
         }
 
         // hier beginnen we
@@ -733,7 +714,7 @@ impl Player {
             return_vec.push(bb[3].x); return_vec.push(bb[3].y);
         }
 
-        return return_vec;
+        // return return_vec;
 
         let sp: Subpath<NoId> = Subpath::<NoId>::from_beziers(&bez_list, true);
         let sis = sp.all_self_intersections(Some(0.01), Some(0.01));

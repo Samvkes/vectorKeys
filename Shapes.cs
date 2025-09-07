@@ -523,9 +523,12 @@ public static class Shapes
         for (int i = 1; i < S.Count; i++)
         {
             Segment[][] newShapes = [];
+            int countt = 0;
             foreach (Segment[] island in currentShapes)
             {
-                newShapes = [.. newShapes, .. BooleanMergeSegments(island, S[i].Segments(), i%2 == 0)];
+                newShapes = [.. newShapes, .. BooleanMergeSegments(island, S[i].Segments(), false)];
+                if (countt > 0)
+                countt += 1;
             }
             currentShapes = newShapes;
         }

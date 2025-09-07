@@ -8,6 +8,7 @@ using System.Numerics;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Data;
+using System.Diagnostics.Metrics;
 
 namespace Vectordrawing;
 
@@ -91,12 +92,19 @@ static class SvgString
     {
         float[] startSeg = s[0].Flat();
         CurrentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
+        int counter = 0;
         foreach (Segment seg in s)
         {
             float[] flatSeg = seg.Flat();
-            CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}, ";
+            CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+            if (counter != s.Length - 1)
+            {
+                CurrentString += ",";
+            }
+            CurrentString += " ";
+            counter += 1;
         }
-        CurrentString += $"Z\"";
+        CurrentString += $"Z\" ";
         //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
         Style(currentShape);
         CurrentString += "/>";

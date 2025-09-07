@@ -157,30 +157,27 @@ public partial class Base : Node2D
         }
 
         // draw unrounded shapes / unmerged shapes for clarity in editing mode?
-        // foreach (Shape s in Shapes.S)
-        // {
-        //     if (s.Anchors.Count <= 1)
-        //     {
-        //         continue;
-        //     }
+        foreach (Shape s in Shapes.S)
+        {
+            if (s.Anchors.Count <= 1)
+            {
+                continue;
+            }
 
-        //     if (CurrentMode == Mode.Editing && s == CurrentShape)
-        //     {
-        //         SvgString.SetStyle(Style.ShapeUnchanged);
-        //         SvgString.AddSegments(s.Segments());
-        //     }
+            if (CurrentMode == Mode.Editing && s == CurrentShape)
+            {
+                SvgString.SetStyle(Style.ShapeUnchanged);
+                SvgString.AddSegments(s.Segments());
+            }
 
-        //     if (CurrentMode == Mode.Previewing) SvgString.SetStyle(Style.ShapePreview);
-        //     else
-        //     {
-        //         if (s.Finished) SvgString.SetStyle(Style.ShapeClosed);
-        //         else SvgString.SetStyle(Style.ShapeOpen);
-        //     }
+            if (CurrentMode == Mode.Previewing) SvgString.SetStyle(Style.ShapePreview);
+            else
+            {
+                if (s.Finished) SvgString.SetStyle(Style.ShapeClosed);
+                else SvgString.SetStyle(Style.ShapeOpen);
+            }
 
-        //     Segment[] seg = s.RoundCornersSegments();
-        //     SvgString.AddSegments(seg, s == CurrentShape);
-
-        // }
+        }
         if (CurrentMode == Mode.Editing) SvgString.SetStyle(Style.ShapeClosed);
         if (CurrentMode == Mode.Previewing) SvgString.SetStyle(Style.ShapePreview);
         if (Shapes.S.Count > 1)
@@ -222,6 +219,7 @@ public partial class Base : Node2D
         }
 
         SvgString.Finish();
+        GD.Print(SvgString.CurrentString);
         Im.LoadSvgFromString(SvgString.CurrentString);
         Tex.Texture = ImageTexture.CreateFromImage(Im);
         QueueRedraw();
