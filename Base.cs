@@ -157,6 +157,7 @@ public partial class Base : Node2D
         }
 
         // draw unrounded shapes / unmerged shapes for clarity in editing mode?
+        int cccc = 0;
         foreach (Shape s in Shapes.S)
         {
             if (s.Anchors.Count <= 1)
@@ -164,10 +165,23 @@ public partial class Base : Node2D
                 continue;
             }
 
+            if (CurrentMode == Mode.Editing)
+            {
+                if (cccc % 2 == 0)
+                {
+                    SvgString.SetStyle(Style.ShapeUnchanged);
+                }
+                else
+                {
+                    SvgString.SetStyle(Style.ShapeNegative);
+                }
+                SvgString.AddSegments(s.SegList());
+            }
+
             if (CurrentMode == Mode.Editing && s == CurrentShape)
             {
-                SvgString.SetStyle(Style.ShapeUnchanged);
-                SvgString.AddSegments(s.Segments());
+                SvgString.SetStyle(Style.ShapeSelected);
+                SvgString.AddSegments(s.SegList());
             }
 
             if (CurrentMode == Mode.Previewing) SvgString.SetStyle(Style.ShapePreview);
@@ -176,17 +190,18 @@ public partial class Base : Node2D
                 if (s.Finished) SvgString.SetStyle(Style.ShapeClosed);
                 else SvgString.SetStyle(Style.ShapeOpen);
             }
-
+            cccc += 1;
         }
         if (CurrentMode == Mode.Editing) SvgString.SetStyle(Style.ShapeClosed);
         if (CurrentMode == Mode.Previewing) SvgString.SetStyle(Style.ShapePreview);
         if (Shapes.S.Count > 1)
         {
             Segment[][] flatShapes = Shapes.MergeAllShapes();
-            foreach (Segment[] flatShape in flatShapes)
-            {
-                SvgString.AddSegments(flatShape);
-            }
+            SvgString.AddSegmentsGroup(flatShapes);
+            // foreach (Segment[] flatShape in flatShapes)
+            // {
+            //     SvgString.AddSegments(flatShape);
+            // }
         }
 
         if (CurrentMode == Mode.Editing)
@@ -219,7 +234,6 @@ public partial class Base : Node2D
         }
 
         SvgString.Finish();
-        GD.Print(SvgString.CurrentString);
         Im.LoadSvgFromString(SvgString.CurrentString);
         Tex.Texture = ImageTexture.CreateFromImage(Im);
         QueueRedraw();
@@ -229,15 +243,15 @@ public partial class Base : Node2D
     {
         if (CurrentMode == Mode.Editing)
         {
-            foreach (Shape s in Shapes.S)
-            {
-                int cc = 0;
-                foreach (Anchor a in s.Anchors)
-                {
-                    DrawChar(MediumFont, Fun.Vtv(a.Position), cc.ToString(), 22);
-                    cc += 1;
-                }
-            }
+            // foreach (Shape s in Shapes.S)
+            // {
+            //     int cc = 0;
+            //     foreach (Anchor a in s.Anchors)
+            //     {
+            //         DrawChar(MediumFont, Fun.Vtv(a.Position), cc.ToString(), 22);
+            //         cc += 1;
+            //     }
+            // }
             if (GridModifier >= .5f)
             {
                 V2 drawnGridSize = new(Zoom * GridModifier * GridSize);
@@ -452,6 +466,7 @@ public partial class Base : Node2D
                 foreach (Anchor a in SelectedAnchors)
                 {
                     a.Position += movingSelected;
+                    a.AlignHandles();
                 }
             }
             else if (CurrentFocus == Focus.Handle && SelectedHandles.Count > 0)
@@ -612,6 +627,10 @@ public partial class Base : Node2D
             HiMovement(delta);
             HiPointAdding(delta);
             HiScaling(delta);
+            foreach (Shape s in Shapes.S)
+            {
+                s.AlignAllHandles();
+            }
         }
     }
 

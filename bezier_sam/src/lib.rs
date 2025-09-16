@@ -76,6 +76,60 @@ fn trimmed_in_sp(inside: &Subpath<NoId>, outside: &Subpath<NoId>) -> bool {
     outside.point_inside(inside.evaluate(SubpathTValue::GlobalEuclidean(0.5)))
 }
 
+fn array_to_subpath(a:Array<f64>) -> Subpath<NoId> {
+    let mut beza_list: Vec<Bezier> = Vec::new();
+    for j in 0..(a.len() / 8) {
+        let i = j * 8;
+        let x1 = a.at(i+0); let y1 = a.at(i+1);
+        let x2 = a.at(i+2); let y2 = a.at(i+3);
+        let x3 = a.at(i+4); let y3 = a.at(i+5);
+        let x4 = a.at(i+6); let y4 = a.at(i+7);
+        beza_list.push(Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4));
+    }
+    return Subpath::<NoId>::from_beziers(&beza_list[..], true);
+}
+
+fn array_to_path(a:Array<f64>) -> Path  {
+    let mut out_path: Path = Path::new();
+    for j in 0..(a.len() / 8) {
+        let i = j * 8;
+        let x1 = a.at(i+0); let y1 = a.at(i+1);
+        let x2 = a.at(i+2); let y2 = a.at(i+3);
+        let x3 = a.at(i+4); let y3 = a.at(i+5);
+        let x4 = a.at(i+6); let y4 = a.at(i+7);
+        let new_segment = PathSegment::Cubic(
+            DVec2::new(x1,y1).ceil(),
+            DVec2::new(x2,y2).ceil(),
+            DVec2::new(x3,y3).ceil(),
+            DVec2::new(x4,y4).ceil()
+        );
+        out_path.push(new_segment);
+    }
+    return out_path
+}
+
+fn path_to_subpath(p: &Path) -> Subpath<NoId> {
+    let mut bezier_list: Vec<Bezier> = Vec::new();
+    for segment in p {
+        let bb = segment.to_cubic();
+        let bez = Bezier::from_cubic_dvec2(bb[0], bb[1], bb[2], bb[3]);
+        bezier_list.push(bez);
+    }
+    return Subpath::<NoId>::from_beziers(&bezier_list, true)
+}
+
+fn path_to_vec_float(p: &Path) -> Vec<f64> {
+    let mut return_vec: Vec<f64> = Vec::new();
+    for segment in p {
+        let bb = segment.to_cubic();
+        return_vec.push(bb[0].x); return_vec.push(bb[0].y);
+        return_vec.push(bb[1].x); return_vec.push(bb[1].y);
+        return_vec.push(bb[2].x); return_vec.push(bb[2].y);
+        return_vec.push(bb[3].x); return_vec.push(bb[3].y);
+    }
+    return return_vec
+}
+
 fn last(mut sp: Subpath<NoId>) -> DVec2 {
     let lmg: &ManipulatorGroup<NoId> = sp.last_manipulator_group_mut().expect("moet wel");
     let a = lmg.anchor;
@@ -83,7 +137,7 @@ fn last(mut sp: Subpath<NoId>) -> DVec2 {
     a
 }
 
-fn first(mut sp: Subpath<NoId>) -> DVec2 {
+fn first(sp: Subpath<NoId>) -> DVec2 {
     // print!("hab");
     let a = sp[0].anchor;
     // godot_print!("first:{a}");
@@ -634,177 +688,230 @@ impl Player {
         a_path
     }
 
+
     #[func]
-    fn better_vector_boolean(&mut self, a:Array<f64>, b:Array<f64>, negative: bool) -> Vec<f64>  {
-        // check of 1 van de vormen self-intersects of colinear is (alle punten van de vorm liggen op 1 lijn)
+    fn are_shapes_overlapping(&mut self, ai:Array<i16>, bi:Array<i16>) -> bool {
+        let mut a: Array<f64> = Array::new();
+        let mut b: Array<f64> = Array::new();
+        for i in 0..ai.len(){
+            a.push(ai.at(i) as f64);
+        }
+        for i in 0..bi.len(){
+            b.push(bi.at(i) as f64);
+        }
+        let bezier_path_a = array_to_subpath(a.clone());
+        let bezier_path_b = array_to_subpath(b.clone());
+        return bezier_path_a.subpath_intersections(&bezier_path_b, Some(0.1), Some(0.1)).len() > 0;
+    }
+
+
+    #[func]
+    fn better_vector_boolean(&mut self, ai:Array<i16>, bi:Array<i16>, negative: bool) -> Vec<f64>  {
+        godot_print!("\n\n {negative}");
         let mut return_vec: Vec<f64> = Vec::new();
-        return return_vec;
-        let mut a_path: Path = Path::new();
-        let mut b_path: Path = Path::new();
-        let mut beza_list: Vec<Bezier> = Vec::new();
-        let mut bezb_list: Vec<Bezier> = Vec::new();
-        for j in 0..(a.len() / 8) {
-            let i = j * 8;
-            let x1 = a.at(i+0); let y1 = a.at(i+1);
-            let x2 = a.at(i+2); let y2 = a.at(i+3);
-            let x3 = a.at(i+4); let y3 = a.at(i+5);
-            let x4 = a.at(i+6); let y4 = a.at(i+7);
-            let d1 = DVec2::new(x1,y1).ceil();
-            let d2 = DVec2::new(x2,y2).ceil();
-            let d3 = DVec2::new(x3,y3).ceil();
-            let d4 = DVec2::new(x4,y4).ceil();
-            let new_segment = PathSegment::Cubic(d1,d2,d3,d4);
-            a_path.push(new_segment);
-
-            let bez1 = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
-            beza_list.push(bez1);
+        let mut a: Array<f64> = Array::new();
+        let mut b: Array<f64> = Array::new();
+        let diver: f64 = 128.0;
+        for i in 0..ai.len(){
+            a.push(ai.at(i) as f64);
         }
-        let sp1: Subpath<NoId> = Subpath::<NoId>::from_beziers(&beza_list[..], true);
-        
-        for j in 0..(b.len() / 8) {
-            let i = j * 8;
-            let x1 = b.at(i+0); let y1 = b.at(i+1);
-            let x2 = b.at(i+2); let y2 = b.at(i+3);
-            let x3 = b.at(i+4); let y3 = b.at(i+5);
-            let x4 = b.at(i+6); let y4 = b.at(i+7);
-            let d1 = DVec2::new(x1,y1).ceil();
-            let d2 = DVec2::new(x2,y2).ceil();
-            let d3 = DVec2::new(x3,y3).ceil();
-            let d4 = DVec2::new(x4,y4).ceil();
-            let new_segment = PathSegment::Cubic(d1,d2,d3,d4);
-            b_path.push(new_segment);
-
-            let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
-            bezb_list.push(bez);
+        for i in 0..bi.len(){
+            b.push(bi.at(i) as f64);
         }
-        let sp2: Subpath<NoId> = Subpath::<NoId>::from_beziers(&bezb_list[..], true);
+        let alen = a.len();
+        let boolean_path_a = array_to_path(a.clone());
+        let boolean_path_b = array_to_path(b.clone());
+        let bezier_path_a = array_to_subpath(a.clone());
+        let bezier_path_b = array_to_subpath(b.clone());
+        for j in 0..(a.len()/8) {
+            let i = j * 8;
+            let val = a.at(i) / diver;
+            let val1 = a.at(i+1) / diver;
+            let val2 = a.at(i+2) / diver;
+            let val3 = a.at(i+3) / diver;
+            let val4 = a.at(i+4) / diver;
+            let val5 = a.at(i+5) / diver;
+            let val6 = a.at(i+6) / diver;
+            let val7 = a.at(i+7) / diver;
+            godot_print!("RUST a input {i} : {val} {val1} . {val2} {val3} . {val4} {val5} . {val6} {val7}")
+        }
+        for j in 0..(b.len()/8) {
+            let i = j * 8;
+            let val = b.at(i) / diver;
+            let val1 = b.at(i+1) / diver;
+            let val2 = b.at(i+2) / diver;
+            let val3 = b.at(i+3) / diver;
+            let val4 = b.at(i+4) / diver;
+            let val5 = b.at(i+5) / diver;
+            let val6 = b.at(i+6) / diver;
+            let val7 = b.at(i+7) / diver;
+            godot_print!("RUST b input {i} : {val} {val1} . {val2} {val3} . {val4} {val5} . {val6} {val7}")
+        }
 
-        if 
-            sp1.area(Some(0.1), Some(0.1)) < 0.99 
-            || sp2.area(Some(0.1), Some(0.1)) < 0.99 
-            || sp1.all_self_intersections(Some(0.1), Some(0.1)).len() > 0 
-            || sp2.all_self_intersections(Some(0.1), Some(0.1)).len() > 0 
+        for i in bezier_path_a.manipulator_groups(){
+            let a = i.anchor / diver;
+            let ih = i.in_handle.unwrap() / diver;
+            let oh = i.out_handle.unwrap() / diver;
+            godot_print!("RUST a man group: {a} {ih} {oh}")
+        }
+        for i in bezier_path_b.manipulator_groups(){
+            let a = i.anchor / diver;
+            let ih = i.in_handle.unwrap() / diver;
+            let oh = i.out_handle.unwrap() / diver;
+            godot_print!("RUST b man group: {a} {ih} {oh}")
+        }
+        godot_print!("RUST: a input length: {alen}");
+        let anlen = bezier_path_a.anchors().len();
+        godot_print!("RUST: a bezier anchors  length: {anlen}");
+
+        // check of 1 van de vormen self-intersects of colinear is (alle punten van de vorm liggen op 1 lijn)
+        if bezier_path_a.area(Some(0.1), Some(0.1)) < 0.99 
         {
-            return return_vec
+            godot_print!("RUST: path a tiny area");
+            godot_error!("ar");
+            return return_vec 
+        }
+        if bezier_path_b.area(Some(0.1), Some(0.1)) < 0.99 
+        {
+            godot_print!("RUST: path b tiny area");
+            godot_error!("ar");
+            return return_vec 
+        }
+        if bezier_path_a.all_self_intersections(Some(3.1), Some(3.1)).len() > 0 
+        {
+            godot_print!("RUST: path a self intersects");
+            godot_error!("ar");
+            // return return_vec 
+        }
+
+        if bezier_path_b.all_self_intersections(Some(3.1), Some(3.1)).len() > 0 
+        { 
+            let ts= bezier_path_b.all_self_intersections(Some(3.1), Some(3.1));
+            let tslen = ts.len();
+            let ts00 = ts[0].0;
+            let ts01 = ts[0].1;
+            let ts10 = ts[1].0;
+            let ts11 = ts[1].1;
+            godot_print!("RUST: path b self intersects {tslen} {ts00} {ts01} {ts10} {ts11}");
+            godot_error!("ar");
+            // return return_vec 
         }
 
         // hier beginnen we
-        let mut oper = PathBooleanOperation::Union;
-        if negative {
-            oper = PathBooleanOperation::Difference;
+        let bool_result = path_boolean(
+            &boolean_path_a,
+            FillRule::NonZero,
+            &boolean_path_b,
+            FillRule::NonZero,
+            if !negative {PathBooleanOperation::Union} else {PathBooleanOperation::Difference}
+        );
+        // let errr = bool_result;
+        let result_path_list = bool_result.unwrap();
+        for p in &result_path_list
+        {
+            for pp in p
+            {
+                let ppp = pp.to_cubic();
+                let ppp0 = ppp[0];
+                let ppp1 = ppp[1];
+                let ppp2 = ppp[2];
+                let ppp3 = ppp[3];
+                godot_print!("  RUST pathbool output:::: {ppp0} {ppp1} {ppp2} {ppp3}");
+            }
         }
-        let result = path_boolean(
-            &a_path,
-            FillRule::NonZero,
-            &b_path,
-            FillRule::NonZero,
-            oper
-        ).unwrap();
 
-        // godot_print!("\nboolean:  ");
-        let res_1 = &result[0];
-        let mut bez_list: Vec<Bezier> = Vec::new();
-        for ps in res_1 {
-            let bb = ps.to_cubic();
-            let bez = Bezier::from_cubic_dvec2(bb[0], bb[1], bb[2], bb[3]);
-            bez_list.push(bez);
-            return_vec.push(bb[0].x); return_vec.push(bb[0].y);
-            return_vec.push(bb[1].x); return_vec.push(bb[1].y);
-            return_vec.push(bb[2].x); return_vec.push(bb[2].y);
-            return_vec.push(bb[3].x); return_vec.push(bb[3].y);
+        if result_path_list.len() >= 1
+        {
+            let lennn = result_path_list.len();
+            godot_print!("      RUST: SO many pahts: {lennn}");
         }
+        let result_boolean_path_0: &Path = &result_path_list[0];
+        // return_vec = [return_vec, path_to_vec_float(result_boolean_path_0)].concat();
+
+        let c = &return_vec;
+        // for j in 0..(c.len()/8) {
+        //     let i = j * 8;
+        //     let val = c.get(i).unwrap() / diver;
+        //     let val1 = c.get(i+1).unwrap() / diver;
+        //     let val2 = c.get(i+2).unwrap() / diver;
+        //     let val3 = c.get(i+3).unwrap() / diver;
+        //     let val4 = c.get(i+4).unwrap() / diver;
+        //     let val5 = c.get(i+5).unwrap() / diver;
+        //     let val6 = c.get(i+6).unwrap() / diver;
+        //     let val7 = c.get(i+7).unwrap() / diver;
+        //     godot_print!("RUST output {i} : {val} {val1} . {val2} {val3} . {val4} {val5} . {val6} {val7}")
+        // }
 
         // return return_vec;
+        let result_bezier_path_0 = path_to_subpath(result_boolean_path_0);
+        let sis = result_bezier_path_0.all_self_intersections(Some(0.01), Some(0.01));
 
-        let sp: Subpath<NoId> = Subpath::<NoId>::from_beziers(&bez_list, true);
-        let sis = sp.all_self_intersections(Some(0.01), Some(0.01));
-
-        let mut old_res: DVec2 = res_1[0].start();
+        let mut result_0_start: DVec2 = result_boolean_path_0[0].start();
         let mut big_gap: bool = false;
-        for ps in res_1 {
+        for ps in result_boolean_path_0 {
             if (ps.start() - ps.end()).length() < 0.05 {
                 continue
             }
-            let fps = format!("{ps:?}");
-            // godot_print!("{fps}");
-            if old_res.distance(ps.start())>0.99{
-                big_gap = true
+            if result_0_start.distance(ps.start())>0.99{
+                big_gap = true;
+                break;
             }
-            old_res = ps.end();
+            result_0_start = ps.end();
         }
-        if !big_gap && sis.len() > 0 {
-            // godot_print!("newschool way");
-            // let sp_split = sp.split(SubpathTValue:: Parametric{segment_index: sis[0].0, t: sis[0].1}); 
-            // let fsp = sp_split.0;
-            // let ssp = sp_split.1;
-            let fsp = sp;
+        // if !big_gap && sis.len() > 0 {
+        if false {
+            let fsp = result_bezier_path_0;
             let sispos = fsp.evaluate(SubpathTValue::Euclidean{segment_index: sis[0].0, t: sis[0].1});
 
-            let mut old_res: DVec2 = res_1[0].start();
+            let mut old_res: DVec2 = result_boolean_path_0[0].start();
 
-            for ps in res_1 {
+            for ps in result_boolean_path_0 {
                 if (ps.start() - ps.end()).length() < 0.05 {
                     continue
                 }
-                let fps = format!("{ps:?}");
-                // godot_print!("{fps}");
                 if old_res.distance(ps.start())>0.99 || (ps.start().distance(sispos) < 0.99 && return_vec.len() > 0){
                     return_vec.push(-9999.0);
                 }
                 old_res = ps.end();
                 let temp_bez = ps.to_cubic();
                 for p in temp_bez {
-                    let aaa = p[0] / 128.0;
-                    let bbb = p[1] / 128.0;
-                    // godot_print!("{aaa} {bbb}");
                     return_vec.push(p[0]/1.0);
                     return_vec.push(p[1]/1.0);
                 }
             }
         }
         else {
+            let mut old_res: DVec2 = result_boolean_path_0[0].start();
 
-            // godot_print!("oldschool way");
-            let mut old_res: DVec2 = res_1[0].start();
-
-            for ps in res_1 {
+            for ps in result_boolean_path_0 {
                 if (ps.start() - ps.end()).length() < 0.05 {
                     continue
                 }
-                let fps = format!("{ps:?}");
-                // godot_print!("{fps}");
-                if old_res.distance(ps.start())>0.99 {
+                if old_res.distance(ps.start())>0.9 {
                     return_vec.push(-9999.0);
                 }
-                old_res = ps.end();
-                let temp_bez = ps.to_cubic();
-                for p in temp_bez {
-                    let aaa = p[0] / 128.0;
-                    let bbb = p[1] / 128.0;
-                    // godot_print!("{aaa} {bbb}");
-                    return_vec.push(p[0]/1.0);
-                    return_vec.push(p[1]/1.0);
+                for node_or_handle in ps.to_cubic() {
+                    return_vec.push(node_or_handle[0]);
+                    return_vec.push(node_or_handle[1]);
                 }
+                old_res = ps.end();
             }
-            // split at self intersection
         }
-
-        let a = return_vec;
-        for j in 0..a.len()/8 {
+        let c = &return_vec;
+        for j in 0..(c.len()/8) {
             let i = j * 8;
-            let a1 = a[i]/ 128.0;
-            let a2 = a[i+1]/128.0;
-            let a3 = a[i+2]/128.0;
-            let a4 = a[i+3]/128.0;
-            let a5 = a[i+4]/128.0;
-            let a6 = a[i+5]/128.0;
-            let a7 = a[i+6]/128.0;
-            let a8 = a[i+7]/128.0;
-            // godot_print!("{i}: {a1};{a2}  {a7};{a8}")
+            let val = c.get(i).unwrap() / diver;
+            let val1 = c.get(i+1).unwrap() / diver;
+            let val2 = c.get(i+2).unwrap() / diver;
+            let val3 = c.get(i+3).unwrap() / diver;
+            let val4 = c.get(i+4).unwrap() / diver;
+            let val5 = c.get(i+5).unwrap() / diver;
+            let val6 = c.get(i+6).unwrap() / diver;
+            let val7 = c.get(i+7).unwrap() / diver;
+            godot_print!("RUST output {i} : {val} {val1} . {val2} {val3} . {val4} {val5} . {val6} {val7}")
         }
-        // godot_print!("end\n  ");
-        a
 
+        return_vec
     }
 
 }

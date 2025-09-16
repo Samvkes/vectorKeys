@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Data;
 using System.Diagnostics;
+using System.Collections.Specialized;
 
 
 namespace Vectordrawing;
@@ -57,6 +58,11 @@ public struct Segment(V2 inPoint, V2 inHandle, V2 outHandle, V2 outPoint)
     public V2 OutPoint = outPoint;
     public V2 InHandle = inHandle;
     public V2 OutHandle = outHandle;
+
+    public int[] FlatI()
+    {
+        return [(int)InPoint.X, (int)InPoint.Y, (int)InHandle.X, (int)InHandle.Y, (int)OutHandle.X, (int)OutHandle.Y, (int)OutPoint.X, (int)OutPoint.Y];
+    }
 
     public float[] Flat()
     {
@@ -113,7 +119,7 @@ public class Handle
     public float DistanceFromAnchor;
     public float Angle;
 
-    public Handle(Anchor adjacentAnchor, bool isInhandle, float angle = 0, float distanceFromAnchor = 1)
+    public Handle(Anchor adjacentAnchor, bool isInhandle, float angle = 0, float distanceFromAnchor = 2)
     {
         AdjacentAnchor = adjacentAnchor;
         IsInHandle = isInhandle;
@@ -158,9 +164,9 @@ public class Anchor
     public Anchor(V2 startPosition, Shape myShape)
     {
         // SelectionLabel = selectionLabel;
-        Position = startPosition;
-        MyShape = myShape;
         MakeHandles();
+        MyShape = myShape;
+        Position = startPosition;
     }
     public void MakeHandles()
     {
@@ -234,6 +240,14 @@ public class Shape
             a.ReverseHandles();
         }
         Anchors.Reverse();
+    }
+
+    public void AlignAllHandles()
+    {
+        foreach (Anchor a in Anchors)
+        {
+            a.AlignHandles();
+        }
     }
 
     public override string ToString()
@@ -341,15 +355,12 @@ public class Shape
             Delete();
             return;
         }
-        foreach (Anchor a in Anchors)
-        {
-            a.AlignHandles();
-        }
-        MakeClockwise();
+        // MakeClockwise();
         Finished = true;
+        AlignAllHandles();
     }
 
-    public Segment[] Segments()
+    public Segment[] SegList()
     {
         Segment[] segments = new Segment[Anchors.Count];
         for (int i = 0; i < Anchors.Count; i += 1)
@@ -366,6 +377,25 @@ public class Shape
     }
 
     /// <summary>Like 'Segments' but flattened</summary><returns></returns>
+    public int[] FlatI()
+    {
+        int[] flatPositions = [];
+        for (int i = 0; i < Anchors.Count; i += 1)
+        {
+            int after = i + 1;
+            if (i == Anchors.Count - 1)
+            {
+                i = 0;
+            }
+            V2 start = Anchors[i].Position;
+            V2 h1 = Anchors[i].OutHandle.Position();
+            V2 h2 = Anchors[i].InHandle.Position();
+            V2 end = Anchors[after].Position;
+            flatPositions = [.. flatPositions, .. (int[])[(int)start.X, (int)start.Y, (int)h1.X, (int)h1.Y, (int)h2.X, (int)h2.Y, (int)end.X, (int)end.Y]];
+        }
+        return flatPositions;
+    }
+
     public float[] Flat()
     {
         float[] flatPositions = [];
@@ -387,7 +417,7 @@ public class Shape
 
     public float[] VectorBoolean(Shape shapeB, bool negative)
     {
-        return Player.BetterVectorBoolean(Flat(), shapeB.Flat(), negative);
+        return Player.BetterVectorBoolean(FlatI(), shapeB.FlatI(), negative);
     }
 
     public string GetLabel(Anchor a)
@@ -405,7 +435,7 @@ public class Shape
 
     public Segment[] RoundSelf(bool rounded = true, int cornerSize = 80, float roundness = 1.0f)
     {
-        return RoundCornersSegments(Segments(), rounded, cornerSize, roundness);
+        return RoundCornersSegments(SegList(), rounded, cornerSize, roundness);
     }
 
     public static Segment[] RoundCornersSegments(Segment[] originalShape, bool rounded = true, int cornerSize = 80, float roundness = 1.0f)
@@ -479,12 +509,6 @@ public class Shape
         }
         return roundedSegments.ToArray();
     }
-    // public string GetLabel(HandlePointer h)
-    // {
-    //     int index = Anchors.IndexOf(h.A);
-    //     Debug.Assert(index != -1);
-    //     return C.Alfabet[index].ToString();
-    // }
 }
 
 public static class Shapes
@@ -519,22 +543,128 @@ public static class Shapes
 
     public static Segment[][] MergeAllShapes()
     {
-        Segment[][] currentShapes = [S[0].Segments()];
-        for (int i = 1; i < S.Count; i++)
+        // huidige vormen en current merging shapes
+        // als negatief, merge 1 voor 1 met alle huidige eilanden
+        // als posi, houd cms bij: merge met eerste eiland. Overlap? Nieuwe cms
+        //      geen overlap? pass on eiland, 
+        //      cms tegen volgende eiland. Overlap? nieuwe cms. Geen overlap? pass on eiland
+        //      als laatste voeg je cms toe aan shapes.
+        GD.Print("\nMERGE START"); 
+        Segment[][] segLists = [S[0].SegList()];
+        int co = 0;
+        bool nega = false;
+        foreach (Shape shape in S[1..])
         {
-            Segment[][] newShapes = [];
-            int countt = 0;
-            foreach (Segment[] island in currentShapes)
+            if (co % 2 == 0)
             {
-                newShapes = [.. newShapes, .. BooleanMergeSegments(island, S[i].Segments(), false)];
-                if (countt > 0)
-                countt += 1;
+                nega = true;
+                // if (shape.IsClockwise())
+                // {
+                //     shape.ReverseShape();
+                // }
             }
-            currentShapes = newShapes;
+            else
+            {
+                nega = false;
+            }
+            Segment[] currentShape = shape.SegList();
+            GD.Print("  GOING TO RUST: " + co);
+            segLists = BooleanMergeSegmentGroups(segLists, currentShape, nega);
+            co += 1;
+            // if (nega)
+            // {
+            //     shape.ReverseShape();
+            // }
         }
-        Segment[][] roundedShapes = [];
-        return currentShapes;
-        // foreach (Segment[] island in currentShapes)
+        // GD.Print("\n      seglists len: " + segLists.Length);
+        return segLists;
+        // for (int i = 1; i < S.Count; i++)
+        // {
+        //     Segment[][] newShapes = [];
+        //     foreach (Segment[] island in currentShapes)
+        //     {
+        //         newShapes = [.. newShapes, .. BooleanMergeSegments(island, S[i].Segments(), false)];
+        //     }
+        //     currentShapes = newShapes;
+        // }
+        // Segment[][] roundedShapes = [];
+        // foreach (Segment[] island in segLists)
+        // {
+        //     roundedShapes = [.. roundedShapes, Shape.RoundCornersSegments(island, true, 40, 1)];
+        // }
+        // return roundedShapes;
+    }
+
+    public static Segment[][] old_MergeAllShapes()
+    {
+        // huidige vormen en current merging shapes
+        // als negatief, merge 1 voor 1 met alle huidige eilanden
+        // als posi, houd cms bij: merge met eerste eiland. Overlap? Nieuwe cms
+        //      geen overlap? pass on eiland, 
+        //      cms tegen volgende eiland. Overlap? nieuwe cms. Geen overlap? pass on eiland
+        //      als laatste voeg je cms toe aan shapes.
+        Segment[][] segLists = [S[0].SegList()];
+        int co = 0;
+        bool nega = false;
+        foreach (Shape shape in S[1..])
+        {
+            if (co % 2 == 0)
+            {
+                nega = true;
+            }
+            else
+            {
+                nega = false;
+            }
+            if (nega)
+            {
+                Segment[] currentShape = shape.SegList();
+                Segment[][] tempSegLists = [];
+                foreach (Segment[] segList in segLists)
+                {
+                    tempSegLists = [.. tempSegLists, .. BooleanMergeSegments(segList, currentShape, true)];
+                }
+                segLists = tempSegLists;
+            }
+            else
+            {
+                Segment[] currentMergingShape = shape.SegList();
+                // Segment[] currentShape = shape.SegList();
+                Segment[][] tempSegLists = [];
+                foreach (Segment[] segList in segLists)
+                {
+                    if (Player.AreShapesOverlapping(segList, currentMergingShape))
+                    {
+                    var mergedSegs = BooleanMergeSegments(segList, currentMergingShape, false);
+                        currentMergingShape = mergedSegs[0];
+                        for (int i = 1; i < mergedSegs.Length; i++)
+                        {
+                            tempSegLists = [.. tempSegLists, mergedSegs[i]];
+                        }
+                    }
+                    else
+                    {
+                        tempSegLists = [.. tempSegLists, segList];
+                    }
+                }
+                tempSegLists = [.. tempSegLists, currentMergingShape];
+                segLists = tempSegLists;
+            }
+            co += 1;
+        }
+        // GD.Print("\n      seglists len: " + segLists.Length);
+        return segLists;
+        // for (int i = 1; i < S.Count; i++)
+        // {
+        //     Segment[][] newShapes = [];
+        //     foreach (Segment[] island in currentShapes)
+        //     {
+        //         newShapes = [.. newShapes, .. BooleanMergeSegments(island, S[i].Segments(), false)];
+        //     }
+        //     currentShapes = newShapes;
+        // }
+        // Segment[][] roundedShapes = [];
+        // foreach (Segment[] island in segLists)
         // {
         //     roundedShapes = [.. roundedShapes, Shape.RoundCornersSegments(island, true, 20, 1)];
         // }
@@ -542,32 +672,119 @@ public static class Shapes
     }
 
 
-    public static Segment[][] BooleanMergeSegments(Segment[] A, Segment[] B, bool negative)
+    public static Segment[][] BooleanMergeSegmentGroups(Segment[][] A, Segment[] B, bool negative)
     {
-        float[] pointsA = [];
-        foreach (Segment s in A)
+        int[] pointsA = [];
+        foreach (Segment[] a in A)
         {
-            pointsA = [.. pointsA, .. s.Flat()];
+            foreach (Segment s in a)
+            {
+                pointsA = [.. pointsA, .. s.FlatI()];
+            }
         }
 
-        float[] pointsB = [];
+        int[] pointsB = [];
         foreach (Segment s in B)
         {
-            pointsB = [.. pointsB, .. s.Flat()];
+            pointsB = [.. pointsB, .. s.FlatI()];
         }
         if (pointsA.Length <= 16 || pointsB.Length <= 16)
         {
-            return [A, B];
+            // if (pointsA.Length <= 16)
+            // {
+            //     GD.Print("pointsAlength smaller than 16");
+            //     GD.Print(pointsA.Length);
+            // }
+            // if (pointsB.Length <= 16)
+            // {
+            //     GD.Print("pointsBlength smaller than 16");
+            //     GD.Print(pointsB.Length);
+            // }
+            GD.Print("EARLY RETURN: short length for points");
+            return A;
         }
         float[] merged = Player.BetterVectorBoolean(pointsA, pointsB, negative);
-        GD.Print("\n");
         for (int i = 0; i < merged.Length / 4; i++)
         {
             int j = i * 4;
-            // GD.Print(merged[j] + "  " + merged[j + 1] + "  " + merged[j + 2] + "  " + merged[j + 3]);
         }
         if (merged.Length == 0)
         {
+            GD.Print("EARLY RETURN: merged length = 0");
+            return A;
+        }
+
+        Segment[][] outAr = [];
+        Segment[] segAr = [];
+        int cc = 0;
+        for (int i = 0; i < merged.Length; i++)
+        {
+            if (merged[i] == -9999)
+            {
+                GD.Print("\ngap\n");
+                cc = 0;
+                outAr = [.. outAr, segAr];
+                segAr = [];
+            }
+            else
+            {
+                if (cc == 7)
+                {
+                    cc = 0;
+                    int j = i - 7;
+                    V2 inA = new(merged[j], merged[j + 1]);
+                    V2 inH = new(merged[j + 2], merged[j + 3]);
+                    V2 outH = new(merged[j + 4], merged[j + 5]);
+                    V2 outA = new(merged[j + 6], merged[j + 7]);
+                    segAr = [.. segAr, new(inA, inH, outH, outA)];
+                }
+                else cc += 1;
+            }
+        }
+
+        outAr = [.. outAr, segAr];
+        // GD.Print("segar length: " + segAr.Length);
+        // GD.Print("outar length: " + outAr.Length);
+        return outAr;
+    }
+
+
+    public static Segment[][] BooleanMergeSegments(Segment[] A, Segment[] B, bool negative)
+    {
+        int[] pointsA = [];
+        foreach (Segment s in A)
+        {
+            pointsA = [.. pointsA, .. s.FlatI()];
+        }
+
+        int[] pointsB = [];
+        foreach (Segment s in B)
+        {
+            pointsB = [.. pointsB, .. s.FlatI()];
+        }
+        if (pointsA.Length <= 16 || pointsB.Length <= 16)
+        {
+            // if (pointsA.Length <= 16)
+            // {
+            //     GD.Print("pointsAlength smaller than 16");
+            //     GD.Print(pointsA.Length);
+            // }
+            // if (pointsB.Length <= 16)
+            // {
+            //     GD.Print("pointsBlength smaller than 16");
+            //     GD.Print(pointsB.Length);
+            // }
+            GD.Print("EARLY RETURN: short points");
+            return [A, B];
+        }
+        float[] merged = Player.BetterVectorBoolean(pointsA, pointsB, negative);
+        for (int i = 0; i < merged.Length / 4; i++)
+        {
+            int j = i * 4;
+        }
+        if (merged.Length == 0)
+        {
+            GD.Print("EARLY RETURN: merged length = 0");
             return [A, B];
         }
 
@@ -600,16 +817,9 @@ public static class Shapes
         }
 
         outAr = [.. outAr, segAr];
+        // GD.Print("segar length: " + segAr.Length);
+        // GD.Print("outar length: " + outAr.Length);
         return outAr;
     }
     
 }
-
-// public static class LabelMaster
-// {
-//     static string[] SelectLetters = "abcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".Split();
-//     static string GetLabel()
-//     {
-//         SelectLetters.T
-//     }
-// }

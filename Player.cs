@@ -25,19 +25,35 @@ public partial class Player : Node
         return (float[])pl.Call("trimmed_tangent_parametric", x1, y1, x2, y2, x3, y3, x4, y4, t1,t2);
     }
 
-    public static float[] BetterVectorBoolean(float[] a, float[] b, bool negative)
+    public static float[] BetterVectorBoolean(int[] a, int[] b, bool negative)
     {
-        Array<float> aa = new();
-        foreach (float f in a)
+        Array<int> aa = new();
+        foreach (int f in a)
         {
             aa.Add(f);
         }
-        Array<float> bb = new();
-        foreach (float f in b)
+        Array<int> bb = new();
+        foreach (int f in b)
         {
             bb.Add(f);
         }
         return (float[])pl.Call("better_vector_boolean", aa,bb,negative);
+    }
+
+    public static bool AreShapesOverlapping(Segment[] a, Segment[] b)
+    {
+        Array<int> aa = new();
+        foreach (Segment s in a)
+        {
+            aa.AddRange(s.FlatI());
+        }
+
+        Array<int> bb = new();
+        foreach (Segment s in b)
+        {
+            bb.AddRange(s.FlatI());
+        }
+        return (bool)pl.Call("are_shapes_overlapping", aa,bb);
     }
 
     public static float[] PointAlongCubicParametric(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float amount)

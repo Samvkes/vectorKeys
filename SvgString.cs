@@ -17,6 +17,8 @@ enum Style  {
     ShapeOpen,
     ShapePreview,
     ShapeUnchanged,
+    ShapeNegative,
+    ShapeSelected
 }
 
 static class Styles
@@ -26,11 +28,11 @@ static class Styles
         new()
         {
         // shape closed
-            ["fill"] = "black",
+            ["fill"] = "blue",
             ["stroke"] = "black",
-            ["fill-opacity"] = "0.15",
-            ["stroke-opacity"] = "1",
-            ["stroke-width"] = "1",
+            ["fill-opacity"] = "0.10",
+            ["stroke-opacity"] = "1.0",
+            ["stroke-width"] = "2",
         },
         new()
         {
@@ -54,10 +56,28 @@ static class Styles
         {
         // shape unchanged
             ["fill"] = "black",
-            ["stroke"] = "red",
-            ["fill-opacity"] = "0",
-            ["stroke-opacity"] = "0.5",
+            ["stroke"] = "black",
+            ["fill-opacity"] = "0.1",
+            ["stroke-opacity"] = "0.8",
             ["stroke-width"] = "1",
+        },
+        new()
+        {
+        // shape negative
+            ["fill"] = "#d69c85",
+            ["stroke"] = "black",
+            ["fill-opacity"] = "0.8",
+            ["stroke-opacity"] = "0.8",
+            ["stroke-width"] = "1",
+        },
+        new()
+        {
+        // shape selected
+            ["fill"] = "black",
+            ["stroke"] = "red",
+            ["fill-opacity"] = "0.0",
+            ["stroke-opacity"] = "0.8",
+            ["stroke-width"] = "2",
         },
 
     ];
@@ -110,6 +130,33 @@ static class SvgString
         CurrentString += "/>";
     }
 
+    public static void AddSegmentsGroup(Segment[][] sGroup, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
+    {
+        CurrentString += $"<path d=\"";
+        foreach (Segment[] s in sGroup)
+        {
+            float[] startSeg = s[0].Flat();
+            CurrentString += $" M {startSeg[0]} {startSeg[1]} C ";
+            int counter = 0;
+            foreach (Segment seg in s)
+            {
+                float[] flatSeg = seg.Flat();
+                CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+                if (counter != s.Length - 1)
+                {
+                    CurrentString += ",";
+                }
+                CurrentString += " ";
+                counter += 1;
+            }
+            CurrentString += $"Z ";
+        }
+        //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
+        CurrentString += "\"";
+        Style(currentShape);
+        CurrentString += "/>";
+    }
+
     public static void AddCircle(V2 position, float radius, string fill = "black", string stroke = "black", float fOpacity = 1.0f, float sOpacity = 1.0f, float sWidth = 10f)
     { 
         CurrentString += (
@@ -129,7 +176,7 @@ static class SvgString
     public static void ClearString(float zoom, V2 origin, V2 windowSize)
     {
         CurrentString = (
-            $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\">" +
+            $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\" >" +
             $"<g transform=\"scale({1}) translate({origin.X},{origin.Y}) rotate({0})\">" +
             $"<g transform=\"scale({zoom:N3}) translate({-origin.X},{-origin.Y}) rotate({0})\">"
         );
