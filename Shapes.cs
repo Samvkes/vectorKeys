@@ -11,6 +11,7 @@ using System.Linq;
 using System.Data;
 using System.Diagnostics;
 using System.Collections.Specialized;
+using SkiaSharp;
 
 
 namespace Vectordrawing;
@@ -99,6 +100,11 @@ public struct Segment(V2 inPoint, V2 inHandle, V2 outHandle, V2 outPoint)
         float[] f = Flat();
         float[] raw = Player.PointAlongCubicParametric(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], amount);
         return new(raw[0], raw[1]);
+    }
+
+    public Segment Reverse()
+    {
+        return new(OutPoint, OutHandle, InHandle, InPoint);
     }
 
     public override string ToString()
@@ -242,6 +248,28 @@ public class Shape
         Anchors.Reverse();
     }
 
+    public SKPath ToSKPath()
+    {
+        SKPath retPath = new();
+        retPath.MoveTo(Anchors[0].Position);
+        foreach (Anchor a in Anchors)
+        {
+            retPath.CubicTo(a.OutHandle.Position(), a.NextAnchor().InHandle.Position(), a.NextAnchor().Position);
+        }
+        retPath.Close();
+        return retPath;
+    }
+
+    public string SKSVG()
+    {
+        if (Anchors.Count < 3)
+        {
+            return "";
+        }
+        SKPath path = ToSKPath();
+        return path.ToSvgPathData();
+    }
+
     public void AlignAllHandles()
     {
         foreach (Anchor a in Anchors)
@@ -301,6 +329,14 @@ public class Shape
         return ((BA.X * CA.Y) - (BA.Y * CA.X)) <= 0;
     }
 
+    public void MakeCounterClockWise()
+    {
+        if (IsClockwise())
+        {
+            ReverseShape();
+        }
+    }
+    
     public void MakeClockwise()
     {
         if (!IsClockwise())
@@ -431,7 +467,7 @@ public class Shape
     {
         int index = s[0] - 97;
         return Anchors[index];
-    }
+   }
 
     public Segment[] RoundSelf(bool rounded = true, int cornerSize = 80, float roundness = 1.0f)
     {
@@ -526,6 +562,63 @@ public static class Shapes
         S.Remove(s);
     }
 
+    public static bool IsSegmentListClockwise(Segment[] segs)
+    {
+        float lowestY = 100000000;
+        V2 lowestSeg = segs[0].InPoint;
+        int lowestIndex = 0;
+        int counter = 0;
+        foreach (Segment s in segs)
+        {
+            if (s.InPoint.Y < lowestY)
+            {
+                lowestY = s.InPoint.Y;
+                lowestSeg = s.InPoint;
+                lowestIndex = counter;
+            }
+            counter += 1;
+        }
+        V2 A = lowestSeg;
+        int aIndex = lowestIndex;
+
+        V2 B = V2.Zero;
+        if (aIndex > 0)
+        {
+            B = segs[aIndex - 1].InPoint;
+        }
+        else
+        {
+            B = segs.Last().InPoint;
+        }
+        V2 C = V2.Zero;
+        if (aIndex == segs.Length - 1)
+        {
+            C = segs[0].InPoint;
+        }
+        else
+        {
+            C = segs[aIndex + 1].InPoint;
+        }
+        V2 BA = B - A;
+        V2 CA = C - A;
+        return ((BA.X * CA.Y) - (BA.Y * CA.X)) > 0;
+    }
+
+    public static Segment[] ReverseSegmentList(Segment[] segs)
+    {
+        // reverse order
+        Array.Reverse(segs);
+        // swap endpoints/handles of each segment so geometry direction is consistent
+        for (int i = 0; i < segs.Length; i++)
+        {
+            var s = segs[i];
+            // Reverse swaps ends+handles
+            (s.InPoint, s.InHandle, s.OutHandle, s.OutPoint) = (s.OutPoint, s.OutHandle, s.InHandle, s.InPoint);
+            segs[i] = s;
+        }
+        return segs;
+    }
+
     public static Shape CreateRandomShape(int variation, int shapeSize)
     {
         V2 xBorder = new(300, 1500);
@@ -540,6 +633,130 @@ public static class Shapes
         return toReturn;
     }
 
+    public static Segment[][] MergeShapesSkia()
+    {
+        bool nega = false;
+        int co = 0;
+        if (S.Count < 2)
+        {
+            if (S[0].Finished)  return [S[0].SegList()];
+            else                return [];
+        }
+        SKPath currentSKPath = S[0].ToSKPath();
+        SKPathOp operation = SKPathOp.Union;
+        foreach (Shape shape in S[1..])
+        {
+            if (co % 2 == 0)
+            {
+                nega = true;
+                operation = SKPathOp.Difference;
+                // currentSKPath.Contains()
+                currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
+                // if (shape.IsClockwise())
+                // {
+                //     // shape.ReverseShape();
+                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
+                //     // shape.ReverseShape();
+                // }
+                // else
+                // {
+                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
+                // }
+                co += 1;
+            }
+            else
+            {
+                nega = false;
+                operation = SKPathOp.Union;
+                currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
+                // if (shape.IsClockwise())
+                // {
+                //     // shape.ReverseShape();
+                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation); 
+                //     // shape.ReverseShape();
+                // }
+                // else
+                // {
+                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation); 
+                // }
+                co += 1;
+            }
+        }
+
+        // var outSegmentLists = SKPathToSegmentLists(currentSKPath);
+        Segment[][] segLists = [];
+        var splitPaths = SKPathToPaths(currentSKPath);
+        foreach (SKPath p in splitPaths)
+        {
+            int containsCounter = 0;
+            SKPoint testPoint = p.GetPoint(0);
+            foreach (SKPath p2 in splitPaths)
+            {
+                if (p2 != p && p2.Contains(testPoint.X, testPoint.Y))
+                {
+                    containsCounter += 1;
+                }
+            }
+            Segment[] segs = SKPathToSegmentLists(p)[0];
+            if ((containsCounter % 2 == 0 && !IsSegmentListClockwise(segs)) || (containsCounter % 2 != 0 && IsSegmentListClockwise(segs)))
+            {
+                segs = ReverseSegmentList(segs);
+            }
+            segLists = [.. segLists, segs];
+        }
+        // return outSegmentLists;
+        Segment[][] roundedShapes = [];
+        foreach (Segment[] island in segLists)
+        {
+            roundedShapes = [.. roundedShapes, RoundCornersSegments(island, true, 40, 1.0f)];
+        }
+        return roundedShapes;
+        // // return currentSKPath;
+    }
+
+    public static List<SKPath> SKPathToPaths(SKPath path)
+    {
+        List<SKPath> paths = [];
+        var iter = path.CreateIterator(true);
+        SKPoint[] currentVerb = [new(), new(), new(), new()];
+        SKPathVerb currentVerbType = new();
+        iter.Next(currentVerb);
+        SKPath currentNewPath = new();
+        currentNewPath.MoveTo(currentVerb[0]);
+        paths.Add(currentNewPath);
+        while (true)
+        {
+            currentVerbType = iter.Next(currentVerb);
+            if (currentVerbType == SKPathVerb.Done)
+            {
+                break;
+            }
+            else if (currentVerbType == SKPathVerb.Move)
+            {
+                // GD.Print("VERB is move");
+                currentNewPath = new();
+                currentNewPath.MoveTo(currentVerb[0]);
+                paths.Add(currentNewPath);
+            }
+            else if (currentVerbType == SKPathVerb.Line)
+            {
+                // GD.Print("VERB is line");
+                currentNewPath.LineTo(currentVerb[1]);
+            }
+            else if (currentVerbType == SKPathVerb.Quad)
+            {
+                currentNewPath.QuadTo(currentVerb[1], currentVerb[2]);
+                // GD.Print("VERB is quad");
+            }
+            else if (currentVerbType == SKPathVerb.Cubic)
+            {
+                currentNewPath.CubicTo(currentVerb[1], currentVerb[2], currentVerb[3]);
+            }
+        }
+        return paths;
+    }
+
+
 
     public static Segment[][] MergeAllShapes()
     {
@@ -549,7 +766,7 @@ public static class Shapes
         //      geen overlap? pass on eiland, 
         //      cms tegen volgende eiland. Overlap? nieuwe cms. Geen overlap? pass on eiland
         //      als laatste voeg je cms toe aan shapes.
-        GD.Print("\nMERGE START"); 
+        GD.Print("\nMERGE START");
         Segment[][] segLists = [S[0].SegList()];
         int co = 0;
         bool nega = false;
@@ -635,7 +852,7 @@ public static class Shapes
                 {
                     if (Player.AreShapesOverlapping(segList, currentMergingShape))
                     {
-                    var mergedSegs = BooleanMergeSegments(segList, currentMergingShape, false);
+                        var mergedSegs = BooleanMergeSegments(segList, currentMergingShape, false);
                         currentMergingShape = mergedSegs[0];
                         for (int i = 1; i < mergedSegs.Length; i++)
                         {
@@ -821,5 +1038,138 @@ public static class Shapes
         // GD.Print("outar length: " + outAr.Length);
         return outAr;
     }
-    
+
+    public static Segment[][] SKPathToSegmentLists(SKPath skpath)
+    {
+        Segment[][] outSegmentLists = [];
+        Segment[] currentSegList = [];
+        var iter = skpath.CreateIterator(true);
+        SKPoint[] currentVerb = [new(), new(), new(), new()];
+        SKPathVerb currentVerbType = new();
+        while (true)
+        {
+            currentVerbType = iter.Next(currentVerb);
+            if (currentVerbType == SKPathVerb.Done)
+            {
+                break;
+            }
+            else if (currentVerbType == SKPathVerb.Move)
+            {
+                // GD.Print("VERB is move");
+                if (currentSegList.Length > 0)
+                {
+                    outSegmentLists = [.. outSegmentLists, currentSegList];
+                    currentSegList = [];
+                }
+            }
+            else if (currentVerbType == SKPathVerb.Line)
+            {
+                // GD.Print("VERB is line");
+                Segment s = new(currentVerb[0], currentVerb[0], currentVerb[1], currentVerb[1]);
+                currentSegList = [.. currentSegList, s];
+            }
+            else if (currentVerbType == SKPathVerb.Quad)
+            {
+                // GD.Print("VERB is quad");
+            }
+            else if (currentVerbType == SKPathVerb.Cubic)
+            {
+                // GD.Print("VERB is cubic");
+            }
+        }
+        outSegmentLists = [.. outSegmentLists, currentSegList];
+        return outSegmentLists;
+    }
+
+    public static Segment[] RoundCornersSegments(Segment[] originalShape, bool rounded = false, int cornerSize = 80, float roundness = 1.0f)
+    {
+        roundness *= 0.7f;
+        List<Segment> roundedSegments = [];
+        List<(Segment, V2, V2)> trimmedSegList = [];
+        List<float> cornerSizeList = [];
+
+        for (int i = 0; i < originalShape.Length; i++)
+        {
+            float cornerSizeToUse = cornerSize;
+            float segLength = originalShape[i].LengthCubic();
+            if (segLength < 2 * cornerSize)
+            {
+                cornerSizeToUse = segLength / 2.4f;
+            }
+            cornerSizeList.Add(cornerSizeToUse);
+        }
+
+        for (int i = 0; i < originalShape.Length; i++)
+        {
+            Segment seg = originalShape[i];
+            float segLength = seg.LengthCubic();
+            float amountToTrim = MathF.Min((segLength > 1e-4f) ? cornerSizeList[i] / segLength : 0f, 0.49f);
+            if (!float.IsFinite(amountToTrim)) amountToTrim = 0f;
+            if (cornerSizeList[i] < 3)
+            {
+                trimmedSegList.Add((seg, seg.InPoint, seg.OutPoint));
+            }
+            else
+            {
+                trimmedSegList.Add(seg.TrimmedTangentAndPos(amountToTrim, 1.0f - amountToTrim));
+            }
+        }
+
+        if (trimmedSegList.Count == 0)
+        {
+            return originalShape;
+        }
+        int index = 0;
+        foreach ((Segment trimmed, V2 tanPos, V2 tanAngle) in trimmedSegList)
+        {
+            V2 tanPos2;
+            Segment trimmed2;
+            float r;
+            if (index < trimmedSegList.Count - 1)
+            {
+                trimmed2 = trimmedSegList[index + 1].Item1;
+                tanPos2 = trimmedSegList[index + 1].Item2;
+                r = cornerSizeList[index + 1];
+            }
+            else
+            {
+                trimmed2 = trimmedSegList[0].Item1;
+                tanPos2 = trimmedSegList[0].Item2;
+                r = cornerSizeList[0];
+            }
+            var t1 = SafeNormalize(tanPos);
+            var t2 = SafeNormalize(tanPos2);
+            float cosA = Math.Clamp(V2.Dot(t1, -t2), -1f, 1f);
+            float angle = Mathf.Acos(cosA);
+            roundedSegments.Add(trimmed);
+            if (rounded && cornerSizeList[index] >= 3 && r >= 3)
+            {
+                const float MIN_ANGLE = 2f * (MathF.PI / 180f);
+                const float MAX_ANGLE = 178f * (MathF.PI / 180f);
+
+                if (angle < MIN_ANGLE || angle > MAX_ANGLE || t1 == V2.Zero || t2 == V2.Zero)
+                {
+                    roundedSegments.Add(new(trimmed.OutPoint, trimmed.OutPoint, trimmed2.InPoint, trimmed2.InPoint));
+                }
+                else
+                {
+                    V2 newPos1 = trimmed.OutPoint + t1 * (roundness * cornerSizeList[index]);
+                    V2 newPos2 = trimmed2.InPoint - t2 * (roundness * r);
+                    roundedSegments.Add(new(trimmed.OutPoint, newPos1, newPos2, trimmed2.InPoint));
+                }
+            }
+            else
+            {
+                roundedSegments.Add(new(trimmed.OutPoint, trimmed.OutPoint, trimmed2.InPoint, trimmed2.InPoint));
+            }
+            index += 1;
+        }
+        return roundedSegments.ToArray();
+    }
+
+    static V2 SafeNormalize(V2 v, float eps = 1e-6f)
+    {
+        float m = v.Length();
+        return (m > eps) ? v / m : V2.Zero;
+    }
 }

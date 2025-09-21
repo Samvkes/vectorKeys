@@ -36,48 +36,48 @@ public enum Focus
 
 public partial class Base : Node2D
 {
-    const int GridSize = 16;
-    const int FarMoveBorder = 2 * GridSize;
-    const float ValidHoldTime = .2f;
-    const int DefaultFontSize = 14;
-    const int RotationStepSizeDegrees = 15;
-    public static readonly V2 WindowSize = new V2(96, 112) * GridSize;
-    public static readonly V2 Origin = WindowSize / 2f;
-    static readonly (V2, V2) Borders = (V2.Zero, WindowSize);
-    static readonly Color GridColor = Color.FromOkHsl(43 / 359f, 45 / 100f, 10 / 100f, 0.05f);
-    static readonly Color GuidesColor = Color.FromOkHsl(43 / 359f, 45 / 100f, 10 / 100f, 0.1f);
+    const  int GridSize                   = 16;
+    const  int FarMoveBorder              = 2 * GridSize;
+    const  float ValidHoldTime            = .2f;
+    const  int DefaultFontSize            = 14;
+    const  int RotationStepSizeDegrees    = 15;
+    public static readonly V2 WindowSize  = new V2(96, 112) * GridSize;
+    public static readonly V2 Origin      = WindowSize / 2f;
+    static readonly (V2, V2) Borders      = (V2.Zero, WindowSize);
+    static readonly Color GridColor       = Color.FromOkHsl(43 / 359f, 45 / 100f, 10 / 100f, 0.05f);
+    static readonly Color GuidesColor     = Color.FromOkHsl(43 / 359f, 45 / 100f, 10 / 100f, 0.1f);
     static readonly Color BackgroundColor = Color.FromOkHsl(43 / 359f, 45 / 100f, 70 / 100f);
-    static readonly Color SelectingColor = Color.FromOkHsl(63 / 359f, 9 / 100f, 66 / 100f);
-    static readonly Color PreviewColor = Color.FromOkHsl(10 / 359f, 75 / 100f, 90 / 100f);
-    static Font LightFont = GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Light.otf");
-    static Font MediumFont = GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Medium.otf");
-    static Font BoldFont = GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Bold.otf");
-    static Manager Manager = GD.Load<PackedScene>("res://Manager.tscn").Instantiate<Manager>();
+    static readonly Color SelectingColor  = Color.FromOkHsl(63 / 359f, 9 / 100f, 66 / 100f);
+    static readonly Color PreviewColor    = Color.FromOkHsl(10 / 359f, 75 / 100f, 90 / 100f);
+    static Font LightFont                 = GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Light.otf");
+    static Font MediumFont                = GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Medium.otf");
+    static Font BoldFont                  = GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Bold.otf");
+    static Manager Manager                = GD.Load<PackedScene>("res://Manager.tscn").Instantiate<Manager>();
 
-    float GridModifier = 8;
-    public float Zoom = 1f;
-    float MovementHeldTime = 0f;
-    float VisualGridSize = GridSize;
-    Image Im = new();
-    Sprite2D Tex = null!;
-    int FrameCounter = 0;
-    float Counter = 0;
-    V2 MarkerPos = Origin;
-    Shape CurrentShape = Shapes.NewShape();
-    List<float> DeltaTimeList = new();
-    bool StickyGuide = true;
-    bool CanMoveAgain = true;
-    bool CanUndoAgain = true;
-    bool SelectingInHandle = true;
-    static Mode CurrentMode = Mode.Editing;
-    static Focus CurrentFocus = Focus.Anchor;
-    Timer UndoTimer = new();
-    Timer MovementTimer = new();
-    Sprite2D Cursor = null!;
-    RichTextLabel FpsLabel = null!;
-    ColorRect Background = null!;
+    float         GridModifier       = 8;
+    public        float Zoom         = 1f;
+    float         MovementHeldTime   = 0f;
+    float         VisualGridSize     = GridSize;
+    Image         Im                 = new();
+    Sprite2D      Tex                = null!;
+    public        int FrameCounter   = 0;
+    float         Counter            = 0;
+    V2            MarkerPos          = Origin;
+    Shape         CurrentShape       = Shapes.NewShape();
+    List<float>   DeltaTimeList      = new();
+    bool          StickyGuide        = true;
+    bool          CanMoveAgain       = true;
+    bool          CanUndoAgain       = true;
+    bool          SelectingInHandle  = true;
+    static        Mode CurrentMode   = Mode.Editing;
+    static        Focus CurrentFocus = Focus.Anchor;
+    Timer         UndoTimer          = new();
+    Timer         MovementTimer      = new();
+    Sprite2D      Cursor             = null!;
+    RichTextLabel FpsLabel           = null!;
+    ColorRect     Background         = null!;
 
-    List<Anchor> SelectedAnchors= new();
+    List<Anchor> SelectedAnchors = new();
     List<HandlePointer> SelectedHandles = new();
 
 
@@ -105,10 +105,8 @@ public partial class Base : Node2D
         Background.Color = BackgroundColor;
     }
 
-    // 4 functions - svg - drawing
     public override void _Process(double doubleDelta)
     {
-        // return;
         float delta = (float)doubleDelta;
         Counter += delta;
 
@@ -137,107 +135,17 @@ public partial class Base : Node2D
 
         // SVG code goes here
         SvgString.ClearString(Zoom, Origin, WindowSize);
-        if (CurrentMode == Mode.Editing)
-        {
-            float firstLine = 256 * 1.5f;
-            float secondLine = 256 * 2.5f;
-            SvgString.AddLine(new V2(-100, Origin.Y - firstLine), new V2(3000, Origin.Y - firstLine), sWidth:1, sOpacity: .3f);
-            SvgString.AddLine(new V2(0, Origin.Y + firstLine), new V2(3000, Origin.Y + firstLine), sWidth:1, sOpacity: .3f);
-            SvgString.AddLine(new V2(-100, Origin.Y - secondLine), new V2(3000, Origin.Y - secondLine), sWidth:1, sOpacity: .3f);
-            SvgString.AddLine(new V2(0, Origin.Y + secondLine), new V2(3000, Origin.Y + secondLine), sWidth:1, sOpacity: .3f);
-            // draw guidelines
-        }
-        
-        // round corners of individual shapes
 
-        if (Shapes.S.Count > 1)
-        {
-            // boolean merge shapes
-            // round corners of transitions between shapes
-        }
-
-        // draw unrounded shapes / unmerged shapes for clarity in editing mode?
-        int cccc = 0;
-        foreach (Shape s in Shapes.S)
-        {
-            if (s.Anchors.Count <= 1)
-            {
-                continue;
-            }
-
-            if (CurrentMode == Mode.Editing)
-            {
-                if (cccc % 2 == 0)
-                {
-                    SvgString.SetStyle(Style.ShapeUnchanged);
-                }
-                else
-                {
-                    SvgString.SetStyle(Style.ShapeNegative);
-                }
-                SvgString.AddSegments(s.SegList());
-            }
-
-            if (CurrentMode == Mode.Editing && s == CurrentShape)
-            {
-                SvgString.SetStyle(Style.ShapeSelected);
-                SvgString.AddSegments(s.SegList());
-            }
-
-            if (CurrentMode == Mode.Previewing) SvgString.SetStyle(Style.ShapePreview);
-            else
-            {
-                if (s.Finished) SvgString.SetStyle(Style.ShapeClosed);
-                else SvgString.SetStyle(Style.ShapeOpen);
-            }
-            cccc += 1;
-        }
-        if (CurrentMode == Mode.Editing) SvgString.SetStyle(Style.ShapeClosed);
-        if (CurrentMode == Mode.Previewing) SvgString.SetStyle(Style.ShapePreview);
-        if (Shapes.S.Count > 1)
-        {
-            Segment[][] flatShapes = Shapes.MergeAllShapes();
-            SvgString.AddSegmentsGroup(flatShapes);
-            // foreach (Segment[] flatShape in flatShapes)
-            // {
-            //     SvgString.AddSegments(flatShape);
-            // }
-        }
-
-        if (CurrentMode == Mode.Editing)
-        {
-            foreach (Shape s in Shapes.S)
-            {
-                if (s != CurrentShape) continue;
-
-                foreach (Anchor a in s.Anchors)
-                {
-                    SvgString.AddCircle(a.Position, 6, fOpacity:0, sOpacity: 1.0f, sWidth:1);
-                    // draw anchors
-                    // visualize anchor selection
-                    // visualize anchor type
-                    if (a.InHandle.Type == SegmentType.Cubic)
-                    {
-                        SvgString.AddLine(a.Position, a.InHandle.Position(), sOpacity: .5f);
-                        SvgString.AddLine(a.Position, a.OutHandle.Position(), sOpacity: .5f);
-                    }
-                    if (a.OutHandle.Type == SegmentType.Cubic)
-                    {
-                        SvgString.AddCircle(a.InHandle.Position(), 6, fill:"blue", fOpacity: .3f, sOpacity:0f);
-                        SvgString.AddCircle(a.OutHandle.Position(), 6, fill:"blue", fOpacity: .3f, sOpacity:0f);
-                    }
-                    // draw handles
-                    // visualize handle selection
-                    // visualize handle type
-                }
-            }
-        }
+        if (CurrentMode == Mode.Editing) DrawEditing();
+        else if (CurrentMode == Mode.Previewing) DrawPreviewing();
+        else if (CurrentMode == Mode.Selecting) DrawSelecting();
 
         SvgString.Finish();
         Im.LoadSvgFromString(SvgString.CurrentString);
         Tex.Texture = ImageTexture.CreateFromImage(Im);
         QueueRedraw();
     }
+
 
     public override void _Draw()
     {
@@ -264,24 +172,24 @@ public partial class Base : Node2D
                 {
                     DrawLine(
                         new GV2(0, i * drawnGridSize.X - gridAdjustment.X),
-                        new GV2(3000, i * drawnGridSize.X - gridAdjustment.X), GridColor, 1.5f, true); 
+                        new GV2(3000, i * drawnGridSize.X - gridAdjustment.X), GridColor, 1.5f, true);
                 }
                 for (int i = 0; i < (WindowSize.Y / drawnGridSize.Y) + 10; i++)
                 {
                     DrawLine(
                         new GV2(i * drawnGridSize.Y - gridAdjustment.Y, 0),
-                        new GV2(i * drawnGridSize.Y - gridAdjustment.Y, 3000), GridColor, 1.5f, true); 
+                        new GV2(i * drawnGridSize.Y - gridAdjustment.Y, 3000), GridColor, 1.5f, true);
                 }
             }
 
             if (Zoom <= 1)
-                {
-                    DrawString(LightFont, Fun.Vtv((MarkerPos * Zoom) + (Origin * (1f - Zoom)) + new V2(30, 30)), (MarkerPos/16).ToString(), HorizontalAlignment.Left, -1f, DefaultFontSize + 8);
-                }
-                else
-                {
-                    DrawString(LightFont, Fun.Vtv(Origin + new V2(30, 30)), MarkerPos.ToString(), HorizontalAlignment.Left, -1f, DefaultFontSize + 8);
-                }
+            {
+                DrawString(LightFont, Fun.Vtv((MarkerPos * Zoom) + (Origin * (1f - Zoom)) + new V2(30, 30)), (MarkerPos / 16).ToString(), HorizontalAlignment.Left, -1f, DefaultFontSize + 8);
+            }
+            else
+            {
+                DrawString(LightFont, Fun.Vtv(Origin + new V2(30, 30)), MarkerPos.ToString(), HorizontalAlignment.Left, -1f, DefaultFontSize + 8);
+            }
 
         }
         else if (CurrentMode == Mode.Selecting)
@@ -301,7 +209,7 @@ public partial class Base : Node2D
                     }
                     // DrawCircle(Fun.Vtv(a.Position), 14, Colors.Black);
                     V2 letterOffset = new(-9, 7);
-                    DrawChar(MediumFont, Fun.Vtv(a.Position + letterOffset + new V2(0,3)), c.ToString(), 30, shadowColor);
+                    DrawChar(MediumFont, Fun.Vtv(a.Position + letterOffset + new V2(0, 3)), c.ToString(), 30, shadowColor);
                     DrawChar(MediumFont, Fun.Vtv(a.Position + letterOffset), c.ToString(), 30, charColor);
                     c = (char)((int)c + 1);
                 }
@@ -328,7 +236,7 @@ public partial class Base : Node2D
                 }
             }
             else if (CurrentMode == Mode.Selecting && !(at == "Shift+Space" || at == "Space" || at == "Semicolon") && at.Length > 0)
-                {
+            {
                 if (at.StartsWith("Shift"))
                 {
                     HandleSelectionText(at.Substr(6, 1));
@@ -667,5 +575,73 @@ public partial class Base : Node2D
     public void MovementTimerTimeout()
     {
         CanMoveAgain = true;
+    }
+
+    public void DrawPreviewing()
+    {
+        SvgString.SetStyle(Style.ShapePreview);
+        SvgString.AddSegmentsGroup(Shapes.MergeShapesSkia());
+    }
+
+    public void DrawEditing()
+    {
+        // draw guides
+        float firstLine  = 256 * 1.5f;
+        float secondLine = 256 * 2.5f;
+        SvgString.AddLine(new V2(-100, Origin.Y - firstLine), new V2(3000, Origin.Y - firstLine), sWidth: 1, sOpacity: .3f);
+        SvgString.AddLine(new V2(0, Origin.Y + firstLine), new V2(3000, Origin.Y + firstLine), sWidth: 1, sOpacity: .3f);
+        SvgString.AddLine(new V2(-100, Origin.Y - secondLine), new V2(3000, Origin.Y - secondLine), sWidth: 1, sOpacity: .3f);
+        SvgString.AddLine(new V2(0, Origin.Y + secondLine), new V2(3000, Origin.Y + secondLine), sWidth: 1, sOpacity: .3f);
+
+        // draw unmerged shape underlays
+        int TEMP = 0;
+        foreach (Shape s in Shapes.S)
+        {
+            if (s.Anchors.Count <= 1) continue;
+
+            if (s == CurrentShape)  SvgString.SetStyle(Style.ShapeSelected);
+            else if (TEMP % 2 == 0) SvgString.SetStyle(Style.ShapeUnchanged);
+            else                    SvgString.SetStyle(Style.ShapeNegative);
+            SvgString.AddSegments(s.SegList(), false);
+            
+            TEMP += 1;
+        }
+
+        // draw merged shapes
+        SvgString.SetStyle(Style.ShapeClosed);
+        SvgString.AddSegmentsGroup(Shapes.MergeShapesSkia());
+
+        // draw ui overlays (anchors and handles)
+        foreach (Shape s in Shapes.S)
+        {
+            if (s != CurrentShape) continue;
+
+            foreach (Anchor a in s.Anchors)
+            {
+                // draw anchors
+                    // visualize anchor selection
+                    // visualize anchor type
+                SvgString.AddCircle(a.Position, 6, fOpacity: 0, sOpacity: 1.0f, sWidth: 1);
+
+                // draw handles
+                    // visualize handle selection
+                    // visualize handle type
+                if (a.InHandle.Type == SegmentType.Cubic)
+                {
+                    SvgString.AddLine(a.Position, a.InHandle.Position(), sOpacity: .5f);
+                    SvgString.AddLine(a.Position, a.OutHandle.Position(), sOpacity: .5f);
+                }
+                if (a.OutHandle.Type == SegmentType.Cubic)
+                {
+                    SvgString.AddCircle(a.InHandle.Position(), 6, fill: "blue", fOpacity: .3f, sOpacity: 0f);
+                    SvgString.AddCircle(a.OutHandle.Position(), 6, fill: "blue", fOpacity: .3f, sOpacity: 0f);
+                }
+            }
+        }
+    }
+
+    public void DrawSelecting()
+    {
+
     }
 }

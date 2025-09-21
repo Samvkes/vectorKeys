@@ -14,7 +14,7 @@
 [x] chamfer
 [x] rounding
     -  replace point with 2 new points, move them along 
-[] boolean
+[x] boolean
     0. Zorg dat vormen of "normale vormen" of "Booleans" kunnen zijn.
     1. voor elke boolean check met bounding boxes met welke vormen ze mogelijk overlappen
     2. voor elke mogelijke overlappende vorm: loop voor zowel de boolean als de vorm door elk segment van de andere vorm, 
@@ -43,31 +43,51 @@
 het probleem is vormen die een punt delen. maar niet altijd. 
     Log de posities van de punten op het scherm, voeg winding info toe. 
     Het is een hoop werk, maar werkende booleans zouden wel cool zijn.
-[] maak booleans leesbaarder
+[x] maak booleans leesbaarder
+ [x] fix booleans stukje
+
+[] fix zooming
+
+[] handles
+[] breaking points and connections
+[] point placing and converting
+[] auto obvious
+
+[] add point to shape
 [] division of shapes + shape selection
-[] copy / paste
+
+[] scaling / rotation
+
+[] jumping to points?
+
+[] undo / redo
 [] save / load
+
+[] knife
+
+[] add square & circle
+[] copy / paste
+
+[] angles and lengths visible
 [] curv comb
 
+ [] fix rounding stukje: rounding soms platter dan verwacht, progressief cornershrinken zorgt vaak voor lelijke hoeken. sommige hoeken krijg je uberhaubt nauwelijks rounding, bij een paar graden meer of minder weer wel
+
+-- niceties and visuals!!
+[] good scaling/rotating visually
+[] set mode for default placing whole or broken points, straight or cubic curve
 
 [] multiple letters
 [] code cleaning - break up process for debugging
 
--- niceties and visuals!!
-[] add square & circle
-[] auto obvious
-[] good scaling/rotating visually
-[] set mode for default placing whole or broken points, straight or cubic curve
-[] knife
-
 [] mirroring
 [] skewing
-[] jumping to points
-
 
 [] sensible keymap
 
 NOVA - test
+
+[] interface!!!
 
 
 voor selecteren:

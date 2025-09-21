@@ -9,6 +9,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Data;
 using System.Diagnostics.Metrics;
+using SkiaSharp;
+using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace Vectordrawing;
 
@@ -32,7 +35,7 @@ static class Styles
             ["stroke"] = "black",
             ["fill-opacity"] = "0.10",
             ["stroke-opacity"] = "1.0",
-            ["stroke-width"] = "2",
+            ["stroke-width"] = "3",
         },
         new()
         {
@@ -64,7 +67,8 @@ static class Styles
         new()
         {
         // shape negative
-            ["fill"] = "#d69c85",
+            // ["fill"] = "#d69c85",
+            ["fill"] = "#e08a85",
             ["stroke"] = "black",
             ["fill-opacity"] = "0.8",
             ["stroke-opacity"] = "0.8",
@@ -94,21 +98,25 @@ static class SvgString
         CurrentStyle = Styles.S[(int)s];
     }
 
-    static void Style(bool currentShape)
+    static void Style()
     {
         foreach ((string key, string val) in CurrentStyle)
         {
-            if (currentShape && key == "stroke-opacity")
-            {
-                CurrentString += key + "=\"" + "1" + "\" ";
-            }
-            else
-            {
-                CurrentString += key + "=\"" + val + "\" ";
-            }
+            CurrentString += key + "=\"" + val + "\" ";
         }
     }
-    public static void AddSegments(Segment[] s, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
+
+    public static void AddSKPath(SKPath path)
+    {
+        CurrentString += $"<path d=\" ";
+        CurrentString += path.ToSvgPathData();
+        CurrentString += $"Z\" ";
+        //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
+        Style();
+        CurrentString += "/>";
+    }
+
+    public static void AddSegments(Segment[] s, bool debugInfo = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
     {
         float[] startSeg = s[0].Flat();
         CurrentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
@@ -125,9 +133,58 @@ static class SvgString
             counter += 1;
         }
         CurrentString += $"Z\" ";
-        //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
-        Style(currentShape);
+        if (debugInfo)
+        {
+            if (Shapes.IsSegmentListClockwise(s))
+            {
+                CurrentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>";
+            }
+            else
+            {
+                CurrentString += " fill =\"blue\" stroke =\"blue\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>";
+            }
+            // CurrentString += " fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
+        }
+        else
+        {
+            Style();
+        }
         CurrentString += "/>";
+    }
+
+    public static void AddSegmentsGroup_Debug(Segment[][] sGroup, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
+    {
+        foreach (Segment[] s in sGroup)
+        {
+            CurrentString += $"<path d=\"";
+            float[] startSeg = s[0].Flat();
+            CurrentString += $" M {startSeg[0]} {startSeg[1]} C ";
+            int counter = 0;
+            foreach (Segment seg in s)
+            {
+                float[] flatSeg = seg.Flat();
+                CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+                if (counter != s.Length - 1)
+                {
+                    CurrentString += ",";
+                }
+                CurrentString += " ";
+                counter += 1;
+            }
+            CurrentString += $"Z ";
+            CurrentString += "\"";
+            if (Shapes.IsSegmentListClockwise(s))
+            {
+                CurrentString += "fill =\"red\" stroke =\"red\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"4\"";
+            }
+            else
+            {
+                CurrentString += "fill =\"blue\" stroke =\"blue\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"4\"";
+            }
+            // Style(currentShape);
+            CurrentString += "/>";
+        }
+        //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
     }
 
     public static void AddSegmentsGroup(Segment[][] sGroup, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
@@ -153,7 +210,7 @@ static class SvgString
         }
         //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
         CurrentString += "\"";
-        Style(currentShape);
+        Style();
         CurrentString += "/>";
     }
 
