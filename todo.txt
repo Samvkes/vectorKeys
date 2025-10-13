@@ -46,49 +46,60 @@ het probleem is vormen die een punt delen. maar niet altijd.
 [x] maak booleans leesbaarder
  [x] fix booleans stukje
 
-[] fix zooming
+[x] fix zooming
 
-[] handles
-[] breaking points and connections
-[] point placing and converting
-[] auto obvious
+[x] handles
 
-[] add point to shape
-[] division of shapes + shape selection
+[x] add point to shape
+[x] division of shapes + shape selection
 
-[] scaling / rotation
+[x] scaling / rotation
 
-[] jumping to points?
+[x] undo / redo - 4 uur
 
-[] undo / redo
-[] save / load
+[x] proberen te rasterizen met skia (geen succes, antialiasing te traag)
 
-[] knife
+[] curv comb - 3 uur
 
-[] add square & circle
-[] copy / paste
-
-[] angles and lengths visible
-[] curv comb
-
- [] fix rounding stukje: rounding soms platter dan verwacht, progressief cornershrinken zorgt vaak voor lelijke hoeken. sommige hoeken krijg je uberhaubt nauwelijks rounding, bij een paar graden meer of minder weer wel
+[] interface!!! Scherm 1
 
 -- niceties and visuals!!
-[] good scaling/rotating visually
+// maak straights curved in handle mode -> s vs c is een property van de handles
+// Handles die gelocked zijn is ook een prop van de handles, niet van de punten.
+// Voordeel: 6 combinaties van curved line vs straight line, met locked vs unlocked anchor er tussen. De enige ongeldige combi is 2 straight lines met een locked anchor.
+// Die combi wordt onrepresentable als locking via handles gaat ipv via anchors (want handles zijn niet zichtbaar bij straights)
+// gelockde handles matchen hun buur, behalve als ze op straight staan. handles locken doet altijd hetzelfde bij de buur.
+// auto is een losse stand die zorgt dat handle buren in een lijn blijven die parallel is aan de lijn de anchors van de handles maken.
+// alleen relevant bij gelockede curvd handles
+// alhoewel, miss moet ik locken gewoon een movemodus maken.
+
+[] handles 2 - 4 uur
+    [] breaking points and connections
+    [] point placing and converting
+    [] auto obvious
+
+[] multiple letters - 5 uur
+[] save / load - 3 uur
+
+[] intermezzo
+    [] semi sensible keymap 
+    [] code cleanup
+    NOVA - test
+
+
+[] undo / redo better  
+[] jumping to points?
 [] set mode for default placing whole or broken points, straight or cubic curve
-
-[] multiple letters
-[] code cleaning - break up process for debugging
-
+[] good scaling/rotating visually
+[] angles and lengths visible
+[] fix rounding stukje: rounding soms platter dan verwacht, progressief cornershrinken zorgt vaak voor lelijke hoeken. sommige hoeken krijg je uberhaubt nauwelijks rounding, bij een paar graden meer of minder weer wel
+[] copy / paste (geselecteerde punten in een nieuwe vorm plakken?)
+[] add square & circle
 [] mirroring
+
+[] knife
 [] skewing
-
 [] sensible keymap
-
-NOVA - test
-
-[] interface!!!
-
 
 voor selecteren:
     alleen punten

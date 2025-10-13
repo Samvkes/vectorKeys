@@ -16,12 +16,12 @@ using System.Linq.Expressions;
 namespace Vectordrawing;
 
 enum Style  {
-    ShapeClosed,
+    ShapePositive,
     ShapeOpen,
     ShapePreview,
     ShapeUnchanged,
     ShapeNegative,
-    ShapeSelected
+    ShapeSelected,
 }
 
 static class Styles
@@ -30,10 +30,10 @@ static class Styles
     [
         new()
         {
-        // shape closed
+        // shape positive
             ["fill"] = "blue",
             ["stroke"] = "black",
-            ["fill-opacity"] = "0.10",
+            ["fill-opacity"] = "0.1",
             ["stroke-opacity"] = "1.0",
             ["stroke-width"] = "3",
         },
@@ -76,14 +76,13 @@ static class Styles
         },
         new()
         {
-        // shape selected
+        // shape selected 
             ["fill"] = "black",
-            ["stroke"] = "red",
+            ["stroke"] = "blue",
             ["fill-opacity"] = "0.0",
-            ["stroke-opacity"] = "0.8",
-            ["stroke-width"] = "2",
+            ["stroke-opacity"] = "0.2",
+            ["stroke-width"] = "3",
         },
-
     ];
 }
 
@@ -222,20 +221,35 @@ static class SvgString
         );
     }
 
-    public static void AddLine(V2 start, V2 end, string stroke = "black", float sWidth = 1f, float sOpacity = 1f)
+    public static void AddLine(V2 start, V2 end, string stroke = "red", float sWidth = 1f, float sOpacity = 1f)
     {
         CurrentString += (
             $"<path d=\"M {start.X} {start.Y} L {end.X} {end.Y}\"" + 
             $"stroke =\"{stroke}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>"
         );
     }
-
-    public static void ClearString(float zoom, V2 origin, V2 windowSize)
+    
+    public static void AddDashed(V2 start, V2 end, string dash, string stroke = "black", float sWidth = 1f, float sOpacity = 1f)
     {
+        CurrentString += (
+            $"<line x1=\"{start.X}\" y1=\"{start.Y}\"  x2=\"{end.X}\" y2=\"{end.Y}\"" +
+            $"stroke =\"{stroke}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\" " +
+            "stroke-dasharray=\"" + dash + "\" stroke-linecap=\"round\"" +
+            "/>"
+        );
+    }
+
+    public static void ClearString(float zoom, V2 origin, V2 windowSize, V2 markerPos)
+    {
+        var tslating = origin;
+        if (zoom > 1)
+        {
+            tslating = origin + 1.33333f * (markerPos - origin);
+        }
         CurrentString = (
             $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\" >" +
-            $"<g transform=\"scale({1}) translate({origin.X},{origin.Y}) rotate({0})\">" +
-            $"<g transform=\"scale({zoom:N3}) translate({-origin.X},{-origin.Y}) rotate({0})\">"
+            $"<g transform=\"scale({1}) translate({tslating.X},{tslating.Y}) rotate({0})\">" +
+            $"<g transform=\"scale({zoom:N3}) translate({-tslating.X},{-tslating.Y}) rotate({0})\">"
         );
     }
 

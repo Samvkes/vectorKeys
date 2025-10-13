@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using V2 = System.Numerics.Vector2;
 using GV2 = Godot.Vector2;
+using System.Diagnostics;
 
 namespace Vectordrawing;
 
@@ -41,6 +42,11 @@ static class Fun
     {
         int choice = GD.RandRange(0, a.Count - 1);
         return a[choice];
+    }
+
+    public static void PrintCaller()
+    {
+        GD.Print(new StackFrame(1, true).GetMethod().Name);
     }
 
     public static V2 ProjectPointOnLine(V2 toProject, V2 lineStart, V2 lineEnd)
@@ -84,9 +90,11 @@ static class StringNamesList
     public static readonly StringName decrease_grid_modifier = "decrease_grid_modifier";
     public static readonly StringName switch_segment_style = "switch_segment_style";
     public static readonly StringName switch_point_style = "switch_point_style";
+    public static readonly StringName switch_focus = "switch_focus";
     public static readonly StringName insert_point = "insert_point";
     public static readonly StringName add_new_point = "add_new_point";
     public static readonly StringName finish_shape = "finish_shape";
+    public static readonly StringName shape_negative = "shape_negative";
     public static readonly StringName undo = "undo";
     public static readonly StringName redo = "redo";
 }

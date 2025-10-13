@@ -1,25 +1,228 @@
-[gd_scene load_steps=8 format=3 uid="uid://nq848ct5jjb0"]
+[gd_scene load_steps=15 format=3 uid="uid://nq848ct5jjb0"]
 
+[ext_resource type="FontFile" uid="uid://bp6obah0nqddo" path="res://assets/DepartureMono-Regular.otf" id="1_nopgj"]
+[ext_resource type="FontFile" uid="uid://cqwy28fv08co6" path="res://assets/DraftingMono/DraftingMono-BoldItalic.otf" id="2_22hco"]
 [ext_resource type="Texture2D" uid="uid://c7pf2hdil4web" path="res://assets/DraftingMono/radio_button_unchecked_50dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.svg" id="2_b56jl"]
 [ext_resource type="Script" uid="uid://mlikt7xk4omk" path="res://Player.cs" id="2_nopgj"]
 [ext_resource type="Script" uid="uid://bxgca61n8ryny" path="res://undo_redo.gd" id="3_i812h"]
 [ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://Base.cs" id="5_nopgj"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_58kua"]
+bg_color = Color(0.807843, 0.807843, 0.807843, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.372455, 0.233749, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+shadow_color = Color(0, 0, 0, 0.0627451)
+shadow_size = 8
+shadow_offset = Vector2(-4, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nopgj"]
+bg_color = Color(0.807843, 0.807843, 0.807843, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(1, 0.372455, 0.233749, 1)
+corner_radius_top_left = 15
+corner_radius_bottom_left = 15
+shadow_color = Color(0, 0, 0, 0.0588235)
+shadow_size = 5
+shadow_offset = Vector2(-5, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_22hco"]
+bg_color = Color(0.971635, 0.384655, 0.427308, 0.960784)
+border_color = Color(0.979746, 0.76797, 0.68667, 0.372549)
+border_blend = true
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.816077, 0.296569, 0.0138151, 0.866667)
+shadow_size = 1
+shadow_offset = Vector2(0, 5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_swcnr"]
+bg_color = Color(0.911827, 0.459766, 0.343956, 1)
+border_width_left = 560
+border_color = Color(0.800151, 0.800151, 0.800151, 0)
+border_blend = true
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_swcnr"]
+size = Vector2(100, 90)
+
 [sub_resource type="Gradient" id="Gradient_b56jl"]
 offsets = PackedFloat32Array(0.474026, 0.724026, 1)
-colors = PackedColorArray(0.132632, 0.0659219, 0, 0, 0.154645, 0.0779312, 0, 0.200436, 0.184314, 0.0941176, 0, 0.611765)
+colors = PackedColorArray(0.132632, 0.0659219, 0, 0, 0.154645, 0.0779312, 0, 0.200436, 0.165817, 0.140386, 0.0966045, 0.717647)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_i812h"]
 gradient = SubResource("Gradient_b56jl")
 fill = 1
 fill_from = Vector2(0.516055, 0.458716)
-fill_to = Vector2(1, 1)
+fill_to = Vector2(0.954268, 0.978659)
 
 [sub_resource type="SystemFont" id="SystemFont_i812h"]
 font_names = PackedStringArray("Sans-Serif")
 multichannel_signed_distance_field = true
 
 [node name="Base" type="Node2D"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="CanvasLayer"]
+z_index = 5
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.014
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -615.0
+offset_top = -0.880001
+offset_right = -24.0
+offset_bottom = -20.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_58kua")
+
+[node name="ColorRect2" type="ColorRect" parent="CanvasLayer"]
+z_index = 7
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -613.0
+offset_top = -973.0
+offset_right = -610.0
+offset_bottom = -63.0
+grow_horizontal = 0
+grow_vertical = 0
+color = Color(0.789732, 0.262603, 0.108194, 0.160784)
+
+[node name="Panel2" type="Panel" parent="CanvasLayer"]
+z_index = 6
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -731.0
+offset_top = -1020.0
+offset_right = -613.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_nopgj")
+
+[node name="Panel3" type="Panel" parent="CanvasLayer/Panel2"]
+z_index = 10
+layout_mode = 0
+offset_left = 7.0
+offset_top = 107.0
+offset_right = 117.0
+offset_bottom = 197.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_22hco")
+
+[node name="Panel4" type="Panel" parent="CanvasLayer/Panel2/Panel3"]
+z_index = 10
+layout_mode = 0
+offset_left = -168.0
+offset_top = 26.0
+offset_bottom = 72.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_swcnr")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/Panel2/Panel3"]
+z_index = 12
+layout_mode = 0
+offset_left = -182.0
+offset_top = 25.0
+offset_right = -9.0
+offset_bottom = 75.0
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("1_nopgj")
+theme_override_font_sizes/normal_font_size = 33
+text = "01/24"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Panel2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel2/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="TextureRect1" type="TextureRect" parent="CanvasLayer/Panel2/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+texture = SubResource("PlaceholderTexture2D_swcnr")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/Panel2/MarginContainer/VBoxContainer/TextureRect1"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -33.0
+offset_top = -0.0300026
+offset_right = -6.0
+offset_bottom = 38.25
+theme_override_fonts/normal_font = ExtResource("2_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "1"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 32.0
+offset_top = 6.0
+offset_right = 3178.0
+offset_bottom = 1908.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ColorRect" type="ColorRect" parent="."]
+visible = false
+z_index = 3
+offset_left = 2425.0
+offset_top = 29.0
+offset_right = 3169.0
+offset_bottom = 1888.0
+color = Color(0.8, 0.8, 0.796078, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="ColorRect"]
+visible = false
+z_index = -1
+layout_mode = 0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 747.0
+offset_bottom = 1862.0
+color = Color(1, 0.515377, 0.565999, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="ColorRect"]
+visible = false
+z_index = -2
+layout_mode = 0
+offset_left = -10.0
+offset_top = -3.0
+offset_right = 740.0
+offset_bottom = 1869.0
+color = Color(0, 0, 0, 0.0862745)
 
 [node name="Player" type="Player" parent="."]
 script = ExtResource("2_nopgj")
@@ -30,27 +233,32 @@ centered = false
 
 [node name="Background" type="ColorRect" parent="."]
 z_index = -10
-offset_left = -162.0
-offset_top = -173.0
-offset_right = 1573.0
-offset_bottom = 2515.0
-color = Color(0.998268, 0.925563, 0.776873, 1)
+offset_left = -17.0
+offset_top = -13.0
+offset_right = 3233.0
+offset_bottom = 1938.0
+color = Color(0.786026, 0.786027, 0.781885, 1)
+metadata/_edit_lock_ = true
 
 [node name="Cursor" type="Sprite2D" parent="."]
+modulate = Color(1, 0.125535, 0.485422, 1)
 position = Vector2(100, 100)
-scale = Vector2(0.5, 0.5)
+scale = Vector2(0.3, 0.3)
 texture = ExtResource("2_b56jl")
 
 [node name="Shad" type="Sprite2D" parent="Cursor"]
-modulate = Color(0.105614, 0.105614, 0.105614, 1)
+visible = false
+modulate = Color(1, 0.123964, 0.408759, 0.121569)
 z_index = -1
+scale = Vector2(2, 2)
 texture = ExtResource("2_b56jl")
 
 [node name="Overlay" type="Sprite2D" parent="."]
-modulate = Color(1, 1, 1, 0.309804)
-position = Vector2(755, 903.5)
-scale = Vector2(24.4375, 28.9219)
+modulate = Color(1, 1, 1, 0.145098)
+position = Vector2(1588, 951.5)
+scale = Vector2(50.4687, 30.4219)
 texture = SubResource("GradientTexture2D_i812h")
+metadata/_edit_lock_ = true
 
 [node name="FpsLabel" type="RichTextLabel" parent="."]
 offset_right = 1503.0

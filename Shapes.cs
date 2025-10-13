@@ -12,6 +12,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Collections.Specialized;
 using SkiaSharp;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
+using System.Text.Json.Serialization;
 
 
 namespace Vectordrawing;
@@ -121,21 +126,25 @@ public class Handle
     public SegmentType Type = SegmentType.Straight;
     public bool Selected = false;
     public bool IsInHandle = false;
-    public Anchor AdjacentAnchor;
-    public float DistanceFromAnchor;
-    public float Angle;
+    public Anchor AdjacentAnchor = null!;
+    public float DistanceFromAnchor = 2;
+    public float Angle = 0;
 
-    public Handle(Anchor adjacentAnchor, bool isInhandle, float angle = 0, float distanceFromAnchor = 2)
+    public Handle()
     {
-        AdjacentAnchor = adjacentAnchor;
+    }
+
+    public void Init(Anchor adjacentAnchor, bool isInhandle, float angle = 0f, float distanceFromAnchor = 2)
+    {
         IsInHandle = isInhandle;
-        Angle = angle;
+        AdjacentAnchor = adjacentAnchor;
         DistanceFromAnchor = distanceFromAnchor;
+        Angle = angle;
     }
 
     public V2 Position()
     {
-        return AdjacentAnchor.Position + V2.Transform(new V2(1,0) * DistanceFromAnchor, Matrix3x2.CreateRotation(Angle));
+        return AdjacentAnchor.Position + V2.Transform(new V2(1, 0) * DistanceFromAnchor, Matrix3x2.CreateRotation(Angle));
     }
 
     public override string ToString()
@@ -157,28 +166,74 @@ public class Anchor
         }
     }
     public int SelectionIndex;
-    public Shape MyShape;
+    public Shape MyShape = null!;
     public AnchorType Type = AnchorType.Whole;
+    public bool AutoHandles = false;
     public SegmentType SType = SegmentType.Straight;
     public SubdivisionType SubdivType = SubdivisionType.None;
     public Handle InHandle = null!;
     public Handle OutHandle = null!;
-    public bool Selected = false;
+    public bool Sselected = false;
 
     private V2 _position = new(0, 0);
 
-    public Anchor(V2 startPosition, Shape myShape)
+    public void Init(V2 startPosition, Shape myShape)
     {
         // SelectionLabel = selectionLabel;
         MakeHandles();
         MyShape = myShape;
         Position = startPosition;
     }
+
+    public void SwitchSegmentType(bool trailingSegment = false)
+    {
+        if (trailingSegment)
+        {
+            if (InHandle.Type == SegmentType.Straight)
+            {
+                InHandle.Type = SegmentType.Cubic;
+                InHandle.DistanceFromAnchor = 100;
+                // InHandle.Angle = -GD.Randf();
+                PreviousAnchor().OutHandle.Type = SegmentType.Cubic;
+                PreviousAnchor().OutHandle.DistanceFromAnchor = 100;
+                // PreviousAnchor().OutHandle.Angle = -GD.Randf();
+            }
+            else
+            {
+                InHandle.Type = SegmentType.Straight;
+                InHandle.DistanceFromAnchor = 1;
+                PreviousAnchor().OutHandle.Type = SegmentType.Straight;
+                PreviousAnchor().OutHandle.DistanceFromAnchor = 1;
+            }
+        }
+        else
+        {
+            if (OutHandle.Type == SegmentType.Straight)
+            {
+                OutHandle.Type = SegmentType.Cubic;
+                OutHandle.DistanceFromAnchor = 100;
+                // OutHandle.Angle = -GD.Randf();
+                NextAnchor().InHandle.Type = SegmentType.Cubic;
+                NextAnchor().InHandle.DistanceFromAnchor = 100;
+                // NextAnchor().InHandle.Angle = -GD.Randf();
+            }
+            else
+            {
+                OutHandle.Type = SegmentType.Straight;
+                OutHandle.DistanceFromAnchor = 1;
+                NextAnchor().InHandle.Type = SegmentType.Straight;
+                NextAnchor().InHandle.DistanceFromAnchor = 1;
+            }
+        }
+    }
+
     public void MakeHandles()
     {
         // zorg dat ze op een lijn staan
-        InHandle = new(this, true);
-        OutHandle = new(this, false);
+        InHandle = new();
+        InHandle.Init(this, true);
+        OutHandle = new();
+        OutHandle.Init(this, true);
     }
 
     public void ReverseHandles()
@@ -188,8 +243,32 @@ public class Anchor
 
     public void AlignHandles()
     {
-        InHandle.Angle = Fun.Vtv(Position).DirectionTo(Fun.Vtv(PreviousAnchor().Position)).Angle();
-        OutHandle.Angle = Fun.Vtv(Position).DirectionTo(Fun.Vtv(NextAnchor().Position)).Angle();
+        if (OutHandle.Type == SegmentType.Straight)
+        {
+            OutHandle.Angle = Fun.Vtv(Position).DirectionTo(Fun.Vtv(NextAnchor().Position)).Angle();
+        }
+        if (InHandle.Type == SegmentType.Straight)
+        {
+            InHandle.Angle = Fun.Vtv(Position).DirectionTo(Fun.Vtv(PreviousAnchor().Position)).Angle();
+        }
+        if (OutHandle.Type == SegmentType.Cubic)
+        {
+            if (Type == AnchorType.Broken) return;
+            else if (AutoHandles)
+            {
+                OutHandle.Angle = InHandle.Angle + MathF.PI;
+            }
+        }
+        if (InHandle.Type == SegmentType.Cubic)
+        {
+            if (PreviousAnchor().Type == AnchorType.Broken) return;
+            else if (AutoHandles)
+            {
+                GD.Print("2asdf");
+                InHandle.Angle = OutHandle.Angle + MathF.PI;
+            }
+        }
+
     }
 
     public override string ToString()
@@ -228,16 +307,16 @@ public class Anchor
     }
 }
 
-
-public class Shape
+public class Shape 
 {
-    public bool Selected = false;
-    public List<Anchor> Anchors = [];
-    public bool Finished = false;
-
     public Shape()
     {
     }
+
+    public bool Ssselected = false;
+    public List<Anchor> Anchors = [];
+    public bool Finished = false;
+    public bool Negative = false; 
 
     public void ReverseShape()
     {
@@ -347,7 +426,8 @@ public class Shape
 
     public void AddAnchor(V2 pos, bool makeCubic = false, Anchor? insertAfter = null)
     {
-        Anchor a = new(pos, this);
+        Anchor a = new();
+        a.Init(pos, this);
 
         // early out
         if (Anchors.Count > 0 && Anchors[^1].Position == a.Position)
@@ -556,6 +636,22 @@ public static class Shapes
         S.Add(s);
         return s;
     }
+    private static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        IncludeFields = true,                        // ➊ serialize public fields
+        ReferenceHandler = ReferenceHandler.Preserve, // ➋ avoid crashes on back-references
+        WriteIndented = false
+    };
+
+    public static string SaveState()
+    {
+        return JsonSerializer.Serialize(S, JsonOpts);
+    }
+
+    public static void LoadState(string serialized)
+    {
+        S = JsonSerializer.Deserialize<List<Shape>>(serialized, JsonOpts);
+    }
 
     public static void DeleteShape(Shape s)
     {
@@ -606,13 +702,10 @@ public static class Shapes
 
     public static Segment[] ReverseSegmentList(Segment[] segs)
     {
-        // reverse order
         Array.Reverse(segs);
-        // swap endpoints/handles of each segment so geometry direction is consistent
         for (int i = 0; i < segs.Length; i++)
         {
             var s = segs[i];
-            // Reverse swaps ends+handles
             (s.InPoint, s.InHandle, s.OutHandle, s.OutPoint) = (s.OutPoint, s.OutHandle, s.InHandle, s.InPoint);
             segs[i] = s;
         }
@@ -633,59 +726,38 @@ public static class Shapes
         return toReturn;
     }
 
+    public static (V2, V2)[] ListOfTangents(Segment[][] segList)
+    {
+        (V2, V2)[] lot = [];
+        foreach (Segment[] segs in segList)
+        {
+            foreach (Segment seg in segs)
+            {
+                float[] f = seg.Flat();
+                // Player.CurvaturePosition(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]);
+            }
+        }
+        return lot;
+    }
+
     public static Segment[][] MergeShapesSkia()
     {
-        bool nega = false;
-        int co = 0;
         if (S.Count < 2)
         {
             if (S[0].Finished)  return [S[0].SegList()];
             else                return [];
         }
+
         SKPath currentSKPath = S[0].ToSKPath();
-        SKPathOp operation = SKPathOp.Union;
         foreach (Shape shape in S[1..])
         {
-            if (co % 2 == 0)
-            {
-                nega = true;
-                operation = SKPathOp.Difference;
-                // currentSKPath.Contains()
-                currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
-                // if (shape.IsClockwise())
-                // {
-                //     // shape.ReverseShape();
-                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
-                //     // shape.ReverseShape();
-                // }
-                // else
-                // {
-                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
-                // }
-                co += 1;
-            }
-            else
-            {
-                nega = false;
-                operation = SKPathOp.Union;
-                currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation);
-                // if (shape.IsClockwise())
-                // {
-                //     // shape.ReverseShape();
-                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation); 
-                //     // shape.ReverseShape();
-                // }
-                // else
-                // {
-                //     currentSKPath = currentSKPath.Op(shape.ToSKPath(), operation); 
-                // }
-                co += 1;
-            }
+            SKPathOp currentOperation = shape.Negative ? SKPathOp.Difference : SKPathOp.Union;
+            currentSKPath = currentSKPath.Op(shape.ToSKPath(), currentOperation);
         }
 
-        // var outSegmentLists = SKPathToSegmentLists(currentSKPath);
         Segment[][] segLists = [];
-        var splitPaths = SKPathToPaths(currentSKPath);
+        // fix winding: positive shapes clockwise, negative shapes counter
+        List<SKPath> splitPaths = SplitSKPathToContours(currentSKPath);
         foreach (SKPath p in splitPaths)
         {
             int containsCounter = 0;
@@ -704,17 +776,16 @@ public static class Shapes
             }
             segLists = [.. segLists, segs];
         }
-        // return outSegmentLists;
+        // return segLists;
         Segment[][] roundedShapes = [];
         foreach (Segment[] island in segLists)
         {
-            roundedShapes = [.. roundedShapes, RoundCornersSegments(island, true, 40, 1.0f)];
+            roundedShapes = [.. roundedShapes, RoundCornersSegments(island, true, 20, 1.0f)];
         }
         return roundedShapes;
-        // // return currentSKPath;
     }
 
-    public static List<SKPath> SKPathToPaths(SKPath path)
+    public static List<SKPath> SplitSKPathToContours(SKPath path)
     {
         List<SKPath> paths = [];
         var iter = path.CreateIterator(true);
@@ -756,289 +827,6 @@ public static class Shapes
         return paths;
     }
 
-
-
-    public static Segment[][] MergeAllShapes()
-    {
-        // huidige vormen en current merging shapes
-        // als negatief, merge 1 voor 1 met alle huidige eilanden
-        // als posi, houd cms bij: merge met eerste eiland. Overlap? Nieuwe cms
-        //      geen overlap? pass on eiland, 
-        //      cms tegen volgende eiland. Overlap? nieuwe cms. Geen overlap? pass on eiland
-        //      als laatste voeg je cms toe aan shapes.
-        GD.Print("\nMERGE START");
-        Segment[][] segLists = [S[0].SegList()];
-        int co = 0;
-        bool nega = false;
-        foreach (Shape shape in S[1..])
-        {
-            if (co % 2 == 0)
-            {
-                nega = true;
-                // if (shape.IsClockwise())
-                // {
-                //     shape.ReverseShape();
-                // }
-            }
-            else
-            {
-                nega = false;
-            }
-            Segment[] currentShape = shape.SegList();
-            GD.Print("  GOING TO RUST: " + co);
-            segLists = BooleanMergeSegmentGroups(segLists, currentShape, nega);
-            co += 1;
-            // if (nega)
-            // {
-            //     shape.ReverseShape();
-            // }
-        }
-        // GD.Print("\n      seglists len: " + segLists.Length);
-        return segLists;
-        // for (int i = 1; i < S.Count; i++)
-        // {
-        //     Segment[][] newShapes = [];
-        //     foreach (Segment[] island in currentShapes)
-        //     {
-        //         newShapes = [.. newShapes, .. BooleanMergeSegments(island, S[i].Segments(), false)];
-        //     }
-        //     currentShapes = newShapes;
-        // }
-        // Segment[][] roundedShapes = [];
-        // foreach (Segment[] island in segLists)
-        // {
-        //     roundedShapes = [.. roundedShapes, Shape.RoundCornersSegments(island, true, 40, 1)];
-        // }
-        // return roundedShapes;
-    }
-
-    public static Segment[][] old_MergeAllShapes()
-    {
-        // huidige vormen en current merging shapes
-        // als negatief, merge 1 voor 1 met alle huidige eilanden
-        // als posi, houd cms bij: merge met eerste eiland. Overlap? Nieuwe cms
-        //      geen overlap? pass on eiland, 
-        //      cms tegen volgende eiland. Overlap? nieuwe cms. Geen overlap? pass on eiland
-        //      als laatste voeg je cms toe aan shapes.
-        Segment[][] segLists = [S[0].SegList()];
-        int co = 0;
-        bool nega = false;
-        foreach (Shape shape in S[1..])
-        {
-            if (co % 2 == 0)
-            {
-                nega = true;
-            }
-            else
-            {
-                nega = false;
-            }
-            if (nega)
-            {
-                Segment[] currentShape = shape.SegList();
-                Segment[][] tempSegLists = [];
-                foreach (Segment[] segList in segLists)
-                {
-                    tempSegLists = [.. tempSegLists, .. BooleanMergeSegments(segList, currentShape, true)];
-                }
-                segLists = tempSegLists;
-            }
-            else
-            {
-                Segment[] currentMergingShape = shape.SegList();
-                // Segment[] currentShape = shape.SegList();
-                Segment[][] tempSegLists = [];
-                foreach (Segment[] segList in segLists)
-                {
-                    if (Player.AreShapesOverlapping(segList, currentMergingShape))
-                    {
-                        var mergedSegs = BooleanMergeSegments(segList, currentMergingShape, false);
-                        currentMergingShape = mergedSegs[0];
-                        for (int i = 1; i < mergedSegs.Length; i++)
-                        {
-                            tempSegLists = [.. tempSegLists, mergedSegs[i]];
-                        }
-                    }
-                    else
-                    {
-                        tempSegLists = [.. tempSegLists, segList];
-                    }
-                }
-                tempSegLists = [.. tempSegLists, currentMergingShape];
-                segLists = tempSegLists;
-            }
-            co += 1;
-        }
-        // GD.Print("\n      seglists len: " + segLists.Length);
-        return segLists;
-        // for (int i = 1; i < S.Count; i++)
-        // {
-        //     Segment[][] newShapes = [];
-        //     foreach (Segment[] island in currentShapes)
-        //     {
-        //         newShapes = [.. newShapes, .. BooleanMergeSegments(island, S[i].Segments(), false)];
-        //     }
-        //     currentShapes = newShapes;
-        // }
-        // Segment[][] roundedShapes = [];
-        // foreach (Segment[] island in segLists)
-        // {
-        //     roundedShapes = [.. roundedShapes, Shape.RoundCornersSegments(island, true, 20, 1)];
-        // }
-        // return roundedShapes;
-    }
-
-
-    public static Segment[][] BooleanMergeSegmentGroups(Segment[][] A, Segment[] B, bool negative)
-    {
-        int[] pointsA = [];
-        foreach (Segment[] a in A)
-        {
-            foreach (Segment s in a)
-            {
-                pointsA = [.. pointsA, .. s.FlatI()];
-            }
-        }
-
-        int[] pointsB = [];
-        foreach (Segment s in B)
-        {
-            pointsB = [.. pointsB, .. s.FlatI()];
-        }
-        if (pointsA.Length <= 16 || pointsB.Length <= 16)
-        {
-            // if (pointsA.Length <= 16)
-            // {
-            //     GD.Print("pointsAlength smaller than 16");
-            //     GD.Print(pointsA.Length);
-            // }
-            // if (pointsB.Length <= 16)
-            // {
-            //     GD.Print("pointsBlength smaller than 16");
-            //     GD.Print(pointsB.Length);
-            // }
-            GD.Print("EARLY RETURN: short length for points");
-            return A;
-        }
-        float[] merged = Player.BetterVectorBoolean(pointsA, pointsB, negative);
-        for (int i = 0; i < merged.Length / 4; i++)
-        {
-            int j = i * 4;
-        }
-        if (merged.Length == 0)
-        {
-            GD.Print("EARLY RETURN: merged length = 0");
-            return A;
-        }
-
-        Segment[][] outAr = [];
-        Segment[] segAr = [];
-        int cc = 0;
-        for (int i = 0; i < merged.Length; i++)
-        {
-            if (merged[i] == -9999)
-            {
-                GD.Print("\ngap\n");
-                cc = 0;
-                outAr = [.. outAr, segAr];
-                segAr = [];
-            }
-            else
-            {
-                if (cc == 7)
-                {
-                    cc = 0;
-                    int j = i - 7;
-                    V2 inA = new(merged[j], merged[j + 1]);
-                    V2 inH = new(merged[j + 2], merged[j + 3]);
-                    V2 outH = new(merged[j + 4], merged[j + 5]);
-                    V2 outA = new(merged[j + 6], merged[j + 7]);
-                    segAr = [.. segAr, new(inA, inH, outH, outA)];
-                }
-                else cc += 1;
-            }
-        }
-
-        outAr = [.. outAr, segAr];
-        // GD.Print("segar length: " + segAr.Length);
-        // GD.Print("outar length: " + outAr.Length);
-        return outAr;
-    }
-
-
-    public static Segment[][] BooleanMergeSegments(Segment[] A, Segment[] B, bool negative)
-    {
-        int[] pointsA = [];
-        foreach (Segment s in A)
-        {
-            pointsA = [.. pointsA, .. s.FlatI()];
-        }
-
-        int[] pointsB = [];
-        foreach (Segment s in B)
-        {
-            pointsB = [.. pointsB, .. s.FlatI()];
-        }
-        if (pointsA.Length <= 16 || pointsB.Length <= 16)
-        {
-            // if (pointsA.Length <= 16)
-            // {
-            //     GD.Print("pointsAlength smaller than 16");
-            //     GD.Print(pointsA.Length);
-            // }
-            // if (pointsB.Length <= 16)
-            // {
-            //     GD.Print("pointsBlength smaller than 16");
-            //     GD.Print(pointsB.Length);
-            // }
-            GD.Print("EARLY RETURN: short points");
-            return [A, B];
-        }
-        float[] merged = Player.BetterVectorBoolean(pointsA, pointsB, negative);
-        for (int i = 0; i < merged.Length / 4; i++)
-        {
-            int j = i * 4;
-        }
-        if (merged.Length == 0)
-        {
-            GD.Print("EARLY RETURN: merged length = 0");
-            return [A, B];
-        }
-
-        Segment[][] outAr = [];
-        Segment[] segAr = [];
-        int cc = 0;
-        for (int i = 0; i < merged.Length; i++)
-        {
-            if (merged[i] == -9999)
-            {
-                GD.Print("\ngap\n");
-                cc = 0;
-                outAr = [.. outAr, segAr];
-                segAr = [];
-            }
-            else
-            {
-                if (cc == 7)
-                {
-                    cc = 0;
-                    int j = i - 7;
-                    V2 inA = new(merged[j], merged[j + 1]);
-                    V2 inH = new(merged[j + 2], merged[j + 3]);
-                    V2 outH = new(merged[j + 4], merged[j + 5]);
-                    V2 outA = new(merged[j + 6], merged[j + 7]);
-                    segAr = [.. segAr, new(inA, inH, outH, outA)];
-                }
-                else cc += 1;
-            }
-        }
-
-        outAr = [.. outAr, segAr];
-        // GD.Print("segar length: " + segAr.Length);
-        // GD.Print("outar length: " + outAr.Length);
-        return outAr;
-    }
-
     public static Segment[][] SKPathToSegmentLists(SKPath skpath)
     {
         Segment[][] outSegmentLists = [];
@@ -1071,10 +859,14 @@ public static class Shapes
             else if (currentVerbType == SKPathVerb.Quad)
             {
                 // GD.Print("VERB is quad");
+                Segment s = new(currentVerb[0], currentVerb[1], currentVerb[2], currentVerb[2]);
+                currentSegList = [.. currentSegList, s];
             }
             else if (currentVerbType == SKPathVerb.Cubic)
             {
                 // GD.Print("VERB is cubic");
+                Segment s = new(currentVerb[0], currentVerb[1], currentVerb[2], currentVerb[3]);
+                currentSegList = [.. currentSegList, s];
             }
         }
         outSegmentLists = [.. outSegmentLists, currentSegList];
@@ -1137,12 +929,12 @@ public static class Shapes
                 tanPos2 = trimmedSegList[0].Item2;
                 r = cornerSizeList[0];
             }
-            var t1 = SafeNormalize(tanPos);
+            var t1 = SafeNormalize(tanAngle);
             var t2 = SafeNormalize(tanPos2);
             float cosA = Math.Clamp(V2.Dot(t1, -t2), -1f, 1f);
             float angle = Mathf.Acos(cosA);
             roundedSegments.Add(trimmed);
-            if (rounded && cornerSizeList[index] >= 3 && r >= 3)
+            if (true && cornerSizeList[index] >= 3 && r >= 3)
             {
                 const float MIN_ANGLE = 2f * (MathF.PI / 180f);
                 const float MAX_ANGLE = 178f * (MathF.PI / 180f);
@@ -1153,6 +945,8 @@ public static class Shapes
                 }
                 else
                 {
+                    // V2 newPos1 = trimmed.OutPoint + t1 * 100;
+                    // V2 newPos2 = trimmed2.InPoint - t2 * 100;
                     V2 newPos1 = trimmed.OutPoint + t1 * (roundness * cornerSizeList[index]);
                     V2 newPos2 = trimmed2.InPoint - t2 * (roundness * r);
                     roundedSegments.Add(new(trimmed.OutPoint, newPos1, newPos2, trimmed2.InPoint));

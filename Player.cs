@@ -56,6 +56,11 @@ public partial class Player : Node
         return (bool)pl.Call("are_shapes_overlapping", aa,bb);
     }
 
+    public static float[] CurvaturePosition(float[] a)
+    {
+        return (float[])pl.Call("curvature_position", a);
+    }
+
     public static float[] PointAlongCubicParametric(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float amount)
     {
         return (float[])pl.Call("point_along_cubic_parametric", x1, y1, x2, y2, x3, y3, x4, y4, amount);
