@@ -1,7 +1,10 @@
 using Godot;
+using V2 = System.Numerics.Vector2;
+using GV2 = Godot.Vector2;
 using Godot.Collections;
 using Godot.NativeInterop;
 using System;
+using System.Collections.Generic;
 
 namespace Vectordrawing;
 
@@ -54,6 +57,39 @@ public partial class Player : Node
             bb.AddRange(s.FlatI());
         }
         return (bool)pl.Call("are_shapes_overlapping", aa,bb);
+    }
+
+    public static List<(int,V2)> ShapeShapeIntersections(Segment[] segList, Segment[] segList2)
+    {
+        Array<float> floatAr = new();
+        foreach (Segment part in segList)
+        {
+            floatAr.AddRange(part.Flat());
+        }
+        Array<float> floatAr2 = new();
+        foreach (Segment part in segList2)
+        {
+            floatAr2.AddRange(part.Flat());
+        }
+        // float[] f = s.Flat();
+        float[] a = (float[])pl.Call("shape_shape_intersections", floatAr, floatAr2);
+        List<(int, V2)> outAr = [];
+        for (int i = 0; i < a.Length / 3; i++)
+        {
+            outAr.Add(((int)a[i*3],new(a[i*3 + 1],a[i*3 + 2])));
+        }
+        return outAr;
+    }
+
+    public static float[] SegmentShapeIntersections(Segment[] segList, Segment s)
+    {
+        Array<float> floatAr = new();
+        foreach (Segment part in segList)
+        {
+            floatAr.AddRange(part.Flat());
+        }
+        float[] f = s.Flat();
+        return (float[])pl.Call("segment_shape_intersections", floatAr, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]);
     }
 
     public static float[] CurvaturePosition(float[] a)

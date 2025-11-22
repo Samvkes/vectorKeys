@@ -706,6 +706,38 @@ impl Player {
 
 
     #[func]
+    fn shape_shape_intersections(&mut self, shape:Array<f64>, shape2:Array<f64>) -> Vec<f64>  {
+        let mut return_vec: Vec<f64> = Vec::new();
+        let bezier_path = array_to_subpath(shape.clone());
+        let bezier_path2 = array_to_subpath(shape2.clone());
+        // let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
+
+        let inters: Vec<(usize, f64)> = bezier_path2.subpath_intersections(&bezier_path,Some(5.1),Some(5.0));
+        for inter in inters{
+            let intersection_coords: DVec2 = bezier_path2.get_segment(inter.0).unwrap().evaluate(TValue::Parametric(inter.1));
+            return_vec.push(inter.0 as f64);
+            return_vec.push(intersection_coords.x);
+            return_vec.push(intersection_coords.y);
+        }
+        return return_vec;
+    }
+
+    #[func]
+    fn segment_shape_intersections(&mut self, shape:Array<f64>, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> Vec<f64>  {
+        let mut return_vec: Vec<f64> = Vec::new();
+        let bezier_path = array_to_subpath(shape.clone());
+        let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
+
+        let inters: Vec<(usize, f64)> = bezier_path.intersections(&bez,Some(5.1),Some(5.0));
+        for inter in inters{
+            let intersection_coords: DVec2 = bezier_path.get_segment(inter.0).unwrap().evaluate(TValue::Parametric(inter.1));
+            return_vec.push(intersection_coords.x);
+            return_vec.push(intersection_coords.y);
+        }
+        return return_vec;
+    }
+
+    #[func]
     fn better_vector_boolean(&mut self, ai:Array<i16>, bi:Array<i16>, negative: bool) -> Vec<f64>  {
         godot_print!("\n\n {negative}");
         let mut return_vec: Vec<f64> = Vec::new();

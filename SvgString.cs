@@ -19,6 +19,7 @@ enum Style  {
     ShapePositive,
     ShapeOpen,
     ShapePreview,
+    ShapePreviewWhite,
     ShapeUnchanged,
     ShapeNegative,
     ShapeSelected,
@@ -26,7 +27,26 @@ enum Style  {
 
 static class Styles
 {
-    public static readonly Dictionary<string, string>[] S =
+    public enum Width
+    {
+        thin,
+        medium,
+        thick,
+    }
+    public static float zoom = 1;
+
+    public static string GetWidth(Width width)
+    {
+        string[] widths = ["1", "3", "5"];
+        if (zoom > 1)
+            widths = ["0.5", "1", "2"];
+        else if (zoom < 1)
+            widths = ["3", "5", "8"];
+
+        return widths[(int)width];
+    }
+
+    public static Dictionary<string, string>[] S =
     [
         new()
         {
@@ -35,7 +55,7 @@ static class Styles
             ["stroke"] = "black",
             ["fill-opacity"] = "0.1",
             ["stroke-opacity"] = "1.0",
-            ["stroke-width"] = "3",
+            ["stroke-width"] = "2",
         },
         new()
         {
@@ -57,11 +77,20 @@ static class Styles
         },
         new()
         {
+        // shape preview
+            ["fill"] = "lightgray",
+            ["stroke"] = "lightgray",
+            ["fill-opacity"] = "1",
+            ["stroke-opacity"] = "0",
+            ["stroke-width"] = "0",
+        },
+        new()
+        {
         // shape unchanged
-            ["fill"] = "black",
-            ["stroke"] = "black",
-            ["fill-opacity"] = "0.1",
-            ["stroke-opacity"] = "0.8",
+            ["fill"] = "gray",
+            ["stroke"] = "white",
+            ["fill-opacity"] = "0.5",
+            ["stroke-opacity"] = "1.0",
             ["stroke-width"] = "1",
         },
         new()
@@ -70,17 +99,17 @@ static class Styles
             // ["fill"] = "#d69c85",
             ["fill"] = "#e08a85",
             ["stroke"] = "black",
-            ["fill-opacity"] = "0.8",
+            ["fill-opacity"] = "0.7",
             ["stroke-opacity"] = "0.8",
             ["stroke-width"] = "1",
         },
         new()
         {
         // shape selected 
-            ["fill"] = "black",
+            ["fill"] = "blue",
             ["stroke"] = "blue",
-            ["fill-opacity"] = "0.0",
-            ["stroke-opacity"] = "0.2",
+            ["fill-opacity"] = "0.30",
+            ["stroke-opacity"] = "0.0",
             ["stroke-width"] = "3",
         },
     ];
@@ -101,7 +130,14 @@ static class SvgString
     {
         foreach ((string key, string val) in CurrentStyle)
         {
-            CurrentString += key + "=\"" + val + "\" ";
+            if (key == "stroke-width" && val != "0")
+            {
+                CurrentString += key + "=\"" + Styles.GetWidth((Styles.Width)(int.Parse(val)-1)) + "\" ";
+            }
+            else
+            {
+                CurrentString += key + "=\"" + val + "\" ";
+            }
         }
     }
 
@@ -246,9 +282,10 @@ static class SvgString
         {
             tslating = origin + 1.33333f * (markerPos - origin);
         }
+        Styles.zoom = zoom;
         CurrentString = (
             $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\" >" +
-            $"<g transform=\"scale({1}) translate({tslating.X},{tslating.Y}) rotate({0})\">" +
+            $"<g transform=\"scale({1}) translate({tslating.X + Base.CursorOff.X},{tslating.Y + Base.CursorOff.Y}) rotate({0})\">" +
             $"<g transform=\"scale({zoom:N3}) translate({-tslating.X},{-tslating.Y}) rotate({0})\">"
         );
     }

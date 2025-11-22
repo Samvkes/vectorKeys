@@ -97,4 +97,15 @@ static class StringNamesList
     public static readonly StringName shape_negative = "shape_negative";
     public static readonly StringName undo = "undo";
     public static readonly StringName redo = "redo";
+    public static readonly StringName xscale_up_points = "xscale_up_points";
+    public static readonly StringName xscale_down_points = "xscale_down_points";
+    public static readonly StringName yscale_up_points = "yscale_up_points";
+    public static readonly StringName yscale_down_points = "yscale_down_points";
+    public static readonly StringName rotate_cw_points = "rotate_cw_points";
+    public static readonly StringName rotate_ccw_points = "rotate_ccw_points";
+    public static readonly StringName move_focus = "move_focus";
+    public static readonly StringName curve_points_mode = "curve_points_mode";
+    public static readonly StringName auto_move_mode = "auto_move_mode";
+    public static readonly StringName save_project = "save_project";
+    public static readonly StringName load_project = "load_project";
 }

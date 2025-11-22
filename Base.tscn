@@ -1,62 +1,118 @@
-[gd_scene load_steps=15 format=3 uid="uid://nq848ct5jjb0"]
+[gd_scene load_steps=26 format=3 uid="uid://nq848ct5jjb0"]
 
 [ext_resource type="FontFile" uid="uid://bp6obah0nqddo" path="res://assets/DepartureMono-Regular.otf" id="1_nopgj"]
-[ext_resource type="FontFile" uid="uid://cqwy28fv08co6" path="res://assets/DraftingMono/DraftingMono-BoldItalic.otf" id="2_22hco"]
-[ext_resource type="Texture2D" uid="uid://c7pf2hdil4web" path="res://assets/DraftingMono/radio_button_unchecked_50dp_FFFFFF_FILL0_wght500_GRAD0_opsz40.svg" id="2_b56jl"]
 [ext_resource type="Script" uid="uid://mlikt7xk4omk" path="res://Player.cs" id="2_nopgj"]
+[ext_resource type="FontFile" uid="uid://b224airig5vj2" path="res://assets/DraftingMono/DraftingMono-SemiBold.otf" id="3_6ol3t"]
+[ext_resource type="FontFile" uid="uid://cxbup0l5ngyia" path="res://assets/DraftingMono/DraftingMono-LightItalic.otf" id="3_22hco"]
 [ext_resource type="Script" uid="uid://bxgca61n8ryny" path="res://undo_redo.gd" id="3_i812h"]
+[ext_resource type="FontFile" uid="uid://ckyhp8u8dy62q" path="res://assets/DraftingMono/DraftingMono-SemiBoldItalic.otf" id="4_4p605"]
 [ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://Base.cs" id="5_nopgj"]
+[ext_resource type="Texture2D" uid="uid://cvnp47h0jkfrx" path="res://assets/DraftingMono/Star 1.png" id="5_swcnr"]
+[ext_resource type="Texture2D" uid="uid://b3wplkkkapc3s" path="res://assets/DraftingMono/Group 32.png" id="6_6ol3t"]
+[ext_resource type="Texture2D" uid="uid://bywvvr1buygpx" path="res://assets/DraftingMono/Group 33.png" id="7_4p605"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2lvr1"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.627451, 0.662745, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_offset = Vector2(0, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_58kua"]
-bg_color = Color(0.807843, 0.807843, 0.807843, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 0.372455, 0.233749, 1)
+bg_color = Color(0.625556, 0.661359, 0.679555, 1)
 corner_radius_top_left = 15
 corner_radius_top_right = 15
 corner_radius_bottom_right = 15
-shadow_color = Color(0, 0, 0, 0.0627451)
-shadow_size = 8
+shadow_color = Color(0, 0, 0, 0.0588235)
 shadow_offset = Vector2(-4, 0)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nopgj"]
-bg_color = Color(0.807843, 0.807843, 0.807843, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_bottom = 2
-border_color = Color(1, 0.372455, 0.233749, 1)
-corner_radius_top_left = 15
-corner_radius_bottom_left = 15
-shadow_color = Color(0, 0, 0, 0.0588235)
-shadow_size = 5
-shadow_offset = Vector2(-5, 0)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4p605"]
+bg_color = Color(0.212191, 0.203928, 0.277456, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_22hco"]
-bg_color = Color(0.971635, 0.384655, 0.427308, 0.960784)
-border_color = Color(0.979746, 0.76797, 0.68667, 0.372549)
-border_blend = true
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-shadow_color = Color(0.816077, 0.296569, 0.0138151, 0.866667)
-shadow_size = 1
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lf5p6"]
+bg_color = Color(0.295129, 0.507221, 0.624546, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pn4t7"]
+bg_color = Color(0.612485, 0.30452, 0.33102, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0k0ig"]
+bg_color = Color(0.813177, 0.800952, 0.807971, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6ol3t"]
+content_margin_left = 7.0
+content_margin_top = 3.0
+content_margin_right = 7.0
+content_margin_bottom = 5.0
+bg_color = Color(0.211156, 0.263802, 0.347265, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 1)
 shadow_offset = Vector2(0, 5)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_swcnr"]
-bg_color = Color(0.911827, 0.459766, 0.343956, 1)
-border_width_left = 560
-border_color = Color(0.800151, 0.800151, 0.800151, 0)
-border_blend = true
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nopgj"]
+bg_color = Color(0.627451, 0.662745, 0.678431, 1)
+corner_radius_bottom_left = 15
+shadow_offset = Vector2(-4, 0)
 
-[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_swcnr"]
-size = Vector2(100, 90)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_22hco"]
+bg_color = Color(0.935403, 0.389959, 0.523645, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.986667, 0.370516, 0.0477708, 0.823529)
+shadow_offset = Vector2(3, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_swcnr"]
+bg_color = Color(0.959498, 0.500513, 0.599617, 1)
+border_color = Color(0.950009, 0.438869, 0, 0)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2racw"]
+bg_color = Color(0.627451, 0.662745, 0.678431, 1)
+corner_radius_top_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4phwr"]
+content_margin_left = 6.0
+content_margin_top = 0.0
+content_margin_right = 6.0
+content_margin_bottom = 0.0
+bg_color = Color(0.802956, 0.802956, 0.799312, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="Gradient" id="Gradient_b56jl"]
-offsets = PackedFloat32Array(0.474026, 0.724026, 1)
-colors = PackedColorArray(0.132632, 0.0659219, 0, 0, 0.154645, 0.0779312, 0, 0.200436, 0.165817, 0.140386, 0.0966045, 0.717647)
+offsets = PackedFloat32Array(0.597523, 1)
+colors = PackedColorArray(0.238605, 0.172879, 0.147602, 0, 0.177383, 0.125076, 0.104958, 0.94902)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_i812h"]
 gradient = SubResource("Gradient_b56jl")
@@ -70,9 +126,30 @@ multichannel_signed_distance_field = true
 
 [node name="Base" type="Node2D"]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="BaseTest" type="Node2D" parent="."]
+script = ExtResource("5_nopgj")
 
-[node name="Panel" type="Panel" parent="CanvasLayer"]
+[node name="CanvasLayer" type="CanvasLayer" parent="BaseTest"]
+
+[node name="Label" type="Label" parent="BaseTest/CanvasLayer"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 23.0
+offset_top = -61.0
+offset_right = 310.0
+offset_bottom = -20.5834
+grow_vertical = 0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_nopgj")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_2lvr1")
+text = "vouwfiets mono v0.2"
+horizontal_alignment = 1
+
+[node name="ControlRoot" type="CanvasLayer" parent="BaseTest"]
+
+[node name="MainPanel" type="Panel" parent="BaseTest/ControlRoot"]
 z_index = 5
 anchors_preset = -1
 anchor_left = 1.0
@@ -85,24 +162,464 @@ offset_right = -24.0
 offset_bottom = -20.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_58kua")
 
-[node name="ColorRect2" type="ColorRect" parent="CanvasLayer"]
+[node name="MarginContainer" type="MarginContainer" parent="BaseTest/ControlRoot/MainPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PreviewContainer" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Preview1" type="TextureRect" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer"]
+z_index = 2
+custom_minimum_size = Vector2(200, 320)
+layout_mode = 2
+size_flags_vertical = 3
+stretch_mode = 5
+
+[node name="Panel" type="Panel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer/Preview1"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_4p605")
+
+[node name="TinyPreviewContainer" type="VBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer"]
+custom_minimum_size = Vector2(100, 200)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="TinyPreview" type="TextureRect" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer/TinyPreviewContainer"]
+z_index = 2
+layout_mode = 2
+size_flags_vertical = 3
+stretch_mode = 3
+
+[node name="Panel3" type="Panel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer/TinyPreviewContainer/TinyPreview"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lf5p6")
+
+[node name="TinyPreview2" type="TextureRect" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer/TinyPreviewContainer"]
+z_index = 2
+layout_mode = 2
+size_flags_vertical = 3
+stretch_mode = 3
+
+[node name="Panel4" type="Panel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer/TinyPreviewContainer/TinyPreview2"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pn4t7")
+
+[node name="Preview2" type="TextureRect" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer"]
+z_index = 2
+custom_minimum_size = Vector2(200, 320)
+layout_mode = 2
+size_flags_vertical = 3
+stretch_mode = 5
+
+[node name="Panel2" type="Panel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/PreviewContainer/Preview2"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0k0ig")
+
+[node name="ColorRect3" type="ColorRect" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer"]
 z_index = 7
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+color = Color(0.789732, 0.262603, 0.108194, 0.223529)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "space"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(455, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "selection mode"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "esdf"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer3"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "move cursor
+move selected
+"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "tab"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer4"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "preview mode"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer5"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "j"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer5"]
+custom_minimum_size = Vector2(455, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "place point"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer6" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer6"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "k"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer6"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "finish shape"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer7" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer7"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "y"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer7"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "switch edit modes
+(handle / point)"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer8" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer8"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "l"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer8"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "add handles"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer12" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer12"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "h"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer12"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "switch handle type
+(locked / unlocked)"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer9" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer9"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "c"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer9"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "insert point"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer10" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer10"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "a"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer10"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "move by pixel"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer11" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer11"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "m/n"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer11"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "change grid size"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer13" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer13"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "u/x"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer13"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "undo / redo action"
+fit_content = true
+vertical_alignment = 1
+
+[node name="HBoxContainer14" type="HBoxContainer" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="RichTextLabel" type="Label" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer14"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("3_6ol3t")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_6ol3t")
+text = "w/r"
+horizontal_alignment = 2
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer/VBoxContainer/HBoxContainer14"]
+custom_minimum_size = Vector2(450, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_4p605")
+theme_override_font_sizes/normal_font_size = 26
+text = "zoom out / zoom in"
+fit_content = true
+vertical_alignment = 1
+
+[node name="ColorRect4" type="ColorRect" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer"]
+z_index = 7
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+color = Color(0.789732, 0.262603, 0.108194, 0.211765)
+
+[node name="TextureRect3" type="TextureRect" parent="BaseTest/ControlRoot/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ColorRect2" type="ColorRect" parent="BaseTest/ControlRoot/MainPanel"]
+z_index = 7
+custom_minimum_size = Vector2(2, 600)
+layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -613.0
-offset_top = -973.0
-offset_right = -610.0
-offset_bottom = -63.0
+offset_left = -588.0
+offset_top = -1150.0
+offset_right = -586.0
+offset_bottom = -20.0
 grow_horizontal = 0
 grow_vertical = 0
 color = Color(0.789732, 0.262603, 0.108194, 0.160784)
 
-[node name="Panel2" type="Panel" parent="CanvasLayer"]
+[node name="ColorRect3" type="ColorRect" parent="BaseTest/ControlRoot/MainPanel"]
+z_index = 7
+custom_minimum_size = Vector2(2, 600)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -478.0
+offset_top = 340.0
+offset_right = -475.0
+offset_bottom = 1040.0
+grow_horizontal = 0
+color = Color(0.789732, 0.262603, 0.108194, 0.160784)
+
+[node name="LayerPanel" type="Panel" parent="BaseTest/ControlRoot"]
 z_index = 6
-anchors_preset = -1
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -112,33 +629,35 @@ offset_top = -1020.0
 offset_right = -613.0
 offset_bottom = -20.0
 grow_horizontal = 0
-grow_vertical = 2
+grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_nopgj")
 
-[node name="Panel3" type="Panel" parent="CanvasLayer/Panel2"]
+[node name="Selector" type="Panel" parent="BaseTest/ControlRoot/LayerPanel"]
 z_index = 10
 layout_mode = 0
-offset_left = 7.0
+offset_left = 1.0
 offset_top = 107.0
-offset_right = 117.0
+offset_right = 111.0
 offset_bottom = 197.0
+pivot_offset = Vector2(57, 50)
 theme_override_styles/panel = SubResource("StyleBoxFlat_22hco")
 
-[node name="Panel4" type="Panel" parent="CanvasLayer/Panel2/Panel3"]
+[node name="Panel4" type="Panel" parent="BaseTest/ControlRoot/LayerPanel/Selector"]
 z_index = 10
 layout_mode = 0
-offset_left = -168.0
-offset_top = 26.0
-offset_bottom = 72.0
+offset_left = -131.0
+offset_top = 24.0
+offset_right = -10.0
+offset_bottom = 70.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_swcnr")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/Panel2/Panel3"]
+[node name="PointAmountLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/Selector"]
 z_index = 12
 layout_mode = 0
-offset_left = -182.0
-offset_top = 25.0
-offset_right = -9.0
-offset_bottom = 75.0
+offset_left = -192.0
+offset_top = 23.0
+offset_right = -19.0
+offset_bottom = 73.0
 theme_override_colors/default_color = Color(0, 0, 0, 1)
 theme_override_fonts/normal_font = ExtResource("1_nopgj")
 theme_override_font_sizes/normal_font_size = 33
@@ -146,7 +665,8 @@ text = "01/24"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Panel2"]
+[node name="MarginContainer" type="MarginContainer" parent="BaseTest/ControlRoot/LayerPanel"]
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -158,71 +678,257 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel2/MarginContainer"]
+[node name="VBoxContainer_Layers" type="VBoxContainer" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer"]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 8
 
-[node name="TextureRect1" type="TextureRect" parent="CanvasLayer/Panel2/MarginContainer/VBoxContainer"]
+[node name="TextureRect1" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
 layout_mode = 2
 size_flags_vertical = 4
-texture = SubResource("PlaceholderTexture2D_swcnr")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/Panel2/MarginContainer/VBoxContainer/TextureRect1"]
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect1"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 1.0
 anchor_top = 0.567
 anchor_right = 1.0
 anchor_bottom = 0.575
-offset_left = -33.0
-offset_top = -0.0300026
-offset_right = -6.0
-offset_bottom = 38.25
-theme_override_fonts/normal_font = ExtResource("2_22hco")
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
 theme_override_font_sizes/normal_font_size = 30
 text = "1"
 horizontal_alignment = 2
 vertical_alignment = 2
 
-[node name="Control" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 32.0
-offset_top = 6.0
-offset_right = 3178.0
-offset_bottom = 1908.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
+[node name="TextureRect2" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
 
-[node name="ColorRect" type="ColorRect" parent="."]
-visible = false
-z_index = 3
-offset_left = 2425.0
-offset_top = 29.0
-offset_right = 3169.0
-offset_bottom = 1888.0
-color = Color(0.8, 0.8, 0.796078, 1)
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "2"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="ColorRect2" type="ColorRect" parent="ColorRect"]
-visible = false
-z_index = -1
+[node name="TextureRect3" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect3"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "3"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TextureRect4" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect4"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "4"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TextureRect5" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect5"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "5"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TextureRect6" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect6"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "6"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TextureRect7" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect7"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "7"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TextureRect8" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect8"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "8"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TextureRect9" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect9"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "9"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="TextureRect10" type="TextureRect" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BaseTest/ControlRoot/LayerPanel/MarginContainer/VBoxContainer_Layers/TextureRect10"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.567
+anchor_right = 1.0
+anchor_bottom = 0.575
+offset_left = -35.0
+offset_top = -2.03
+offset_right = -8.0
+offset_bottom = 36.25
+theme_override_colors/default_color = Color(0, 0, 0, 0.639216)
+theme_override_fonts/normal_font = ExtResource("3_22hco")
+theme_override_font_sizes/normal_font_size = 30
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="FocusIdentifier" type="Panel" parent="BaseTest/ControlRoot/LayerPanel"]
 layout_mode = 0
-offset_left = -3.0
-offset_top = -3.0
-offset_right = 747.0
-offset_bottom = 1862.0
-color = Color(1, 0.515377, 0.565999, 1)
+offset_top = -161.0
+offset_right = 117.0
+offset_bottom = 1.0
+pivot_offset = Vector2(65, 82)
+theme_override_styles/panel = SubResource("StyleBoxFlat_2racw")
 
-[node name="ColorRect3" type="ColorRect" parent="ColorRect"]
+[node name="AnchorFocus" type="Sprite2D" parent="BaseTest/ControlRoot/LayerPanel/FocusIdentifier"]
+position = Vector2(59, 79)
+texture = ExtResource("6_6ol3t")
+
+[node name="HandleFocus" type="Sprite2D" parent="BaseTest/ControlRoot/LayerPanel/FocusIdentifier"]
 visible = false
-z_index = -2
-layout_mode = 0
-offset_left = -10.0
-offset_top = -3.0
-offset_right = 740.0
-offset_bottom = 1869.0
-color = Color(0, 0, 0, 0.0862745)
+position = Vector2(60, 79)
+texture = ExtResource("7_4p605")
+
+[node name="ColorRect5" type="ColorRect" parent="BaseTest/ControlRoot/LayerPanel/FocusIdentifier"]
+z_index = 7
+custom_minimum_size = Vector2(100, 2)
+layout_mode = 2
+offset_left = 11.0
+offset_top = 162.0
+offset_right = 111.0
+offset_bottom = 164.0
+color = Color(0.789732, 0.262603, 0.108194, 0.223529)
 
 [node name="Player" type="Player" parent="."]
 script = ExtResource("2_nopgj")
@@ -237,24 +943,39 @@ offset_left = -17.0
 offset_top = -13.0
 offset_right = 3233.0
 offset_bottom = 1938.0
-color = Color(0.786026, 0.786027, 0.781885, 1)
+color = Color(0.777865, 0.798826, 0.782098, 1)
 metadata/_edit_lock_ = true
 
 [node name="Cursor" type="Sprite2D" parent="."]
-modulate = Color(1, 0.125535, 0.485422, 1)
+self_modulate = Color(0, 0, 0, 1)
 position = Vector2(100, 100)
-scale = Vector2(0.3, 0.3)
-texture = ExtResource("2_b56jl")
+scale = Vector2(2, 2)
+texture = ExtResource("5_swcnr")
 
 [node name="Shad" type="Sprite2D" parent="Cursor"]
-visible = false
-modulate = Color(1, 0.123964, 0.408759, 0.121569)
+modulate = Color(0.779177, 0.779105, 0.771812, 1)
+top_level = true
 z_index = -1
-scale = Vector2(2, 2)
-texture = ExtResource("2_b56jl")
+position = Vector2(1, 15)
+texture = ExtResource("5_swcnr")
+
+[node name="Label" type="Label" parent="Cursor"]
+top_level = true
+offset_left = 16.0
+offset_top = 34.0
+offset_right = 74.0
+offset_bottom = 70.0
+size_flags_horizontal = 0
+size_flags_vertical = 6
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_nopgj")
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_4phwr")
+text = "adsf"
+vertical_alignment = 1
 
 [node name="Overlay" type="Sprite2D" parent="."]
-modulate = Color(1, 1, 1, 0.145098)
+modulate = Color(1, 1, 1, 0.0862745)
 position = Vector2(1588, 951.5)
 scale = Vector2(50.4687, 30.4219)
 texture = SubResource("GradientTexture2D_i812h")
@@ -270,5 +991,10 @@ text = "20"
 [node name="UndoRedo" type="Node" parent="."]
 script = ExtResource("3_i812h")
 
-[node name="BaseTest" type="Node2D" parent="."]
-script = ExtResource("5_nopgj")
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.seraf")
+use_native_dialog = true

@@ -59,9 +59,38 @@ het probleem is vormen die een punt delen. maar niet altijd.
 
 [x] proberen te rasterizen met skia (geen succes, antialiasing te traag)
 
-[] curv comb - 3 uur
+[~] interface!!! Scherm 1
 
-[] interface!!! Scherm 1
+[x] preview in main panel
+[x] fix zooming in and out
+
+[x] auto handles
+[x] rounding per punt en segment aan kunnen passen
+
+[x] opslaan?
+
+[] integreer spline research, maak round corners niet editable (denk ik), rechte corners
+    moeten een instelbare rounding hebben.
+    (voor zover ik kan zien exporteren newsplines gewoon naar cubic beziers, als 
+        je de handles van de round corners niet verzet)
+
+[] visualisatie van handles (ook tonen in anch mode, broken vs heel laten zien)
+[] move origin & fix grid and snapping
+[] copy / paste (geselecteerde punten in een nieuwe vorm plakken?)
+[] snel handles plaatsen
+
+
+[] intermezzo
+    [] visualisaties beter
+    [] semi sensible keymap 
+    NOVA - test
+    [] code cleanup
+
+(switch tussen files, nieuwe file maken, openen en opslaan. Overzicht van huidige letters, nieuwe letters, families) (houd het basaal, hardcode sommige dingen)
+[] buiten paneel / font overview
+[] curv comb - 3 uur
+[] measure stem thickness (normal line on closest point on curve to cursor, distance through stem)
+[] stroked shape, instead of fill
 
 -- niceties and visuals!!
 // maak straights curved in handle mode -> s vs c is een property van de handles
@@ -81,19 +110,14 @@ het probleem is vormen die een punt delen. maar niet altijd.
 [] multiple letters - 5 uur
 [] save / load - 3 uur
 
-[] intermezzo
-    [] semi sensible keymap 
-    [] code cleanup
-    NOVA - test
 
 
+[] promt generator bovenaan ofzo
 [] undo / redo better  
 [] jumping to points?
 [] set mode for default placing whole or broken points, straight or cubic curve
 [] good scaling/rotating visually
 [] angles and lengths visible
-[] fix rounding stukje: rounding soms platter dan verwacht, progressief cornershrinken zorgt vaak voor lelijke hoeken. sommige hoeken krijg je uberhaubt nauwelijks rounding, bij een paar graden meer of minder weer wel
-[] copy / paste (geselecteerde punten in een nieuwe vorm plakken?)
 [] add square & circle
 [] mirroring
 
