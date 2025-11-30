@@ -93,6 +93,7 @@ static class StringNamesList
     public static readonly StringName switch_focus = "switch_focus";
     public static readonly StringName insert_point = "insert_point";
     public static readonly StringName add_new_point = "add_new_point";
+    public static readonly StringName add_sharp_point = "add_sharp_point";
     public static readonly StringName finish_shape = "finish_shape";
     public static readonly StringName shape_negative = "shape_negative";
     public static readonly StringName undo = "undo";
@@ -108,4 +109,6 @@ static class StringNamesList
     public static readonly StringName auto_move_mode = "auto_move_mode";
     public static readonly StringName save_project = "save_project";
     public static readonly StringName load_project = "load_project";
+    public static readonly StringName toggle_preview = "toggle_preview";
+    public static readonly StringName select_mode = "select_mode";
 }

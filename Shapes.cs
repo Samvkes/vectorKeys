@@ -20,6 +20,8 @@ using System.Xml.Serialization;
 using System.Text.Json.Serialization;
 using System.Runtime.Intrinsics;
 using System.Reflection.Metadata;
+using System.Diagnostics.Metrics;
+using System.Runtime.CompilerServices;
 
 
 namespace Vectordrawing;
@@ -67,6 +69,7 @@ public struct Segment(V2 inPoint, V2 inHandle, V2 outHandle, V2 outPoint)
     public V2 OutPoint = outPoint;
     public V2 InHandle = inHandle;
     public V2 OutHandle = outHandle;
+    private float? Length = null;
 
     public int[] FlatI()
     {
@@ -80,8 +83,16 @@ public struct Segment(V2 inPoint, V2 inHandle, V2 outHandle, V2 outPoint)
 
     public float LengthCubic()
     {
-        float[] f = Flat();
-        return Player.LengthCubic(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]);
+        if (Length != null)
+        {
+            return (float)Length;
+        }
+        else
+        {
+            float[] f = Flat();
+            Length = Player.LengthCubic(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]);
+            return (float)Length;
+        }
     }
 
     /// <summary>trims segment and returns trimmed segment with tangent unit vectors for start and end of trimmed</summary><returns></returns>
@@ -227,6 +238,9 @@ public class Anchor
     public Handle InHandle = null!;
     public Handle OutHandle = null!;
     public bool Sselected = false;
+    public bool Broken = false;
+    public int anchorRounding = 20;
+    public int intersectionRounding = 1;
 
     private V2 _position = new(0, 0);
 
@@ -447,17 +461,19 @@ public class Anchor
     }
 }
 
-
 public class Shape 
 {
     public Shape()
     {
     }
 
+    public bool AnchorsCached = true;
+    public Segment[] Segments = [];
+    public Segment[] RoundedSegments = [];
     public bool Ssselected = false;
     public List<Anchor> Anchors = [];
     public bool Finished = false;
-    public bool Negative = false; 
+    public bool Negative = false;
 
     public void ReverseShape()
     {
@@ -468,13 +484,14 @@ public class Shape
         Anchors.Reverse();
     }
 
-    public SKPath ToSKPath()
+    public virtual SKPath ToSKPath()
     {
         SKPath retPath = new();
         retPath.MoveTo(Anchors[0].Position);
-        foreach (Anchor a in Anchors)
+        Segment[] segs = SegList();
+        foreach (Segment s in segs)
         {
-            retPath.CubicTo(a.OutHandle.Position(), a.NextAnchor().InHandle.Position(), a.NextAnchor().Position);
+            retPath.CubicTo(s.InHandle, s.OutHandle, s.OutPoint);
         }
         retPath.Close();
         return retPath;
@@ -498,9 +515,14 @@ public class Shape
         }
     }
 
+    public void AnchorsChanged()
+    {
+        AnchorsCached = false;
+    }
+
     public override string ToString()
     {
-        string ts = "[";
+        string ts = "bez: [";
         int counter = 0;
         foreach (var a in Anchors)
         {
@@ -565,10 +587,13 @@ public class Shape
         }
     }
 
-    public void AddAnchor(V2 pos, bool makeCubic = false, Anchor? insertAfter = null)
+    public virtual void AddAnchor(V2 pos, bool makeCubic = false, Anchor? insertAfter = null, bool broken = false)
     {
         Anchor a = new();
         a.Init(pos, this);
+        a.Broken = broken;
+        AnchorsChanged();
+        a.intersectionRounding = 1 + Anchors.Count * 20; 
 
         // early out
         if (Anchors.Count > 0 && Anchors[^1].Position == a.Position)
@@ -615,10 +640,17 @@ public class Shape
         // MakeClockwise();
         Finished = true;
         AlignAllHandles();
+        AnchorsChanged();
     }
 
-    public Segment[] SegList()
+    public virtual Segment[] SegList(bool rounded = false)
     {
+        if (AnchorsCached)
+        {
+            if (rounded) return RoundedSegments;
+            else         return Segments;
+        }
+
         Segment[] segments = new Segment[Anchors.Count];
         for (int i = 0; i < Anchors.Count; i += 1)
         {
@@ -630,51 +662,24 @@ public class Shape
             Segment s = new(Anchors[i].Position, Anchors[i].OutHandle.Position(), Anchors[after].InHandle.Position(), Anchors[after].Position);
             segments[i] = s;
         }
-        return segments;
+
+        Segment[] roundedSegments = Shapes.RoundCornersSegments(segments, CornerRoundings());
+        Segments = segments;
+        RoundedSegments = roundedSegments;
+        AnchorsCached = true;
+
+        if (rounded) return roundedSegments;
+        else return segments;
     }
 
-    /// <summary>Like 'Segments' but flattened</summary><returns></returns>
-    public int[] FlatI()
+    public virtual int[] CornerRoundings()
     {
-        int[] flatPositions = [];
-        for (int i = 0; i < Anchors.Count; i += 1)
+        int[] cornerRoundings = [];
+        foreach (Anchor a in Anchors)
         {
-            int after = i + 1;
-            if (i == Anchors.Count - 1)
-            {
-                i = 0;
-            }
-            V2 start = Anchors[i].Position;
-            V2 h1 = Anchors[i].OutHandle.Position();
-            V2 h2 = Anchors[i].InHandle.Position();
-            V2 end = Anchors[after].Position;
-            flatPositions = [.. flatPositions, .. (int[])[(int)start.X, (int)start.Y, (int)h1.X, (int)h1.Y, (int)h2.X, (int)h2.Y, (int)end.X, (int)end.Y]];
+            cornerRoundings = [.. cornerRoundings, a.anchorRounding];
         }
-        return flatPositions;
-    }
-
-    public float[] Flat()
-    {
-        float[] flatPositions = [];
-        for (int i = 0; i < Anchors.Count; i += 1)
-        {
-            int after = i + 1;
-            if (i == Anchors.Count - 1)
-            {
-                i = 0;
-            }
-            V2 start = Anchors[i].Position;
-            V2 h1 = Anchors[i].OutHandle.Position();
-            V2 h2 = Anchors[i].InHandle.Position();
-            V2 end = Anchors[after].Position;
-            flatPositions = [.. flatPositions, .. (float[])[start.X, start.Y, h1.X, h1.Y, h2.X, h2.Y, end.X, end.Y]];
-        }
-        return flatPositions;
-    }
-
-    public float[] VectorBoolean(Shape shapeB, bool negative)
-    {
-        return Player.BetterVectorBoolean(FlatI(), shapeB.FlatI(), negative);
+        return cornerRoundings;
     }
 
     public string GetLabel(Anchor a)
@@ -689,92 +694,51 @@ public class Shape
         int index = s[0] - 97;
         return Anchors[index];
    }
-
-    // public Segment[] RoundSelf(bool rounded = true, int cornerSize = 80, float roundness = 1.0f)
-    // {
-    //     return RoundCornersSegments(SegList(), rounded, cornerSize, roundness);
-    // }
-
-    // public static Segment[] RoundCornersSegments(Segment[] originalShape, bool rounded = true, int cornerSize = 80, float roundness = 1.0f)
-    // {
-    //     roundness *= 0.7f;
-    //     List<Segment> roundedSegments = [];
-    //     List<(Segment, V2, V2)> trimmedSegList = [];
-    //     List<float> cornerSizeList = [];
-
-    //     {
-    //         float cornerSizeToUse = cornerSize;
-    //         float segLength = originalShape[0].LengthCubic();
-    //         if (segLength < 2 * cornerSize)
-    //         {
-    //             cornerSizeToUse = segLength / 2.1f;
-    //         }
-    //         cornerSizeList.Add(cornerSizeToUse);
-    //         for (int i = 1; i < originalShape.Length; i++)
-    //         {
-    //             cornerSizeToUse = cornerSize;
-    //             segLength = originalShape[i].LengthCubic();
-    //             if (segLength < 2 * cornerSize)
-    //             {
-    //                 cornerSizeToUse = segLength / 2.1f;
-    //             }
-    //             cornerSizeList.Add(cornerSizeToUse);
-    //         }
-    //     }
-
-    //     for (int i = 0; i < originalShape.Length; i++)
-    //     {
-    //         Segment seg = originalShape[i];
-    //         float amountToTrim = cornerSizeList[i] / seg.LengthCubic();
-    //         trimmedSegList.Add(seg.TrimmedTangentAndPos(amountToTrim, 1.0f - amountToTrim));
-    //     }
-
-    //     if (trimmedSegList.Count == 0)
-    //     {
-    //         return originalShape;
-    //     }
-    //     int index = 0;
-    //     foreach ((Segment trimmed, V2 tanPos, V2 tanAngle) in trimmedSegList)
-    //     {
-    //         V2 tanPos2;
-    //         Segment trimmed2;
-    //         float r;
-    //         if (index < trimmedSegList.Count - 1)
-    //         {
-    //             trimmed2 = trimmedSegList[index + 1].Item1;
-    //             tanPos2 = trimmedSegList[index + 1].Item2;
-    //             r = cornerSizeList[index + 1];
-    //         }
-    //         else
-    //         {
-    //             trimmed2 = trimmedSegList[0].Item1;
-    //             tanPos2 = trimmedSegList[0].Item2;
-    //             r = cornerSizeList[0];
-    //         }
-    //         roundedSegments.Add(trimmed);
-    //         if (rounded)
-    //         {
-    //             V2 newPos1 = trimmed.OutPoint + V2.Normalize(tanPos) * roundness * cornerSizeList[index];
-    //             V2 newPos2 = trimmed2.InPoint - V2.Normalize(tanPos2) * roundness * r;
-    //             roundedSegments.Add(new(trimmed.OutPoint, newPos1, newPos2, trimmed2.InPoint));
-    //         }
-    //         else
-    //         {
-    //             roundedSegments.Add(new(trimmed.OutPoint, trimmed.OutPoint, trimmed2.InPoint, trimmed2.InPoint));
-    //         }
-    //         index += 1;
-    //     }
-    //     return roundedSegments.ToArray();
-    // }
 }
 
+public class HyperbezierShape: Shape
+{
+    public int[] BeziersPerAnchorPair = [];
+    public override Segment[] SegList(bool rounded = false)
+    {
+        if (AnchorsCached)
+        {
+            if (rounded) return RoundedSegments;
+            else         return Segments;
+        }
+
+        (Segment[], int[]) segmentsAndAmounts = Player.AnchorsToHyperBeziers(Anchors);
+        BeziersPerAnchorPair = segmentsAndAmounts.Item2;
+
+        Segment[] roundedSegments = Shapes.RoundCornersSegments(segmentsAndAmounts.Item1, CornerRoundings(), BeziersPerAnchorPair);
+        Segments = segmentsAndAmounts.Item1;
+        RoundedSegments = roundedSegments;
+        AnchorsCached = true;
+        if (rounded) return roundedSegments;
+        else return segmentsAndAmounts.Item1;
+    }
+
+    public override string ToString()
+    {
+        string ts = "hyperbez: [";
+        int counter = 0;
+        foreach (var a in Anchors)
+        {
+            ts += counter + ": " + a.ToString() + " ";
+            counter += 1;
+        }
+        ts += "]";
+        return ts;
+    }
+}
 
 public static class Shapes
 {
     public static List<Shape> S = [];
     public static Shape NewShape()
     {
-        Shape s = new();
+        Shape s = new HyperbezierShape();
+        // Shape s = new();
         S.Add(s);
         return s;
     }
@@ -882,6 +846,24 @@ public static class Shapes
         return lot;
     }
 
+    public static Dictionary<V2, int> GetRoundingPerIntersection(Shape shape, Segment[][] segLists)
+    {
+        Dictionary<V2, int> roundingDict = [];
+        List<(int roundedShapeBezIndex, V2)> intersections = [];
+        foreach (Segment[] island in segLists)
+        {
+            intersections.AddRange(Player.ShapeShapeIntersections(island, shape.SegList(true)));
+        }
+
+        foreach ((int bezIndex, V2 intersectCoord) in intersections)
+        {
+            // bezindex belongs to anchor TODO
+            Anchor anchorThatIntersectingBezierBelongsTo = shape.Anchors[2];
+            roundingDict[intersectCoord] = anchorThatIntersectingBezierBelongsTo.intersectionRounding;
+        }
+        return roundingDict;
+    }
+
     public static Segment[][] MergeShapesSkia()
     {
         // beoogd is shape -> rounded shape -> merge w stack -> round merges - |
@@ -889,55 +871,32 @@ public static class Shapes
         // voor elk segment van toMerge wordt gecheckt waar dit seg intersect met elke contour van de stack
         // schrijf coordinaten weg naar dict als keys met segRound als value
         // ga na het mergen alle punten langs, check of ze in de buurt liggen van coords in de dict, zoja round het met de segRound value
+        Segment[] firstShapeRounded = [];
+        if (S[0].Finished) firstShapeRounded = S[0].SegList(true);
 
-        if (S.Count < 2)
-        {
-            if (S[0].Finished) return [S[0].SegList()];
-            else return [];
-        }
-        int[] csList = [];
-        for (int i = 0;  i < S[0].Anchors.Count; i++)
-        {
-                csList = [.. csList, 8];
-        }
+        if (S.Count < 2) return firstShapeRounded.Length > 0 ? [firstShapeRounded] : [];
 
-        SKPath currentSKPath = SegmentListsToSKPath([RoundCornersSegments(S[0].SegList(), csList)]);
+        SKPath currentSKPath = SegmentListsToSKPath([firstShapeRounded]);
+        Segment[][] currentSegLists = SKPathToSegmentLists(currentSKPath);
         foreach (Shape shape in S[1..])
         {
+            if (!shape.Finished) continue;
             SKPathOp currentOperation = shape.Negative ? SKPathOp.Difference : SKPathOp.Union;
-            csList = [];
-            for (int i = 0;  i < shape.Anchors.Count; i++)
-            {
-                int r = 0;
-                if (i % 2 == 0) r = 20;
-                csList = [.. csList, r];
-            }
-            Segment[] nextShapeRounded = RoundCornersSegments(shape.SegList(), csList);
-            Segment[][] currentSegLists = SKPathToSegmentLists(currentSKPath);
-            List<(int, V2)> inters = [];
-            foreach (Segment[] island in currentSegLists)
-            {
-                inters.AddRange(Player.ShapeShapeIntersections(island, nextShapeRounded));
-            }
+            Segment[] roundedShape = shape.SegList(true);
 
-            Dictionary<int, float> csDict = [];
-            Dictionary<V2, int> intersectionDict = [];
-            for (int i = 0;  i < inters.Count; i++)
-            {
-                csDict[inters[i].Item1] = 30;
-                intersectionDict[inters[i].Item2] = inters[i].Item1;
-            }
+            Dictionary<V2, int> intersectionDict = GetRoundingPerIntersection(shape, currentSegLists);
 
-            SKPath pathToMerge = SegmentListsToSKPath([nextShapeRounded]);
+            SKPath pathToMerge = SegmentListsToSKPath([roundedShape]);
             currentSKPath = currentSKPath.Op(pathToMerge, currentOperation);
 
             currentSegLists = SKPathToSegmentLists(currentSKPath);
             for (int i = 0; i < currentSegLists.Length; i++)
             {
-                currentSegLists[i] = RoundIntersections(currentSegLists[i], csDict, intersectionDict);
+                currentSegLists[i] = RoundIntersections(currentSegLists[i], intersectionDict);
             }
             currentSKPath = SegmentListsToSKPath(currentSegLists);
         }
+        return SKPathToSegmentLists(currentSKPath);
 
         Segment[][] segLists = [];
         List<SKPath> splitPaths = SplitSKPathToContours(currentSKPath);
@@ -961,6 +920,7 @@ public static class Shapes
         }
         return segLists;
     }
+
 
     public static List<SKPath> SplitSKPathToContours(SKPath path)
     {
@@ -1063,102 +1023,183 @@ public static class Shapes
     }
 
 
-    public static Segment[] RoundIntersections(Segment[] originalShape, Dictionary<int, float> cornerSizeDict, Dictionary<V2, int> intersections)
+    public static Segment[] RoundIntersections(Segment[] originalShape, Dictionary<V2, int> roundingPerIntersections)
     {
         int[] cornerSizes = [];
-        for (int currentIndex = 0; currentIndex < originalShape.Length; currentIndex++)
+        int[] beziersToSkip = [];
+        int beziersBetween = 0;
+        Segment firstSegment = originalShape[0];
+        foreach ((V2 intersection, int rounding) in roundingPerIntersections)
         {
-            int cornerSize = 0;
-            V2 currentAnchor = originalShape[currentIndex].InPoint;
-            foreach (V2 inter in intersections.Keys)
+            if (V2.Distance(firstSegment.InPoint, intersection) < 5)
             {
-                if (V2.Distance(inter, currentAnchor) < 5)
+                cornerSizes = [.. cornerSizes, rounding];
+                break;
+            }
+        }
+        if (cornerSizes.Length == 0) cornerSizes = [0];
+        beziersBetween += 1;
+
+        for (int currentIndex = 1; currentIndex < originalShape.Length; currentIndex++)
+        {
+            Segment currentSegment = originalShape[currentIndex];
+            foreach ((V2 intersection, int rounding) in roundingPerIntersections)
+            {
+                if (V2.Distance(currentSegment.InPoint, intersection) < 5)
                 {
-                    cornerSize = (int)cornerSizeDict[intersections[inter]];
+                    beziersToSkip = [.. beziersToSkip, beziersBetween];
+                    cornerSizes = [.. cornerSizes, rounding];
+                    beziersBetween = 0;
                     break;
                 }
             }
-            cornerSizes = [.. cornerSizes, cornerSize];
+            beziersBetween += 1;
         }
-        return RoundCornersSegments(originalShape, cornerSizes);
+        beziersToSkip = [.. beziersToSkip, beziersBetween];
+        return RoundCornersSegments(originalShape, cornerSizes, beziersToSkip);
+    }
+
+    public static (Segment[], V2, V2) TrimmedSegmentGroup(Segment[] segmentGroup, float inLength, float outLength)
+    { 
+        V2 inTan = V2.Zero;
+        V2 outTan = V2.Zero;
+        List<Segment> trimmedFromFront = [];
+        List<Segment> trimmedFromBack = [];
+        float trimmedSoFar = 0;
+        for (int index = 0; index < segmentGroup.Length; index++)
+        {
+            Segment currentSeg = segmentGroup[index];
+            float segLength = currentSeg.LengthCubic();
+            if (trimmedSoFar + segLength > inLength)
+            {
+                float remaining = inLength - trimmedSoFar;
+                (Segment trimmed, inTan, V2 _) = currentSeg.TrimmedTangentAndPos(remaining / segLength, 1.0f);
+                trimmedFromFront.Add(trimmed);
+                trimmedFromFront.AddRange(segmentGroup[(index+1)..]);
+                break;
+            }
+            trimmedSoFar += segLength;
+        }
+        trimmedSoFar = 0;
+        trimmedFromFront.Reverse();
+        for (int index = 0; index < trimmedFromFront.Count; index++)
+        {
+            Segment currentSeg = trimmedFromFront[index];
+            float segLength = currentSeg.LengthCubic();
+            if (trimmedSoFar + segLength > outLength)
+            {
+                float remaining = outLength - trimmedSoFar;
+                (Segment trimmed, V2 _, outTan) = currentSeg.TrimmedTangentAndPos(0.0f, 1.0f - (remaining / segLength));
+                trimmedFromBack.Add(trimmed);
+                trimmedFromBack.AddRange(trimmedFromFront[(index+1)..]);
+                break;
+            }
+            trimmedSoFar += segLength;
+        }
+        trimmedFromBack.Reverse();
+
+        return ([.. trimmedFromBack], inTan, outTan);
+    }
+
+    public static float LengthOfSegmentGroup(Segment[] segmentGroup)
+    {
+        float totalLength = 0;
+        foreach (Segment seg in segmentGroup)
+        {
+            totalLength += seg.LengthCubic();
+        }
+        return totalLength;
+    }
+
+    public static (float start, float end) GetCornerSizes(float length, float cornerSizeIn, float cornerSizeOut)
+    {
+        float start = 0;
+        float end = 0;
+        float margin = length / 20;
+        float half = length / 2;
+        start = MathF.Min(cornerSizeIn, MathF.Max(half - margin, length - (cornerSizeOut + margin)));
+        end = MathF.Min(cornerSizeOut, MathF.Max(half - margin, length - (cornerSizeIn + margin)));
+        return (start, end);
     }
 
 
-    public static Segment[] RoundCornersSegments(Segment[] originalShape, int[] cornerSizes, bool rounded = true, float roundness = 1.0f)
+    public static Segment[] RoundCornersSegments(Segment[] originalShape, int[] cornerSizes, int[]? beziersToSkip = null, bool rounded = true)
     {
-        roundness *= 0.7f;
+        float roundness = 0.7f;
         const float MIN_ANGLE = 2f * (MathF.PI / 180f);
         const float MAX_ANGLE = 178f * (MathF.PI / 180f);
         float minCornerSize = 3f;
 
-        List<(Segment, V2, V2)> trimmedSegList = [];
-        List<(float,float)> cornerSizeList = [];
+        List<(Segment[] segments, V2 inTan, V2 outTan)> trimmedAndTangentList = [];
+        List<(float inCorner, float outCorner)> cornerSizeList = [];
+        int currentSegIndex = 0;
+
+        // loop trough all segments, trim appropriately
         for (int currentIndex = 0; currentIndex < cornerSizes.Length; currentIndex++)
         {
             int nextIndex = currentIndex == cornerSizes.Length - 1 ? 0 : currentIndex + 1;
-            Segment seg = originalShape[currentIndex];
-            float segLength = seg.LengthCubic();
-            float halfLength = segLength / 2f;
+            float startSize = cornerSizes[currentIndex];
+            float endSize = cornerSizes[nextIndex];
+            int SBCount = beziersToSkip != null ? beziersToSkip[currentIndex] : 1;
+            Segment[] segsBetween = originalShape[currentSegIndex..(currentSegIndex + SBCount)];
 
-            float cornerSizeToUseStart = cornerSizes[currentIndex] <= halfLength ? cornerSizes[currentIndex] : halfLength * 0.90f;
-            float cornerSizeToUseEnd   = cornerSizes[nextIndex]    <= halfLength ? cornerSizes[nextIndex]    : halfLength * 0.90f;
-            if (cornerSizeToUseEnd == 0 && cornerSizeToUseStart == 0)
+            if (startSize == 0 && endSize == 0)
             {
+                trimmedAndTangentList.Add((segsBetween, V2.Zero, V2.Zero));
                 cornerSizeList.Add((0, 0));
-                Segment untrimmed = originalShape[currentIndex];
-                trimmedSegList.Add((untrimmed,untrimmed.TangentAt(0), untrimmed.TangentAt(1)));
                 continue;
             }
 
-            float startTrim = MathF.Min((segLength > 1e-4f) ? cornerSizeToUseStart / segLength : 0f, 0.49f);
-            float endTrim = MathF.Min((segLength > 1e-4f) ? cornerSizeToUseEnd / segLength : 0f, 0.49f);
-            if (!float.IsFinite(startTrim)) startTrim = 0f;
-            if (!float.IsFinite(endTrim)) endTrim = 0f;
+            float lengthBetween = LengthOfSegmentGroup(segsBetween);
+            (float inCorner, float outCorner) = GetCornerSizes(lengthBetween, startSize, endSize);
+            trimmedAndTangentList.Add(TrimmedSegmentGroup(segsBetween, inCorner, outCorner));
 
-            cornerSizeList.Add((cornerSizeToUseStart, cornerSizeToUseEnd));
-            trimmedSegList.Add(seg.TrimmedTangentAndPos(startTrim, 1.0f - endTrim));
+            cornerSizeList.Add((inCorner, outCorner));
+            currentSegIndex += SBCount;
         }
 
         List<Segment> roundedSegments = [];
-        for (int currentIndex = 0;  currentIndex < trimmedSegList.Count;  currentIndex++)
+        for (int currentIndex = 0; currentIndex < trimmedAndTangentList.Count; currentIndex++)
         {
-            if (cornerSizeList[currentIndex].Item1 == 0 && cornerSizeList[currentIndex].Item2 == 0)
+            int previousIndex = currentIndex == 0 ? trimmedAndTangentList.Count - 1 : currentIndex - 1;
+            Segment[] trimmed = trimmedAndTangentList[currentIndex].segments;
+            Segment[] prevTrimmed = trimmedAndTangentList[previousIndex].segments;
+            var currentCorners = cornerSizeList[currentIndex];
+            var previousCorners = cornerSizeList[previousIndex];
+            V2 startTan = trimmedAndTangentList[currentIndex].inTan;
+            V2 endTan = trimmedAndTangentList[currentIndex].outTan;
+            V2 prevEndTan = trimmedAndTangentList[previousIndex].outTan;
+
+            if (currentCorners.inCorner == 0 && previousCorners.outCorner == 0)
             {
-                roundedSegments.Add(originalShape[currentIndex]);
+                roundedSegments.AddRange(trimmed);
                 continue;
             }
-            int previousIndex = currentIndex == 0 ? originalShape.Length - 1 : currentIndex - 1;
 
-            Segment trimmed = trimmedSegList[currentIndex].Item1;
-            Segment previousTrimmed = trimmedSegList[previousIndex].Item1;
-
-            V2 startTan = trimmedSegList[currentIndex].Item2;
-            V2 endTan = trimmedSegList[currentIndex].Item3;
-            V2 previousEndTan = trimmedSegList[previousIndex].Item3;
-
-            float angle = Mathf.Acos(Math.Clamp(V2.Dot(previousEndTan, -startTan), -1f, 1f));
+            (V2 inPoint, V2 outPoint) = (prevTrimmed.Last().OutPoint, trimmed.First().InPoint);
+            float angle = Mathf.Acos(Math.Clamp(V2.Dot(prevEndTan, -startTan), -1f, 1f));
             if (
                 rounded
-                && cornerSizeList[currentIndex].Item1 >= minCornerSize
+                && cornerSizeList[currentIndex].inCorner >= minCornerSize
                 && angle >= MIN_ANGLE
                 && angle <= MAX_ANGLE
                 && endTan != V2.Zero
                 && startTan != V2.Zero
             )
             {
-                V2 inHandlePos = previousTrimmed.OutPoint + previousEndTan * (roundness * cornerSizeList[previousIndex].Item2);
-                V2 outHandlePos = trimmed.InPoint - startTan * (roundness * cornerSizeList[currentIndex].Item1);
-                roundedSegments.Add(new(previousTrimmed.OutPoint, inHandlePos, outHandlePos, trimmed.InPoint));
+                V2 inHandlePos  = inPoint  + prevEndTan * (roundness * previousCorners.outCorner);
+                V2 outHandlePos = outPoint - startTan   * (roundness * currentCorners.inCorner);
+                roundedSegments.Add(new(inPoint, inHandlePos, outHandlePos, outPoint));
             }
             else
             {
-                roundedSegments.Add(new(previousTrimmed.OutPoint, previousTrimmed.OutPoint, trimmed.InPoint, trimmed.InPoint));
+                roundedSegments.Add(
+                    new(inPoint, inPoint, outPoint, outPoint));
             }
 
-            roundedSegments.Add(trimmed);
+            roundedSegments.AddRange(trimmed);
         }
-        return roundedSegments.ToArray();
+        return [.. roundedSegments];
     }
-
 
 }

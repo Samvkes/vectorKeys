@@ -79,6 +79,9 @@ het probleem is vormen die een punt delen. maar niet altijd.
 [] copy / paste (geselecteerde punten in een nieuwe vorm plakken?)
 [] snel handles plaatsen
 
+[] maak een volledige lijst van alles dat je met toetsen moet kunnen doen
+[] vind een goeie workflow voor numerieke aanpassingen: rotate, scale, adjust corners and transitions
+[] goeie manier van toevoegen en aanpassen handles, modes laten zitten?
 
 [] intermezzo
     [] visualisaties beter
@@ -142,3 +145,7 @@ voor rounding
     bij rounding is alles smooth verbonden, lengte van nieuwe handles nog uitzoeken, richting is hetzelfde als van handles van midden segmenten
     misschien aanpassen zodat altijd 2 handles
     misschien nieuwe class van 'simpele curves' waar alles naar gebakken wordt voor de rounding of boolean stap.
+
+
+11-26: rounding cachen
+    merging async (na 500ms geen aanpassing)

@@ -12,9 +12,11 @@ mod parsing {
 	pub(crate) mod path_command;
 	pub(crate) mod path_data;
 }
+use kurbo::Point;
 pub(crate) use parsing::*;
 pub(crate) use path::*;
 pub(crate) use util::*;
+use kurbo;
 
 pub use intersection_path_segment::path_segment_intersection;
 #[cfg(feature = "parsing")]
@@ -49,6 +51,7 @@ use godot::prelude::*;
 use godot::classes::Sprite2D;
 use godot::classes::ISprite2D;
 use std::fmt::Debug;
+use spline;
 
 // use bezier_rs::{ManipulatorGroup, Identifier};
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -304,6 +307,7 @@ impl Player {
         let a = bez.evaluate(TValue::Parametric(amount));
         return [a[0], a[1]];
     }
+
 
 
     #[func]
@@ -712,7 +716,15 @@ impl Player {
         let bezier_path2 = array_to_subpath(shape2.clone());
         // let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
 
-        let inters: Vec<(usize, f64)> = bezier_path2.subpath_intersections(&bezier_path,Some(5.1),Some(5.0));
+        let inters: Vec<(usize, f64)> = bezier_path2.subpath_intersections(&bezier_path,Some(0.01),Some(0.1));
+        for i in 0..bezier_path.len_segments()
+        {
+            let aj = bezier_path.get_segment(i).unwrap();
+            let ps = aj.get_points();
+            let inter = bezier_path2.intersections(&bezier_path.get_segment(i).unwrap(), Some(0.1), Some(0.1));
+
+        }
+
         for inter in inters{
             let intersection_coords: DVec2 = bezier_path2.get_segment(inter.0).unwrap().evaluate(TValue::Parametric(inter.1));
             return_vec.push(inter.0 as f64);
@@ -946,5 +958,126 @@ impl Player {
         return_vec
     }
 
+    #[func]
+    fn hyper_bezier_handles(&mut self, start: Vector2, in_points:Array<f64>) -> Vec<f64> {
+        // inpoints is a sequence of points defining 
+        // on-curve point in (x,y), 
+        // and 
+        // handle in  (x,y) or (-9999,-9999)
+        // handle out (x,y) or (-9999,-9999)
+        // on-curve point out (x,y)
+        // either 1 or 0 to indicate corner on curve points. 
+
+        // ret_beziers is a list of bezier in-point, in-handle, out-handle, out-point +
+        // how many beziers are created for each hyperbezier
+        let mut result = Vec::new();
+        if in_points.len() < 2 {
+            return result;
+        }
+
+        // 1. Build the spec: one MoveTo, then SplineTo with auto handles.
+        let mut spec = spline::SplineSpec::new();
+        let start: kurbo::Point = kurbo::Point::new(start.x as f64, start.y as f64);
+        // godot_print!("rust: start: {start}");
+        spec.move_to(start);
+        for i in 0..(in_points.len() / 7) {
+            let p1: Point = Point::new(in_points.at(i*7 + 0), in_points.at(i*7 + 1));
+            let p2: Point = Point::new(in_points.at(i*7 + 2), in_points.at(i*7 + 3));
+            let p3: Point = Point::new(in_points.at(i*7 + 4), in_points.at(i*7 + 5));
+            // godot_print!("rust: {p3}");
+            let mut is_smooth: bool = true;
+            if in_points.at(i*7 + 6) as i8 == 1 {
+               is_smooth = false; 
+            }
+            spec.spline_to(None, None, p3, is_smooth);
+        } 
+        spec.close();
+
+        // 2. Solve the spline. This:
+        //    - Creates HyperBezier segments
+        //    - Solves for node angles and tensions
+        let spline = spec.solve();
+
+        // 3. Flatten to cubic Bézier segments: [p0, p1, p2, p3].
+        for seg in spline.segments() {
+            let p00 = seg.p0;
+            let p01 = seg.p1;
+            let p02 = seg.p2;
+            let p03 = seg.p3;
+            result.extend([p00.x, p00.y, p01.x,p01.y, p02.x,p02.y,p03.x,p03.y]);
+        }
+    return result;
+    }
+
+    #[func]
+    fn hyper_bezier(&mut self, start: Vector2, in_points:Array<f64>) -> Vec<f64> {
+        // inpoints is a sequence of points defining 
+        // on-curve point in (x,y), 
+        // and 
+        // handle in  (x,y) or (-9999,-9999)
+        // handle out (x,y) or (-9999,-9999)
+        // on-curve point out (x,y)
+        // either 1 or 0 to indicate corner on curve points. 
+
+        // ret_beziers is a list of bezier in-point, in-handle, out-handle, out-point +
+        // how many beziers are created for each hyperbezier
+        let mut result = Vec::new();
+        if in_points.len() < 2 {
+            return result;
+        }
+
+        // 1. Build the spec: one MoveTo, then SplineTo with auto handles.
+        let mut spec = spline::SplineSpec::new();
+        let start: kurbo::Point = kurbo::Point::new(start.x as f64, start.y as f64);
+        // godot_print!("rust: start: {start}");
+        spec.move_to(start);
+        for i in 0..(in_points.len() / 7) {
+            let p1: Point = Point::new(in_points.at(i*7 + 0), in_points.at(i*7 + 1));
+            let p2: Point = Point::new(in_points.at(i*7 + 2), in_points.at(i*7 + 3));
+            let p3: Point = Point::new(in_points.at(i*7 + 4), in_points.at(i*7 + 5));
+            // godot_print!("rust: {p3}");
+            let mut is_smooth: bool = true;
+            if in_points.at(i*7 + 6) as i8 == 1 {
+               is_smooth = false; 
+            }
+            spec.spline_to(None, None, p3, is_smooth);
+            // spec.spline_to(Some(p1), Some(p2), p3, is_smooth);
+        } 
+        spec.close();
+
+        // 2. Solve the spline. This:
+        //    - Creates HyperBezier segments
+        //    - Solves for node angles and tensions
+        let spline = spec.solve();
+
+        // 3. Flatten to cubic Bézier segments: [p0, p1, p2, p3].
+        for seg in spline.segments() {
+            let p00 = seg.p0;
+            let p01 = seg.p1;
+            let p02 = seg.p2;
+            let p03 = seg.p3;
+            // godot_print!("rust: {p00} {p01} {p02} {p03}");
+            let mut p0 = seg.p0;
+            let mut element_counter: f64 = 0.0;
+            for el in seg.render_elements() {
+                match el {
+                    kurbo::PathEl::CurveTo(p1, p2, p3) => {
+                        result.extend([p0.x, p0.y, p1.x,p1.y, p2.x,p2.y,p3.x,p3.y]);
+                        p0 = p3;
+                    }
+                    kurbo::PathEl::LineTo(p) => {
+                        // Optionally turn lines into degenerate cubics:
+                        result.extend([p0.x, p0.y, p.x,p.y, p.x,p.y,p.x,p.y]);
+                        p0 = p;
+                    }
+                    _ => {}
+                }
+                element_counter += 1.0;
+            }
+            result.extend([-9999.0, element_counter]);
+    }
+
+    return result;
+    }
 }
 

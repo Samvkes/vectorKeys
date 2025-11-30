@@ -39,12 +39,14 @@ dependencies = [
  "bezier-rs",
  "glam 0.28.0",
  "godot",
+ "kurbo",
  "lyon_geom",
  "regex",
  "roots",
  "rustc-hash",
  "slotmap",
  "smallvec",
+ "spline",
 ]
 
 [[package]]
@@ -210,6 +212,15 @@ checksum = "1cfaf33c695fc6e08064efbc1f72ec937429614f25eef83af942d0e227c3a28f"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "kurbo"
+version = "0.9.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd85a5776cd9500c2e2059c8c76c3b01528566b7fcbaf8098b55a33fc298849b"
+dependencies = [
+ "arrayvec",
 ]
 
 [[package]]
@@ -389,6 +400,13 @@ name = "smallvec"
 version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
+
+[[package]]
+name = "spline"
+version = "0.3.0"
+dependencies = [
+ "kurbo",
+]
 
 [[package]]
 name = "syn"

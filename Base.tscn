@@ -930,9 +930,6 @@ offset_right = 111.0
 offset_bottom = 164.0
 color = Color(0.789732, 0.262603, 0.108194, 0.223529)
 
-[node name="Player" type="Player" parent="."]
-script = ExtResource("2_nopgj")
-
 [node name="Tex" type="Sprite2D" parent="."]
 z_index = -1
 centered = false
@@ -998,3 +995,6 @@ file_mode = 0
 access = 2
 filters = PackedStringArray("*.seraf")
 use_native_dialog = true
+
+[node name="Player" type="Player" parent="."]
+script = ExtResource("2_nopgj")

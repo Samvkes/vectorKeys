@@ -5,6 +5,7 @@ using Godot.Collections;
 using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Vectordrawing;
 
@@ -59,7 +60,7 @@ public partial class Player : Node
         return (bool)pl.Call("are_shapes_overlapping", aa,bb);
     }
 
-    public static List<(int,V2)> ShapeShapeIntersections(Segment[] segList, Segment[] segList2)
+    public static List<(int whichBezierFromSL2, V2)> ShapeShapeIntersections(Segment[] segList, Segment[] segList2)
     {
         Array<float> floatAr = new();
         foreach (Segment part in segList)
@@ -72,13 +73,58 @@ public partial class Player : Node
             floatAr2.AddRange(part.Flat());
         }
         // float[] f = s.Flat();
-        float[] a = (float[])pl.Call("shape_shape_intersections", floatAr, floatAr2);
+        float[] outp = (float[])pl.Call("shape_shape_intersections", floatAr, floatAr2);
         List<(int, V2)> outAr = [];
-        for (int i = 0; i < a.Length / 3; i++)
+        for (int i = 0; i < outp.Length / 3; i++)
         {
-            outAr.Add(((int)a[i*3],new(a[i*3 + 1],a[i*3 + 2])));
+            outAr.Add((
+                  (int)outp[i * 3]
+                , new(outp[i * 3 + 1], outp[i * 3 + 2]))
+                );
         }
         return outAr;
+    }
+
+    public static (Segment[], int[]) AnchorsToHyperBeziers(List<Anchor> anchors)
+    {
+        (Segment[], int[]) segs = ([],[]);
+        Vector2 start = Fun.Vtv(anchors[0].Position);
+        Array<float> inPoints = [];
+        foreach (Anchor a in anchors)
+        {
+            Anchor next = a.NextAnchor();
+            V2 inh = a.OutHandle.Position();
+            V2 outh = next.InHandle.Position();
+            
+            inPoints = [.. inPoints, inh.X, inh.Y, outh.X, outh.Y,next.Position.X, next.Position.Y, (next.Broken ? 1 : 0)];
+        }
+
+        float[] hb = (float[])pl.Call("hyper_bezier", start, inPoints);
+
+        // for (int i = 0; i < hb.Length; i++)
+        int counter = 0;
+        while (counter < hb.Length)
+        {
+            int i = counter;
+            if (hb[i] == -9999)
+            {
+                int amount = (int)hb[i+1];
+                segs.Item2 = [.. segs.Item2, amount];
+                counter += 2;
+            }
+            else
+            {
+                Segment seg = new(
+                    new(hb[i + 0], hb[i + 1]),
+                    new(hb[i + 2], hb[i + 3]),
+                    new(hb[i + 4], hb[i + 5]),
+                    new(hb[i + 6], hb[i + 7])
+                );
+                segs.Item1 = [.. segs.Item1, seg];
+                counter += 8;    
+            }
+        }
+        return segs;
     }
 
     public static float[] SegmentShapeIntersections(Segment[] segList, Segment s)

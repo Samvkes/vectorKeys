@@ -99,6 +99,7 @@ public partial class Base : Node2D
     static Focus CurrentFocus = Focus.Anchor;
     Timer UndoTimer = new();
     Timer MovementTimer = new();
+    Timer FpsTimer = new();
     Sprite2D Cursor = null!;
     Sprite2D CursorShadow = null!;
     Label CursorLabel = null!;
@@ -119,6 +120,7 @@ public partial class Base : Node2D
         AddChild(Manager);
         AddChild(UndoTimer);
         AddChild(MovementTimer);
+        AddChild(FpsTimer);
 
         MovementTimer.WaitTime = 0.01f;
         MovementTimer.OneShot = true;
@@ -127,6 +129,10 @@ public partial class Base : Node2D
         UndoTimer.WaitTime = 0.5f;
         UndoTimer.OneShot = true;
         UndoTimer.Timeout += DoUndoRedo;
+
+        FpsTimer.WaitTime = 0.5f;
+        FpsTimer.OneShot = true;
+        FpsTimer.Start();
 
         Tex = GetParent().GetNode<Sprite2D>("Tex");
         Background = GetParent().GetNode<ColorRect>("Background");
@@ -153,16 +159,20 @@ public partial class Base : Node2D
 
         if (true)
         {
-            if (DeltaTimeList.Count() > 3)
+            if (DeltaTimeList.Count() > 30)
                 DeltaTimeList.RemoveAt(0);
             DeltaTimeList.Add(delta);
-            float totalDelta = 0f;
-            float totalPoints = 0f;
-            foreach (float t in DeltaTimeList)
-                totalDelta += t;
-            FpsLabel.Text = Mathf.Round(1.0 / (totalDelta / DeltaTimeList.Count())).ToString() + " : " + totalPoints.ToString();
-            foreach (Shape s in Shapes.S)
-                totalPoints += s.Anchors.Count;
+            if (FpsTimer.TimeLeft <= 0)
+            {
+                FpsTimer.Start();
+                float totalDelta = 0f;
+                float totalPoints = 0f;
+                foreach (float t in DeltaTimeList)
+                    totalDelta += t;
+                FpsLabel.Text = Mathf.Round(1.0 / (totalDelta / DeltaTimeList.Count())).ToString() + " : " + totalPoints.ToString();
+                foreach (Shape s in Shapes.S)
+                    totalPoints += s.Anchors.Count;
+            }
         }
 
         if (Zoom <= 1)
@@ -192,13 +202,15 @@ public partial class Base : Node2D
 
         // SVG code goes here
         
-        Task<Texture2D> taskje = Task.Run(() =>
-        {
-            Im.LoadSvgFromString(LastFramesSvg);
-            Texture2D finalTexture = ImageTexture.CreateFromImage(Im);
-            return finalTexture;
-        });
-        // Task<Segment[][]> taskje2 = Task.Run(Shapes.MergeShapesSkia);
+        // Task<Texture2D> taskje = Task.Run(() =>
+        // {
+        //     Im.LoadSvgFromString(LastFramesSvg);
+        //     Texture2D finalTexture = ImageTexture.CreateFromImage(Im);
+        //     return finalTexture;
+        // });
+        Im.LoadSvgFromString(LastFramesSvg);
+        Texture2D finalTexture = ImageTexture.CreateFromImage(Im);
+
         SvgString.ClearString(Zoom, Origin, WindowSize, MarkerPos);
 
         if (CurrentMode == Mode.Editing) DrawEditing();
@@ -208,7 +220,8 @@ public partial class Base : Node2D
         SvgString.Finish();
         LastFramesSvg = SvgString.CurrentString;
 
-        Tex.Texture = await taskje;
+        // Tex.Texture = await taskje;
+        Tex.Texture = finalTexture;
         
         TextureRect preview1 = PreviewContainer.GetChild<TextureRect>(0);
         TextureRect tinyPreview = (TextureRect)PreviewContainer.FindChild("TinyPreview");
@@ -247,7 +260,7 @@ public partial class Base : Node2D
                 $"<g transform=\"scale(0.1) translate(0,0) rotate(0)\">");
             if (shapeCounter < Shapes.S.Count)
             {
-                if (Shapes.S[shapeCounter].Anchors.Count == 0)
+                if (Shapes.S[shapeCounter].Anchors.Count < 3)
                 {
                     continue;
                 }
@@ -709,6 +722,7 @@ public partial class Base : Node2D
                 {
                     a.Position += movingSelected;
                     a.AlignHandles();
+                    a.MyShape.AnchorsChanged();
                 }
             }
             else if (CurrentFocus == Focus.Handle && SelectedHandles.Count > 0)
@@ -775,7 +789,7 @@ public partial class Base : Node2D
 
     public void HiPointAdding(float delta)
     {
-        if (Input.IsActionJustPressed(Snl.add_new_point))
+        if (Input.IsActionJustPressed(Snl.add_new_point) || Input.IsActionJustPressed(Snl.add_sharp_point))
         {
             Uts();
             if (CurrentShape.Finished)
@@ -800,7 +814,14 @@ public partial class Base : Node2D
             }
             else
             {
-                CurrentShape.AddAnchor(MarkerPos);
+                if (Input.IsActionJustPressed(Snl.add_sharp_point))
+                {
+                    CurrentShape.AddAnchor(MarkerPos, broken: true);
+                }
+                else
+                {
+                    CurrentShape.AddAnchor(MarkerPos);
+                }
             }
 
 
@@ -822,6 +843,7 @@ public partial class Base : Node2D
                 }
             }
         }
+
         if (Input.IsActionJustPressed(Snl.finish_shape) && !CurrentShape.Finished)
         {
             Uts();
@@ -993,7 +1015,7 @@ public partial class Base : Node2D
             CurrentShape = Shapes.S.Last();
         }
 
-        if (Input.IsActionJustPressed("toggle_preview"))
+        if (Input.IsActionJustPressed(Snl.toggle_preview))
         {
             if (CurrentMode == Mode.Editing)
             {
@@ -1011,7 +1033,7 @@ public partial class Base : Node2D
             }
         }
 
-        if (Input.IsActionJustPressed("select_mode"))
+        if (Input.IsActionJustPressed(Snl.select_mode))
         {
             if (CurrentMode == Mode.Editing)
             {
@@ -1114,7 +1136,10 @@ public partial class Base : Node2D
         {
             SvgString.SetStyle(Style.ShapePreview);
         }
-        SvgString.AddSegmentsGroup(Shapes.MergeShapesSkia());
+        // SvgString.AddSegmentsGroup(Shapes.MergeShapesSkia());
+        var mgs = Shapes.MergeShapesSkia();
+        if (mgs.Length > 0)
+            SvgString.AddSegmentsDebug(Shapes.MergeShapesSkia()[0]);
     }
 
     public void DrawGuides(float opac = 0.5f, float lesserOpac = 0.12f, float fwi = 2.0f)
@@ -1168,7 +1193,7 @@ public partial class Base : Node2D
         }
         foreach (Shape s in Shapes.S)
         {
-            if (s.Anchors.Count <= 1) continue;
+            if (s.Anchors.Count < 3) continue;
 
             if (s.Negative)
             {
@@ -1179,7 +1204,8 @@ public partial class Base : Node2D
                 SvgString.SetStyle(Style.ShapeUnchanged);
             }
 
-            SvgString.AddSegments(s.SegList(), false);
+            SvgString.AddSegments(s.SegList());
+            // SvgString.AddSegmentsDebug(s.SegList());
         }
 
         // draw merged shapes
@@ -1197,7 +1223,10 @@ public partial class Base : Node2D
             if (s == CurrentShape)
             {
                 SvgString.SetStyle(Style.ShapeSelected);
-                SvgString.AddSegments(s.SegList(), false);
+                if (s.Anchors.Count > 2)
+                {
+                    SvgString.AddSegments(s.SegList(), false);
+                }
             }
             foreach (Anchor a in s.Anchors)
             {

@@ -151,8 +151,34 @@ static class SvgString
         CurrentString += "/>";
     }
 
+    public static void AddSegmentsDebug(Segment[] s, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
+    {
+        string color1 = "red";
+        string color2 = "white";
+        if (Shapes.IsSegmentListClockwise(s))
+        {
+            color1 = "blue";
+            color2 = "yellow";
+        }
+        float[] startSeg = s[0].Flat();
+        int counter = 0;
+        foreach (Segment seg in s)
+        {
+            string color = color1;
+            if (counter % 2 == 0)
+            {
+                color = color2;
+            }
+            float[] flatSeg = seg.Flat();
+            AddCircle(new(flatSeg[2], flatSeg[3]), 2, color, color, fOpacity = 0.2f, sWidth = 0.5f);
+            AddCircle(new(flatSeg[4], flatSeg[5]), 2, color, color, fOpacity = 0.2f, sWidth = 0.5f);
+            CurrentString += $"<path d=\"M {flatSeg[0]} {flatSeg[1]} C {flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]} \" stroke=\"{color}\" fill-opacity=\"0.0\" stroke-width=\"2\"/>";
+            counter += 1;
+        }
+    }
     public static void AddSegments(Segment[] s, bool debugInfo = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
     {
+        // GD.Print(s[0]);
         float[] startSeg = s[0].Flat();
         CurrentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
         int counter = 0;
@@ -162,7 +188,7 @@ static class SvgString
             CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
             if (counter != s.Length - 1)
             {
-                CurrentString += ",";
+                CurrentString += "C ";
             }
             CurrentString += " ";
             counter += 1;
