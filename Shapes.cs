@@ -22,6 +22,7 @@ using System.Runtime.Intrinsics;
 using System.Reflection.Metadata;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
+using System.Xml.Schema;
 
 
 namespace Vectordrawing;
@@ -139,11 +140,11 @@ public struct Segment(V2 inPoint, V2 inHandle, V2 outHandle, V2 outPoint)
 public class Handle
 {
     public SegmentType Type = SegmentType.Straight;
-    public bool Locked = true;
+    public bool Locked = false;
     public bool Selected = false;
     public bool IsInHandle = false;
     public Anchor AdjacentAnchor = null!;
-    public float DistanceFromAnchor = 2;
+    public float DistanceFromAnchor = 200;
     public float Angle = 0;
 
     public Handle()
@@ -201,7 +202,7 @@ public class Handle
         sibling.DistanceFromAnchor = 100;
     }
 
-    public void Init(Anchor adjacentAnchor, bool isInhandle, float angle = 0f, float distanceFromAnchor = 2)
+    public void Init(Anchor adjacentAnchor, bool isInhandle, float angle = 0f, float distanceFromAnchor = 0)
     {
         IsInHandle = isInhandle;
         AdjacentAnchor = adjacentAnchor;
@@ -306,6 +307,7 @@ public class Anchor
         (OutHandle, InHandle) = (InHandle, OutHandle);
     }
 
+
     public void AutoHandles()
     {
         // float ang1 = MathF.Acos(V2.Dot(Position, NextAnchor().Position) / (NextAnchor().Position.Length() * Position.Length()));
@@ -319,42 +321,54 @@ public class Anchor
         // float avAng = (ang1 + ang2) / 2f + (.5f * MathF.PI);
          
         //normalize!!!
-        GV2 v1 = Fun.Vtv(V2.Normalize(Position - PreviousAnchor().Position));
-        GV2 v2 = Fun.Vtv(V2.Normalize(Position - NextAnchor().Position));
-        GV2 rightV = ((v1 + v2) / 2f).Rotated(0.5f * MathF.PI);
-        float v1a = v1.Angle();
-        float v2a = v2.Angle();
-        if (v1a < 0) v1a = (2 * MathF.PI) + v1a;
-        if (v2a < 0) v2a = (2 * MathF.PI) + v2a;
-        float avAng = ((v1 + v2) / 2f).Angle();
-        if (avAng < 0) avAng = (2 * MathF.PI) + avAng;
-        avAng += (0.5f * MathF.PI);
-
-        float inhAng = 0;
-        float outhAng = 0;
-        if (v1.AngleTo(v2) > 0)
+        if (MyShape.Anchors.Count <= 2) return; 
+        Anchor prev = PreviousAnchor();
+        Anchor next = NextAnchor();
+        GV2 v1 = Fun.Vtv(V2.Normalize(Position - prev.Position));
+        GV2 v2 = Fun.Vtv(V2.Normalize(Position - next.Position));
+        float inhAng;
+        float outhAng;
+        if (Broken)
         {
-            inhAng = avAng;
-            outhAng = avAng + MathF.PI;
+            if (prev.Broken) inhAng = v1.Angle() + MathF.PI;
+            else
+            {
+                inhAng = Fun.Vtv(V2.Normalize(Position - prev.OutHandle.Position())).Angle() + MathF.PI;
+            }
+
+            if (next.Broken) outhAng = v2.Angle() + MathF.PI;
+            else
+            {
+                outhAng = Fun.Vtv(V2.Normalize(Position - next.InHandle.Position())).Angle() + MathF.PI;
+            }
         }
         else
         {
-            inhAng = avAng + MathF.PI;
-            outhAng = avAng;
+            float avAng = ((v1 + v2) / 2f).Angle();
+            if (avAng < 0) avAng = (2 * MathF.PI) + avAng;
+            avAng += 0.5f * MathF.PI;
+            avAng = Fun.Vtv(PreviousAnchor().Position - NextAnchor().Position).Angle();
+            float fraction = MathF.PI / 2;
+            if (v1.AngleTo(v2) > 0)
+            {
+                avAng = MathF.Round(Fun.Vtv(PreviousAnchor().Position - NextAnchor().Position).Angle() / fraction) * fraction;
+                inhAng = avAng;
+                outhAng = avAng + MathF.PI;
+            }
+            else
+            {
+                avAng = MathF.Round(Fun.Vtv(NextAnchor().Position - PreviousAnchor().Position).Angle() / fraction) * fraction;
+                inhAng = avAng + MathF.PI;
+                outhAng = avAng;
+            }
         }
-        float maxLength = 200;
-        if (InHandle.Type == SegmentType.Cubic)
-        {
-            InHandle.Angle = inhAng;
-            InHandle.DistanceFromAnchor = MathF.Min(maxLength,Fun.Vtv(Position).DistanceTo(Fun.Vtv(PreviousAnchor().Position)) / 3f);
-        }
-
-        if (OutHandle.Type == SegmentType.Cubic)
-        {
-            OutHandle.Angle = outhAng;
-            OutHandle.DistanceFromAnchor = MathF.Min(maxLength, Fun.Vtv(Position).DistanceTo(Fun.Vtv(NextAnchor().Position)) / 3f);
-        }
+        float maxLength = 300;
+        InHandle.Angle = inhAng;
+        OutHandle.Angle = outhAng;
+        InHandle.DistanceFromAnchor = MathF.Min(maxLength,Fun.Vtv(Position).DistanceTo(Fun.Vtv(PreviousAnchor().Position)) / 2.6f);
+        OutHandle.DistanceFromAnchor = MathF.Min(maxLength, Fun.Vtv(Position).DistanceTo(Fun.Vtv(NextAnchor().Position)) / 2.6f);
     }
+
 
     public void AlignHandles(bool toOutHandle = false)
     {
@@ -737,8 +751,10 @@ public static class Shapes
     public static List<Shape> S = [];
     public static Shape NewShape()
     {
-        Shape s = new HyperbezierShape();
-        // Shape s = new();
+        // hyperbez
+        Shape s;
+        // s = new HyperbezierShape();
+        s = new Shape();
         S.Add(s);
         return s;
     }
@@ -1128,7 +1144,7 @@ public static class Shapes
         float roundness = 0.7f;
         const float MIN_ANGLE = 2f * (MathF.PI / 180f);
         const float MAX_ANGLE = 178f * (MathF.PI / 180f);
-        float minCornerSize = 3f;
+        float minCornerSize = 1f;
 
         List<(Segment[] segments, V2 inTan, V2 outTan)> trimmedAndTangentList = [];
         List<(float inCorner, float outCorner)> cornerSizeList = [];

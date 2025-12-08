@@ -79,6 +79,8 @@ public partial class Base : Node2D
     public float Zoom = 1f;
     float MovementHeldTime = 0f;
     float VisualGridSize = GridSize;
+    float SelectionFadeOutTime = 1;
+    float SinceLastSelected = 0; 
     Image Im = new();
     Sprite2D Tex = null!;
 
@@ -93,7 +95,7 @@ public partial class Base : Node2D
     bool CanUndoAgain = true;
     bool SelectingInHandle = true;
     bool CurvePlacing = false;
-    public static bool AutoMoveMode = false;
+    public static bool AutoMoveMode = true;
     int CurvePlacingStage = 0;
     static Mode CurrentMode = Mode.Editing;
     static Focus CurrentFocus = Focus.Anchor;
@@ -110,6 +112,9 @@ public partial class Base : Node2D
     HBoxContainer PreviewContainer = null!;
     FileDialog FilePicker = null!;
     string LastFramesSvg = "";
+    Texture2D CrossTexture = null!; 
+    float JDownTimer = 0;
+    // Texture2D CrossTexture = (GD.Load<Texture2D>("res://assets/crosshair099.png"));
 
     HashSet<Anchor> SelectedAnchors = new();
     HashSet<HandlePointer> SelectedHandles = new();
@@ -144,7 +149,9 @@ public partial class Base : Node2D
         FocusIdentifier = ControlRoot.GetNode<Panel>("LayerPanel/FocusIdentifier");
         PreviewContainer = (HBoxContainer)ControlRoot.FindChild("PreviewContainer");
         FilePicker = GetParent().GetNode<FileDialog>("FileDialog");
-
+        Image c = Image.LoadFromFile("res://assets/crosshair085.png");
+        c.Resize(40, 40);
+        CrossTexture = ImageTexture.CreateFromImage(c);
         GetWindow().Size = new Vector2I((int)WindowSize.X, (int)WindowSize.Y);
         Background.Color = BackgroundColor;
     }
@@ -337,7 +344,7 @@ public partial class Base : Node2D
         }
 
         // draw anchor letters
-        if (CurrentMode == Mode.Selecting)
+        if (CurrentMode != Mode.Previewing)
         {
             if (CurrentFocus == Focus.Anchor)
             {
@@ -354,6 +361,8 @@ public partial class Base : Node2D
                         bcol = Colors.Orange;
                         shadowColor = Colors.Red;
                     }
+                    bcol.A = SinceLastSelected / SelectionFadeOutTime;
+                    charColor.A = SinceLastSelected / SelectionFadeOutTime;
                     V2 p = a.Position;
                     if (Zoom <= 1)
                     {
@@ -367,9 +376,23 @@ public partial class Base : Node2D
                         p -= new V2(4, -5);
                     }
                     V2 letterOffset = new(-9, 7);
-                    DrawRect(new(Fun.Vtv(p - new V2(15, 18)), new GV2(30, 36)), bcol);
+                    V2 totalOffset = new(0,0);
+                    // V2 awayDir = (a.NextAnchor().Position - a.Position) + (a.PreviousAnchor().Position - a.Position);
+                    // if (awayDir.Length() > 0) totalOffset = V2.Normalize(awayDir) * new V2(-23,-23);
+                    var pp = a.OutHandle.Position();
+                    var ppp = a.InHandle.Position();
+                    
+                    // DrawTexture(CrossTexture, Fun.Vtv(pp) - (CrossTexture.GetSize()/2.0f), modulate: new(Colors.Blue,a:0.8f));
+                    // DrawTexture(CrossTexture, Fun.Vtv(ppp) - (CrossTexture.GetSize()/2.0f), modulate: new(Colors.Red,a:0.8f));
+                    Color bc = new(bcol.R-.2f, bcol.G-.1f, bcol.B-.1f, 0.9f);
+                    string tallLetters = "htldfiklb";
+                    string deepLetters = "qypg";
+                    if (tallLetters.Contains(c)) letterOffset += new V2(0, 3);
+                    if (deepLetters.Contains(c)) letterOffset -= new V2(0, 3);
+                    // DrawLine(Fun.Vtv(p + totalOffset), Fun.Vtv(a.Position), Colors.Black, width: 2, antialiased: true);
+                    DrawRect(new(Fun.Vtv(p - new V2(12, 16) + totalOffset), new GV2(24, 30)), bcol);
                     // DrawChar(MediumFont, Fun.Vtv(p + letterOffset + new V2(0, 3)), c.ToString(), 30, shadowColor);
-                    DrawChar(MediumFont, Fun.Vtv(p + letterOffset), c.ToString(), 30, charColor);
+                    DrawChar(MediumFont, Fun.Vtv(p + letterOffset + totalOffset), c.ToString(), 30, charColor);
                     c = (char)((int)c + 1);
                 }
             }
@@ -528,6 +551,7 @@ public partial class Base : Node2D
             if (!SelectedAnchors.Remove(a))
             {
                 SelectedAnchors.Add(a);
+                MarkerPos = a.Position;
             }
         }
         else if (CurrentFocus == Focus.Handle)
@@ -725,17 +749,21 @@ public partial class Base : Node2D
                     a.MyShape.AnchorsChanged();
                 }
             }
-            else if (CurrentFocus == Focus.Handle && SelectedHandles.Count > 0)
+            // else if (CurrentFocus == Focus.Handle && SelectedHandles.Count > 0)
+            else if (SelectedHandles.Count > 0)
             {
                 Uts();
+                float movMod = .1f;
+                if (Input.IsKeyPressed(Key.A)) movMod = .01f;
+                float angleChange = (movingSelected.X / movementAmount) * movMod;
                 foreach (HandlePointer hp in SelectedHandles)
                 {
                     Handle h = hp.h();
                     Handle sibling = h.GetAnchorSibling();
-                    if (h.Type == SegmentType.Straight)
-                    {
-                        continue;
-                    }
+                    // if (h.Type == SegmentType.Straight)
+                    // {
+                    //     continue;
+                    // }
                     h.DistanceFromAnchor -= (movingSelected.Y) * .1f;
                     if (Input.IsKeyPressed(Key.Shift))
                     {
@@ -746,19 +774,37 @@ public partial class Base : Node2D
                         float movingAmount = 1.5f;
                         if (!h.Locked)
                         {
-                            h.Angle += (movingSelected.X / 1000f) * movingAmount;
+                            // h.Angle += (movingSelected.X / 1000f) * movingAmount;
+                            h.Angle += angleChange;
                         }
                         else if (sibling.Type == SegmentType.Cubic)
                         {
-                            h.Angle += (movingSelected.X / 1000f) * movingAmount;
+                            h.Angle += angleChange;
                             if (!SelectedHandles.Contains(sibling.Pointer()))
                             {
-                                sibling.Angle += (movingSelected.X / 1000f) * movingAmount;
+                                sibling.Angle += angleChange;
                             }
                         }
                         
+                        hp.A.MyShape.AnchorsChanged();
                         Manager.PlaySound("Rattle3.wav", 0.07f, 1.5f, 2.5f);
                     }
+                    if (!Input.IsKeyPressed(Key.A))
+                    {
+                        if (angleChange < 0)
+                        {
+                            h.Angle = MathF.Floor(h.Angle / (MathF.PI * .125f)) * (MathF.PI * .125f);
+                            sibling.Angle = MathF.Floor(sibling.Angle / (MathF.PI * .125f)) * (MathF.PI * .125f);
+
+                        }
+                        if (angleChange >= 0)
+                        {
+                            h.Angle = MathF.Ceiling(h.Angle / (MathF.PI * .125f)) * (MathF.PI * .125f);
+                            sibling.Angle = MathF.Ceiling(sibling.Angle / (MathF.PI * .125f)) * (MathF.PI * .125f);
+
+                        }
+                    }
+                    
                     //TODO align handles?
                 }
             }
@@ -789,43 +835,41 @@ public partial class Base : Node2D
 
     public void HiPointAdding(float delta)
     {
-        if (Input.IsActionJustPressed(Snl.add_new_point) || Input.IsActionJustPressed(Snl.add_sharp_point))
+        float treshold = 0.15f;
+        if (Input.IsActionPressed(Snl.add_new_point))
+        {
+            if (JDownTimer > treshold)
+            {
+                SelectedAnchors = [CurrentShape.Anchors.Last()];
+            }
+            JDownTimer += delta;
+        }
+        if (Input.IsActionJustReleased(Snl.add_new_point) || Input.IsActionJustReleased(Snl.add_sharp_point))
         {
             Uts();
-            if (CurrentShape.Finished)
-            {
-                CurrentShape = Shapes.NewShape();
-            }
 
-            if (false && CurvePlacing)
+            if (Input.IsActionJustReleased(Snl.add_sharp_point))
             {
-                switch (CurvePlacingStage)
+                if (CurrentShape.Finished)
                 {
-                    case 0:
-                        CurrentShape.AddAnchor(MarkerPos);
-                        break;
-                    case 1:
-                        break;
-                    case 2:
-                        CurvePlacingStage = 0;
-                        break;
+                    CurrentShape = Shapes.NewShape();
                 }
-                CurvePlacingStage += 1;
+                CurrentShape.AddAnchor(MarkerPos);
             }
-            else
+            else if (Input.IsActionJustReleased(Snl.add_new_point))
             {
-                if (Input.IsActionJustPressed(Snl.add_sharp_point))
+                if (JDownTimer < treshold)
                 {
+                    if (CurrentShape.Finished)
+                    {
+                        CurrentShape = Shapes.NewShape();
+                    }
                     CurrentShape.AddAnchor(MarkerPos, broken: true);
                 }
-                else
-                {
-                    CurrentShape.AddAnchor(MarkerPos);
-                }
+                JDownTimer = 0;
             }
-
-
-    
+            SelectedAnchors = [];
+            CurrentShape.AnchorsChanged();
             Cursor.Scale = new(.8f, .8f);
             Manager.PlaySound("Laptop_Keystroke_82.wav", 0.2f, 1.3f, 1.8f);
         }
@@ -837,18 +881,19 @@ public partial class Base : Node2D
                 {
                     Uts();
                     CurrentShape.AddAnchor(MarkerPos, insertAfter: a);
-
+                    CurrentShape.AnchorsChanged();
                     Cursor.Scale = new(.8f, .8f);
                     Manager.PlaySound("Laptop_Keystroke_82.wav", 0.2f, 1.3f, 1.8f);
                 }
             }
         }
 
-        if (Input.IsActionJustPressed(Snl.finish_shape) && !CurrentShape.Finished)
+        if (Input.IsActionJustPressed(Snl.add_new_point) && Input.IsKeyPressed(Key.Shift) && !CurrentShape.Finished)
         {
             Uts();
             CurrentShape.Finish();
             Manager.PlaySound("camera.wav", 0.4f, 1.3f, 1.8f);
+
         }
         if (Input.IsActionJustPressed(Snl.snap_selected))
         {
@@ -856,7 +901,7 @@ public partial class Base : Node2D
             SnapSelectedPos();
         }
 
-        if (Input.IsActionJustPressed(Snl.switch_segment_style) && CurrentFocus == Focus.Handle)
+        if (Input.IsActionJustPressed(Snl.switch_segment_style))
         {
             Uts();
             List<Handle> doneAllready = new();
@@ -1033,20 +1078,47 @@ public partial class Base : Node2D
             }
         }
 
-        if (Input.IsActionJustPressed(Snl.select_mode))
+        SelectedHandles = [];
+        if (Input.IsKeyPressed(Key.Comma) || Input.IsKeyPressed(Key.Period))
         {
-            if (CurrentMode == Mode.Editing)
+            if (Input.IsKeyPressed(Key.Comma))
             {
+                HandlePointer hp = new(CurrentShape.Anchors.Last(), true);
+                SelectedHandles.Add(hp);
+            }
+            if (Input.IsKeyPressed(Key.Period))
+            {
+                HandlePointer hp = new(CurrentShape.Anchors.Last(), false);
+                SelectedHandles.Add(hp);
+            }
+        }
+
+        if (Input.IsActionPressed(Snl.select_mode))
+        {
+            SinceLastSelected = SelectionFadeOutTime;
+            // if (CurrentMode == Mode.Editing)
+            // {
                 CurrentMode = Mode.Selecting;
                 Background.Color = SelectingColor;
                 Cursor.Visible = false;
-            }
-            else if (CurrentMode == Mode.Selecting)
+            // }
+            // else if (CurrentMode == Mode.Selecting)
+            // {
+            //     CurrentMode = Mode.Editing;
+            //     Background.Color = BackgroundColor;
+            //     Cursor.Visible = true;
+            // }
+        }
+        else
+        {
+            if (SinceLastSelected > 0) SinceLastSelected -= delta;
+            if (CurrentMode == Mode.Selecting)
             {
                 CurrentMode = Mode.Editing;
                 Background.Color = BackgroundColor;
                 Cursor.Visible = true;
             }
+
         }
         if (CurrentMode == Mode.Editing || CurrentMode == Mode.Previewing)
         {
@@ -1056,16 +1128,18 @@ public partial class Base : Node2D
             // HiRotation(delta);
             if (AutoMoveMode)
             {
-                foreach (Anchor a in SelectedAnchors)
+                foreach (Anchor a in CurrentShape.Anchors)
                 {
                     a.AutoHandles();
-                    a.PreviousAnchor().AutoHandles();
-                    a.NextAnchor().AutoHandles();
+                }
+                foreach (Anchor a in CurrentShape.Anchors)
+                {
+                    a.AutoHandles();
                 }
             }
             foreach (Shape s in Shapes.S)
             {
-                s.AlignAllHandles();
+                // s.AlignAllHandles();
             }
         }
     }
@@ -1136,10 +1210,10 @@ public partial class Base : Node2D
         {
             SvgString.SetStyle(Style.ShapePreview);
         }
-        // SvgString.AddSegmentsGroup(Shapes.MergeShapesSkia());
-        var mgs = Shapes.MergeShapesSkia();
-        if (mgs.Length > 0)
-            SvgString.AddSegmentsDebug(Shapes.MergeShapesSkia()[0]);
+        SvgString.AddSegmentsGroup(Shapes.MergeShapesSkia());
+        // var mgs = Shapes.MergeShapesSkia();
+        // if (mgs.Length > 0)
+        //     SvgString.AddSegmentsDebug(Shapes.MergeShapesSkia()[0]);
     }
 
     public void DrawGuides(float opac = 0.5f, float lesserOpac = 0.12f, float fwi = 2.0f)
@@ -1237,7 +1311,7 @@ public partial class Base : Node2D
                 if (SelectedAnchors.Contains(a))
                 {
                     // SvgString.AddCircle(a.Position, 12 + Mathf.Sin(Counter*4)*2, fOpacity: 0.0f, sOpacity: 1.0f, sWidth: 6, fill:"red", stroke:"black");
-                    SvgString.AddCircle(a.Position, radiusSizes[1], fOpacity: 0.4f, sOpacity: 1.0f, sWidth: widths[1]);
+                    SvgString.AddCircle(a.Position, radiusSizes[1], fill: "red", fOpacity: 0.4f, sOpacity: 0.0f, sWidth: widths[1]);
                 }
                 else
                 {
@@ -1247,23 +1321,24 @@ public partial class Base : Node2D
                 // draw handles
                 // visualize handle selection
                 // visualize handle type
-                if (CurrentFocus == Focus.Handle && s == CurrentShape)
+                // if (CurrentFocus == Focus.Handle && s == CurrentShape)
+                if (s == CurrentShape)
                 {
-                    if (a.InHandle.Type == SegmentType.Cubic)
+                    // if (a.InHandle.Type == SegmentType.Cubic)
                     {
                         SvgString.AddLine(a.Position, a.InHandle.Position(), sOpacity: .5f);
                         if (SelectedHandles.Contains(a.InHandle.Pointer()))
                             SvgString.AddCircle(a.InHandle.Position(), radiusSizes[1], fill: "blue", fOpacity: .3f, sOpacity: 1.0f, sWidth: widths[1]);
                         else
-                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0], fill: "blue", fOpacity: .3f, sOpacity: 0f, sWidth: widths[0]);
+                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0]+2, fill: "blue", fOpacity: .6f, sOpacity: 0f, sWidth: widths[0]);
                     }
-                    if (a.OutHandle.Type == SegmentType.Cubic)
+                    // if (a.OutHandle.Type == SegmentType.Cubic)
                     {
                         SvgString.AddLine(a.Position, a.OutHandle.Position(), sOpacity: .5f);
                         if (SelectedHandles.Contains(a.OutHandle.Pointer()))
                             SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[1], fill: "red", fOpacity: .3f, sOpacity: 1.0f, sWidth: widths[1]);
                         else
-                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0], fill: "red", fOpacity: .3f, sOpacity: 0f, sWidth: widths[0]);
+                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0]+2, fill: "red", fOpacity: .6f, sOpacity: 0f, sWidth: widths[0]);
                     }
                 }
             }

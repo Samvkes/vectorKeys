@@ -74,14 +74,14 @@ het probleem is vormen die een punt delen. maar niet altijd.
     (voor zover ik kan zien exporteren newsplines gewoon naar cubic beziers, als 
         je de handles van de round corners niet verzet)
 
+[] maak een volledige lijst van alles dat je met toetsen moet kunnen doen
+[] vind een goeie workflow voor numerieke aanpassingen: rotate, scale, adjust corners and transitions
+[] goeie manier van toevoegen en aanpassen handles, modes laten zitten?
+
 [] visualisatie van handles (ook tonen in anch mode, broken vs heel laten zien)
 [] move origin & fix grid and snapping
 [] copy / paste (geselecteerde punten in een nieuwe vorm plakken?)
 [] snel handles plaatsen
-
-[] maak een volledige lijst van alles dat je met toetsen moet kunnen doen
-[] vind een goeie workflow voor numerieke aanpassingen: rotate, scale, adjust corners and transitions
-[] goeie manier van toevoegen en aanpassen handles, modes laten zitten?
 
 [] intermezzo
     [] visualisaties beter
@@ -149,3 +149,19 @@ voor rounding
 
 11-26: rounding cachen
     merging async (na 500ms geen aanpassing)
+
+
+anchors plaatsen. gebroken met j, whole met h
+j ingedrukt om laatst geplaatste anchor te adjusten
+k en l ingedrukt om laatst geplaatste handles te adjusten
+i om anchor mode te gaan: cursor verplaatst over de handles van de vorm met k en l
+    geselcteerde handle bewegen
+    j om te switchen tussen handles en anchors
+    h om te switchen tussen gebroken en whole
+
+J om vorm te sluiten
+hold h om rotated te plaatsen (of te verplaatsen in anchor mode)
+hide cursor als geselecteerde anchors
+waardes van anchors onderin het scherm weergeven: positie, rounding, merge rounding
+anchors pijltjes maken
+richting edges duidelijk maken.

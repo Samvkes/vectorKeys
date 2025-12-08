@@ -1067,7 +1067,7 @@ impl Player {
                     }
                     kurbo::PathEl::LineTo(p) => {
                         // Optionally turn lines into degenerate cubics:
-                        result.extend([p0.x, p0.y, p.x,p.y, p.x,p.y,p.x,p.y]);
+                        result.extend([p0.x, p0.y, p0.x,p0.y, p.x,p.y,p.x,p.y]);
                         p0 = p;
                     }
                     _ => {}
