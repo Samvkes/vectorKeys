@@ -735,17 +735,40 @@ impl Player {
     }
 
     #[func]
-    fn segment_shape_intersections(&mut self, shape:Array<f64>, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> Vec<f64>  {
-        let mut return_vec: Vec<f64> = Vec::new();
+    fn segment_shape_intersections(&mut self, shape:Array<f64>, x1: f64,y1: f64,x2: f64,y2: f64,x3: f64,y3: f64,x4: f64,y4: f64) -> Vec<Vector2>  {
+        let mut return_vec: Vec<Vector2> = Vec::new();
         let bezier_path = array_to_subpath(shape.clone());
         let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
 
         let inters: Vec<(usize, f64)> = bezier_path.intersections(&bez,Some(5.1),Some(5.0));
         for inter in inters{
             let intersection_coords: DVec2 = bezier_path.get_segment(inter.0).unwrap().evaluate(TValue::Parametric(inter.1));
-            return_vec.push(intersection_coords.x);
-            return_vec.push(intersection_coords.y);
+            let v: Vector2 = Vector2::new(intersection_coords.x as f32, intersection_coords.y as f32);
+            return_vec.push(v);
+            // return_vec.push(intersection_coords.x);
+            // return_vec.push(intersection_coords.y);
         }
+        return return_vec;
+    }
+
+    #[func]
+    fn project_on_shape_tangent(&mut self, shape:Array<f64>, x:f64, y:f64) -> Vector2  {
+        let bezier_path = array_to_subpath(shape.clone());
+        let inter = bezier_path.project(DVec2::new(x,y));
+        let inter = inter.unwrap();
+        let seg = bezier_path.get_segment(inter.0).unwrap();
+        let tan = seg.tangent(TValue::Parametric(inter.1));
+        let return_vec = Vector2::new(tan.x as f32, tan.y as f32); 
+        return return_vec;
+    }
+
+    #[func]
+    fn project_on_shape(&mut self, shape:Array<f64>, x:f64, y:f64) -> Vector2  {
+        let bezier_path = array_to_subpath(shape.clone());
+        let inter = bezier_path.project(DVec2::new(x,y));
+        let inter = inter.unwrap();
+        let intersection_coords: DVec2 = bezier_path.get_segment(inter.0).unwrap().evaluate(TValue::Parametric(inter.1));
+        let return_vec = Vector2::new(intersection_coords.x as f32, intersection_coords.y as f32); 
         return return_vec;
     }
 

@@ -111,4 +111,5 @@ static class StringNamesList
     public static readonly StringName load_project = "load_project";
     public static readonly StringName toggle_preview = "toggle_preview";
     public static readonly StringName select_mode = "select_mode";
+    public static readonly StringName debug = "debug";
 }

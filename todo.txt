@@ -165,3 +165,61 @@ hide cursor als geselecteerde anchors
 waardes van anchors onderin het scherm weergeven: positie, rounding, merge rounding
 anchors pijltjes maken
 richting edges duidelijk maken.
+
+
+//measuring
+//switchen naar point mode in handlem
+
+copy paste
+scale rotate mirror skew
+
+//square & circle
+//curv comb
+//magnifier
+//stroked shape
+
+- to menu
+- view cached shape
+- switch to next glyph
+- a-d + 123
+
+exporteren
+
+meerdere letters
+    0. meerdere letters definieren, zo simpel mogelijk - 3 uur
+    1. exporteer letters naar font - 6 uur
+    2. kerning - 6 uur
+    3. meerder versies van zelfde font (bold, italic)
+
+productivity & reference
+bugs en code cleanup
+
+font-project
+weights & kerning
+
+
+// movement
+//     up
+//     down
+//     left
+//     right
+// increase zoom
+// decrease zoom
+// snap selected to grid
+// snap cursor to grid
+// increase grid
+// decrease grid
+// adjust grid skew
+// next letter
+// previous letter
+// back to menu
+// measure mode
+// switch focus
+// add sharp point
+// add round point
+// insert point
+// delete point
+// undo 
+// redo
+// finish shape
+// rotated movement mode

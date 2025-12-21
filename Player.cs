@@ -6,6 +6,7 @@ using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.VisualBasic;
 
 namespace Vectordrawing;
 
@@ -127,7 +128,27 @@ public partial class Player : Node
         return segs;
     }
 
-    public static float[] SegmentShapeIntersections(Segment[] segList, Segment s)
+    public static GV2 ProjectOnShapeTangent(Segment[] segList, V2 pos)
+    {
+        Array<float> floatAr = new();
+        foreach (Segment part in segList)
+        {
+            floatAr.AddRange(part.Flat());
+        }
+        return (GV2)pl.Call("project_on_shape_tangent", floatAr, pos.X, pos.Y);
+    }
+
+    public static GV2 ProjectOnShape(Segment[] segList, V2 pos)
+    {
+        Array<float> floatAr = new();
+        foreach (Segment part in segList)
+        {
+            floatAr.AddRange(part.Flat());
+        }
+        return (GV2)pl.Call("project_on_shape", floatAr, pos.X, pos.Y);
+    }
+
+    public static Vector2[] SegmentShapeIntersections(Segment[] segList, Segment s)
     {
         Array<float> floatAr = new();
         foreach (Segment part in segList)
@@ -135,7 +156,7 @@ public partial class Player : Node
             floatAr.AddRange(part.Flat());
         }
         float[] f = s.Flat();
-        return (float[])pl.Call("segment_shape_intersections", floatAr, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]);
+        return (Vector2[])pl.Call("segment_shape_intersections", floatAr, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]);
     }
 
     public static float[] CurvaturePosition(float[] a)

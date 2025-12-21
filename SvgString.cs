@@ -89,7 +89,7 @@ static class Styles
         // shape unchanged
             ["fill"] = "gray",
             ["stroke"] = "white",
-            ["fill-opacity"] = "0.5",
+            ["fill-opacity"] = "0.4",
             ["stroke-opacity"] = "1.0",
             ["stroke-width"] = "1",
         },
@@ -108,7 +108,7 @@ static class Styles
         // shape selected 
             ["fill"] = "blue",
             ["stroke"] = "blue",
-            ["fill-opacity"] = "0.30",
+            ["fill-opacity"] = "0.15",
             ["stroke-opacity"] = "0.0",
             ["stroke-width"] = "3",
         },

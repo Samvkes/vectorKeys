@@ -932,7 +932,12 @@ color = Color(0.789732, 0.262603, 0.108194, 0.223529)
 
 [node name="Tex" type="Sprite2D" parent="."]
 z_index = -1
+position = Vector2(1237, 918)
 centered = false
+offset = Vector2(-1237, -918)
+
+[node name="Tex2" type="Sprite2D" parent="."]
+z_index = 1
 
 [node name="Background" type="ColorRect" parent="."]
 z_index = -10
