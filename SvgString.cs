@@ -311,7 +311,7 @@ static class SvgString
         Styles.zoom = zoom;
         CurrentString = (
             $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\" >" +
-            $"<g transform=\"scale({1}) translate({tslating.X + Base.CursorOff.X},{tslating.Y + Base.CursorOff.Y}) rotate({0})\">" +
+            $"<g transform=\"scale({1}) translate({tslating.X + Base.ui.CursorOff.X},{tslating.Y + Base.ui.CursorOff.Y}) rotate({0})\">" +
             $"<g transform=\"scale({zoom:N3}) translate({-tslating.X},{-tslating.Y}) rotate({0})\">"
         );
     }

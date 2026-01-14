@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=3 uid="uid://c5ar5y8ypxffx"]
+
+[ext_resource type="PackedScene" uid="uid://cdcixq0vahlub" path="res://letter_menu.tscn" id="1_vjobr"]
+[ext_resource type="Script" uid="uid://b7vi2k1ll1ptm" path="res://Editor.cs" id="1_wrb8p"]
+[ext_resource type="PackedScene" uid="uid://nq848ct5jjb0" path="res://Base.tscn" id="2_wrb8p"]
+[ext_resource type="Texture2D" uid="uid://b7n7y1vp6yjil" path="res://assets/270C_black.png" id="4_q0a35"]
+
+[node name="Editor" type="Node2D"]
+process_mode = 3
+script = ExtResource("1_wrb8p")
+
+[node name="LetterMenu" parent="." instance=ExtResource("1_vjobr")]
+visible = false
+
+[node name="DrawingBase" parent="." instance=ExtResource("2_wrb8p")]
+
+[node name="Peace" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="TextureRect" type="TextureRect" parent="Peace"]
+modulate = Color(1, 1, 1, 0.25098)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -309.0
+offset_top = -309.0
+offset_right = 309.0
+offset_bottom = 309.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_q0a35")
+
+[node name="UfoFilePicker" type="FileDialog" parent="."]
+auto_translate_mode = 1
+title = "Open a Directory"
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="PopupPanel" type="PopupPanel" parent="."]
+title = "oij"
+position = Vector2i(511, 217)
+size = Vector2i(570, 560)
+visible = true

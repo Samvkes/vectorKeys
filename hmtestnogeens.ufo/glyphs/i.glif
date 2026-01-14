@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<glyph name="i" format="2">
+  <advance width="472.99942" height="0" />
+  <unicode hex="0069" />
+  <note>
+  </note>
+  <outline>
+    <contour>
+      <point x="160.4974" y="584" type="line" />
+      <point x="159.99744" y="584" type="offcurve" />
+      <point x="159.6661" y="584.33325" type="offcurve" />
+      <point x="159.6661" y="584.83325" type="curve" />
+      <point x="159.6661" y="584.83325" type="offcurve" />
+      <point x="159.6661" y="689.8342" type="offcurve" />
+      <point x="159.6661" y="689.8342" type="curve" />
+      <point x="159.6661" y="690.3342" type="offcurve" />
+      <point x="159.99768" y="690.6667" type="offcurve" />
+      <point x="160.49765" y="690.6667" type="curve" />
+      <point x="160.49765" y="690.6667" type="offcurve" />
+      <point x="372.16812" y="690.6667" type="offcurve" />
+      <point x="372.16812" y="690.6667" type="curve" />
+      <point x="372.66812" y="690.6667" type="offcurve" />
+      <point x="372.99942" y="690.33344" type="offcurve" />
+      <point x="372.99942" y="689.83344" type="curve" />
+      <point x="372.99942" y="689.83344" type="offcurve" />
+      <point x="372.99942" y="584.83246" type="offcurve" />
+      <point x="372.99942" y="584.83246" type="curve" />
+      <point x="372.99942" y="584.3324" type="offcurve" />
+      <point x="372.66788" y="584" type="offcurve" />
+      <point x="372.16788" y="584" type="curve" />
+      <point x="372.16788" y="584" type="offcurve" />
+      <point x="160.4974" y="584" type="offcurve" />
+      <point x="160.4974" y="584" type="curve" />
+    </contour>
+    <contour>
+      <point x="160.4974" y="530.6667" type="line" />
+      <point x="159.99744" y="530.6667" type="offcurve" />
+      <point x="159.5473" y="530.3552" type="offcurve" />
+      <point x="159.3706" y="529.88745" type="curve" />
+      <point x="149.2142" y="503.07275" type="offcurve" />
+      <point x="140.27246" y="475.79718" type="offcurve" />
+      <point x="132.61533" y="448.1648" type="curve" />
+      <point x="124.88397" y="420.2647" type="offcurve" />
+      <point x="118.46237" y="392.00085" type="offcurve" />
+      <point x="113.41354" y="363.49298" type="curve" />
+      <point x="108.364716" y="334.9851" type="offcurve" />
+      <point x="104.68881" y="306.23328" type="offcurve" />
+      <point x="102.43796" y="277.3695" type="curve" />
+      <point x="100.1871" y="248.50558" type="offcurve" />
+      <point x="99.36142" y="219.52979" type="offcurve" />
+      <point x="100" y="190.58539" type="curve" />
+      <point x="100.63245" y="161.91864" type="offcurve" />
+      <point x="102.701324" y="133.28271" type="offcurve" />
+      <point x="106.22983" y="104.826965" type="curve" />
+      <point x="106.22983" y="104.826965" type="offcurve" />
+      <point x="106.436554" y="103.17322" type="offcurve" />
+      <point x="106.436554" y="103.17322" type="curve" />
+      <point x="109.23129" y="80.996155" type="offcurve" />
+      <point x="112.91321" y="58.931152" type="offcurve" />
+      <point x="117.45764" y="37.045532" type="curve" />
+      <point x="122.05859" y="14.887939" type="offcurve" />
+      <point x="127.54361" y="-7.0858154" type="offcurve" />
+      <point x="133.8822" y="-28.810242" type="curve" />
+      <point x="140.22076" y="-50.534607" type="offcurve" />
+      <point x="147.4129" y="-72.009705" type="offcurve" />
+      <point x="155.42365" y="-93.17462" type="curve" />
+      <point x="163.43448" y="-114.3396" type="offcurve" />
+      <point x="172.26385" y="-135.1944" type="offcurve" />
+      <point x="181.87323" y="-155.6831" type="curve" />
+      <point x="191.36465" y="-175.92041" type="offcurve" />
+      <point x="201.61703" y="-195.80035" type="offcurve" />
+      <point x="212.59" y="-215.27417" type="curve" />
+      <point x="212.83511" y="-215.70996" type="offcurve" />
+      <point x="213.14822" y="-215.7024" type="offcurve" />
+      <point x="213.3718" y="-215.25525" type="curve" />
+      <point x="213.3718" y="-215.25525" type="offcurve" />
+      <point x="265.96066" y="-110.077515" type="offcurve" />
+      <point x="265.96066" y="-110.077515" type="curve" />
+      <point x="266.18423" y="-109.63031" type="offcurve" />
+      <point x="266.66605" y="-109.33331" type="offcurve" />
+      <point x="267.166" y="-109.33331" type="curve" />
+      <point x="267.166" y="-109.33331" type="offcurve" />
+      <point x="372.16702" y="-109.33331" type="offcurve" />
+      <point x="372.16702" y="-109.33331" type="curve" />
+      <point x="372.66702" y="-109.33331" type="offcurve" />
+      <point x="372.99942" y="-109.00043" type="offcurve" />
+      <point x="372.99942" y="-108.50043" type="curve" />
+      <point x="372.99942" y="-108.50043" type="offcurve" />
+      <point x="372.99942" y="-56.83319" type="offcurve" />
+      <point x="372.99942" y="-56.83319" type="curve" />
+      <point x="372.99942" y="-56.33319" type="offcurve" />
+      <point x="372.66653" y="-55.99994" type="offcurve" />
+      <point x="372.16653" y="-55.99994" type="curve" />
+      <point x="372.16653" y="-55.99994" type="offcurve" />
+      <point x="320.49936" y="-55.99994" type="offcurve" />
+      <point x="320.49936" y="-55.99994" type="curve" />
+      <point x="319.99936" y="-55.99994" type="offcurve" />
+      <point x="319.6661" y="-55.667114" type="offcurve" />
+      <point x="319.6661" y="-55.167114" type="curve" />
+      <point x="319.6661" y="-55.167114" type="offcurve" />
+      <point x="319.6661" y="476.5025" type="offcurve" />
+      <point x="319.6661" y="476.5025" type="curve" />
+      <point x="319.6661" y="477.0025" type="offcurve" />
+      <point x="319.999" y="477.33337" type="offcurve" />
+      <point x="320.499" y="477.33337" type="curve" />
+      <point x="320.499" y="477.33337" type="offcurve" />
+      <point x="372.16623" y="477.33337" type="offcurve" />
+      <point x="372.16623" y="477.33337" type="curve" />
+      <point x="372.66617" y="477.33337" type="offcurve" />
+      <point x="372.99942" y="477.66626" type="offcurve" />
+      <point x="372.99942" y="478.16626" type="curve" />
+      <point x="372.99942" y="478.16626" type="offcurve" />
+      <point x="372.99942" y="529.83344" type="offcurve" />
+      <point x="372.99942" y="529.83344" type="curve" />
+      <point x="372.99942" y="530.33344" type="offcurve" />
+      <point x="372.66788" y="530.6667" type="offcurve" />
+      <point x="372.16788" y="530.6667" type="curve" />
+      <point x="372.16788" y="530.6667" type="offcurve" />
+      <point x="160.4974" y="530.6667" type="offcurve" />
+      <point x="160.4974" y="530.6667" type="curve" />
+    </contour>
+  </outline>
+</glyph>

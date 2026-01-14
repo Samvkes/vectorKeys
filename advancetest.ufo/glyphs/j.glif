@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<glyph name="j" format="2">
+  <advance width="200" height="0" />
+  <unicode hex="006A" />
+  <note>
+  </note>
+  <outline>
+    <contour>
+      <point x="724" y="1023.008" type="move" />
+      <point x="724" y="1023.608" type="offcurve" />
+      <point x="723.6011" y="1024" type="offcurve" />
+      <point x="723.0011" y="1024" type="curve" />
+      <point x="711.7104" y="1024" type="offcurve" />
+      <point x="608.2959" y="1024" type="offcurve" />
+      <point x="596.9999" y="1024" type="curve" />
+      <point x="596.3999" y="1024" type="offcurve" />
+      <point x="596" y="1023.6001" type="offcurve" />
+      <point x="596" y="1023.0001" type="curve" />
+      <point x="596" y="1015.52606" type="offcurve" />
+      <point x="596" y="968.4721" type="offcurve" />
+      <point x="596" y="960.99945" type="curve" />
+      <point x="596" y="960.3995" type="offcurve" />
+      <point x="596.3999" y="960" type="offcurve" />
+      <point x="596.9999" y="960" type="curve" />
+      <point x="604.47394" y="960" type="offcurve" />
+      <point x="651.5279" y="960" type="offcurve" />
+      <point x="659.00055" y="960" type="curve" />
+      <point x="659.6005" y="960" type="offcurve" />
+      <point x="660" y="959.6074" type="offcurve" />
+      <point x="660" y="959.00745" type="curve" />
+      <point x="660" y="930.2451" type="offcurve" />
+      <point x="660" y="285.7778" type="offcurve" />
+      <point x="660" y="256.99405" type="curve" />
+      <point x="660" y="256.39404" type="offcurve" />
+      <point x="660.3999" y="256" type="offcurve" />
+      <point x="660.9999" y="256" type="curve" />
+      <point x="668.47394" y="256" type="offcurve" />
+      <point x="715.5279" y="256" type="offcurve" />
+      <point x="723.00055" y="256" type="curve" />
+      <point x="723.6005" y="256" type="offcurve" />
+      <point x="724" y="256.39233" type="offcurve" />
+      <point x="724" y="256.99234" type="curve" />
+      <point x="724" y="287.1094" type="offcurve" />
+      <point x="724" y="992.8962" type="offcurve" />
+      <point x="724" y="1023.008" type="curve" />
+    </contour>
+  </outline>
+</glyph>

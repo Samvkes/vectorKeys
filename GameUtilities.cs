@@ -112,4 +112,6 @@ static class StringNamesList
     public static readonly StringName toggle_preview = "toggle_preview";
     public static readonly StringName select_mode = "select_mode";
     public static readonly StringName debug = "debug";
+    public static readonly StringName escape = "escape";
+    public static readonly StringName export_ufo = "export_ufo";
 }

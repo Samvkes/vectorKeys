@@ -13,14 +13,20 @@ using System.Diagnostics;
 namespace Vectordrawing;
 
 // TODO track more state (selection, currentshape)
-public class UndoRedo()
+public class UndoRedo
 {
+    Shapes Shapes = null!;
     const int MAX_STACK_SIZE = 100;
-    static readonly List<string> UndoStack = [];
-    static readonly List<string> RedoStack = [];
+    readonly List<string> UndoStack = [];
+    readonly List<string> RedoStack = [];
     static private string CurrentState = "";
 
-    public static void Undo()
+    public UndoRedo(Shapes shapes)
+    {
+        Shapes = shapes;
+    }
+
+    public void Undo()
     {
         if (UndoStack.Count <= 0)
         {
@@ -33,7 +39,7 @@ public class UndoRedo()
         UndoStack.RemoveAt(UndoStack.Count - 1);
     }
 
-    public static void Redo()
+    public void Redo()
     {
         if (RedoStack.Count <= 0)
         {
@@ -45,17 +51,17 @@ public class UndoRedo()
         RedoStack.RemoveAt(RedoStack.Count - 1);
     }
 
-    public static void ClearRedoStack()
+    public void ClearRedoStack()
     {
         RedoStack.Clear();
     }
 
-    public static void CurrentShapesToUndoStack()
+    public void CurrentShapesToUndoStack()
     {
         AddToUndoStack(Shapes.SaveState());
     }
 
-    public static void AddToUndoStack(string serialized)
+    public void AddToUndoStack(string serialized)
     {
         UndoStack.Add(serialized);
         if (UndoStack.Count > MAX_STACK_SIZE)

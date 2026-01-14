@@ -659,23 +659,6 @@ public class Shape
         return average;
     }
 
-    public void Delete()
-    {
-        Shapes.DeleteShape(this);
-    }
-
-    public void Finish()
-    {
-        if (Anchors.Count < 3)
-        {
-            Delete();
-            return;
-        }
-        // MakeClockwise();
-        Finished = true;
-        AlignAllHandles();
-        AnchorsChanged();
-    }
 
     public virtual Segment[] SegList(bool rounded = false)
     {
@@ -698,7 +681,7 @@ public class Shape
         }
 
         Segment[] roundedSegments;
-        if (Base.DebugTrigger)
+        if (Base.input.DebugSwitch)
             roundedSegments = Shapes.RoundCornersSegmentsOld(segments, CornerRoundings());
         else
             roundedSegments = Shapes.RoundCornersSegments(segments, CornerRoundings());
@@ -737,27 +720,18 @@ public class Shape
 public class HyperbezierShape: Shape
 {
     public int[] BeziersPerAnchorPair = [];
+
     public override Segment[] SegList(bool rounded = false)
     {
-        if (AnchorsCached)
-        {
-            if (rounded) return RoundedSegments;
-            else         return Segments;
-        }
+        if (AnchorsCached) return rounded ? RoundedSegments : Segments;
 
-        (Segment[], int[]) segmentsAndAmounts = Player.AnchorsToHyperBeziers(Anchors);
-        BeziersPerAnchorPair = segmentsAndAmounts.Item2;
+        (Segments, BeziersPerAnchorPair) = Player.AnchorsToHyperBeziers(Anchors);
+        RoundedSegments = Base.input.DebugSwitch 
+            ? Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair) 
+            : Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair); 
 
-        Segment[] roundedSegments;
-        if (Base.DebugTrigger)
-            roundedSegments = Shapes.RoundCornersSegments(segmentsAndAmounts.Item1, CornerRoundings(), BeziersPerAnchorPair);
-        else
-            roundedSegments = Shapes.RoundCornersSegmentsOld(segmentsAndAmounts.Item1, CornerRoundings(), BeziersPerAnchorPair);
-        Segments = segmentsAndAmounts.Item1;
-        RoundedSegments = roundedSegments;
         AnchorsCached = true;
-        if (rounded) return roundedSegments;
-        else return segmentsAndAmounts.Item1;
+        return rounded ? RoundedSegments : Segments;
     }
 
     public override string ToString()
@@ -774,10 +748,10 @@ public class HyperbezierShape: Shape
     }
 }
 
-public static class Shapes
+public class Shapes
 {
-    public static List<Shape> S = [];
-    public static Shape NewShape()
+    public List<Shape> S = [];
+    public Shape NewShape()
     {
         // hyperbez
         Shape s;
@@ -793,17 +767,30 @@ public static class Shapes
         WriteIndented = false
     };
 
-    public static string SaveState()
+    public void FinishLastShape()
+    {
+        Shape last = S.Last();
+        if (last.Anchors.Count < 3)
+        {
+            DeleteShape(last);
+            return;
+        }
+        last.Finished = true;
+        last.AlignAllHandles();
+        last.AnchorsChanged();
+    }
+
+    public string SaveState()
     {
         return JsonSerializer.Serialize(S, JsonOpts);
     }
 
-    public static void LoadState(string serialized)
+    public void LoadState(string serialized)
     {
         S = JsonSerializer.Deserialize<List<Shape>>(serialized, JsonOpts);
     }
 
-    public static void DeleteShape(Shape s)
+    public void DeleteShape(Shape s)
     {
         S.Remove(s);
     }
@@ -862,7 +849,7 @@ public static class Shapes
         return segs;
     }
 
-    public static Shape CreateRandomShape(int variation, int shapeSize)
+    public Shape CreateRandomShape(int variation, int shapeSize)
     {
         V2 xBorder = new(300, 1500);
         V2 yBorder = new(300, 1500);
@@ -872,7 +859,7 @@ public static class Shapes
         {
             toReturn.AddAnchor(center + Fun.RandomVector(variation, variation));
         }
-        toReturn.Finish();
+        FinishLastShape();
         return toReturn;
     }
 
@@ -926,7 +913,7 @@ public static class Shapes
         return roundingDict;
     }
 
-    public static Segment[][] MergeShapesSkia()
+    public Segment[][] MergeShapesSkia()
     {
         // beoogd is shape -> rounded shape -> merge w stack -> round merges - |
         //           ^---                                              <------ |
@@ -934,7 +921,7 @@ public static class Shapes
         // schrijf coordinaten weg naar dict als keys met segRound als value
         // ga na het mergen alle punten langs, check of ze in de buurt liggen van coords in de dict, zoja round het met de segRound value
         Segment[] firstShapeRounded = [];
-        if (S[0].Finished) firstShapeRounded = S[0].SegList(true);
+         firstShapeRounded = S[0].SegList(true);
 
         if (S.Count < 2) return firstShapeRounded.Length > 0 ? [firstShapeRounded] : [];
 
@@ -1118,7 +1105,7 @@ public static class Shapes
             beziersBetween += 1;
         }
         beziersToSkip = [.. beziersToSkip, beziersBetween];
-        if (Base.DebugTrigger)
+        if (Base.input.DebugSwitch)
             return RoundCornersSegmentsOld(originalShape, cornerSizes, beziersToSkip);
         else
             return RoundCornersSegments(originalShape, cornerSizes, beziersToSkip);

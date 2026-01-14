@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3 uid="uid://cdcixq0vahlub"]
+
+[ext_resource type="Script" uid="uid://xepgylwt0u8t" path="res://LetterMenu.cs" id="1_yqmqq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yqmqq"]
+bg_color = Color(0.241416, 0.276108, 0.348357, 1)
+
+[node name="LetterMenu" type="CanvasLayer"]
+script = ExtResource("1_yqmqq")
+
+[node name="Panel" type="Panel" parent="."]
+z_index = -2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqmqq")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+vertical_scroll_mode = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="GlyphContainer" type="GridContainer" parent="ScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 30
+columns = 12

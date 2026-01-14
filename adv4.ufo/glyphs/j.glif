@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<glyph name="j" format="2">
+  <advance width="392" height="0" />
+  <unicode hex="006A" />
+  <note>
+  </note>
+  <outline>
+    <contour>
+      <point x="0.9984741" y="-1024" type="curve" />
+      <point x="0.39849854" y="-1024" type="offcurve" />
+      <point x="0" y="-1023.60767" type="offcurve" />
+      <point x="0" y="-1023.0077" type="curve" />
+      <point x="0" y="-992.8906" type="offcurve" />
+      <point x="0" y="-287.10382" type="offcurve" />
+      <point x="0" y="-256.992" type="curve" />
+      <point x="0" y="-256.392" type="offcurve" />
+      <point x="0.3988037" y="-256" type="offcurve" />
+      <point x="0.9987793" y="-256" type="curve" />
+      <point x="15.221497" y="-256" type="offcurve" />
+      <point x="176.78076" y="-256" type="offcurve" />
+      <point x="191.00146" y="-256" type="curve" />
+      <point x="191.60144" y="-256" type="offcurve" />
+      <point x="192" y="-256.39233" type="offcurve" />
+      <point x="192" y="-256.99234" type="curve" />
+      <point x="192" y="-287.1094" type="offcurve" />
+      <point x="192" y="-992.8962" type="offcurve" />
+      <point x="192" y="-1023.008" type="curve" />
+      <point x="192" y="-1023.608" type="offcurve" />
+      <point x="191.6012" y="-1024" type="offcurve" />
+      <point x="191.00122" y="-1024" type="curve" />
+      <point x="176.77844" y="-1024" type="offcurve" />
+      <point x="15.219238" y="-1024" type="offcurve" />
+      <point x="0.9984741" y="-1024" type="curve" />
+    </contour>
+  </outline>
+</glyph>

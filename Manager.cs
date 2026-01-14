@@ -63,7 +63,11 @@ public partial class Manager : Node
 
 	public override void _Process(double delta)
 	{
-		// cam.Offset = GetNoiseOffset((float)delta);
+        if (Input.IsKeyPressed(Key.Backspace))
+        {
+			((CanvasLayer)GetParent().FindChild("Peace")).Visible = true;
+            GetTree().Quit();
+        }
 	}
 
 	public void Test()
