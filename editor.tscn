@@ -1,23 +1,48 @@
-[gd_scene load_steps=5 format=3 uid="uid://c5ar5y8ypxffx"]
+[gd_scene format=3 uid="uid://c5ar5y8ypxffx"]
 
 [ext_resource type="PackedScene" uid="uid://cdcixq0vahlub" path="res://letter_menu.tscn" id="1_vjobr"]
 [ext_resource type="Script" uid="uid://b7vi2k1ll1ptm" path="res://Editor.cs" id="1_wrb8p"]
 [ext_resource type="PackedScene" uid="uid://nq848ct5jjb0" path="res://Base.tscn" id="2_wrb8p"]
 [ext_resource type="Texture2D" uid="uid://b7n7y1vp6yjil" path="res://assets/270C_black.png" id="4_q0a35"]
+[ext_resource type="Texture2D" uid="uid://dqgbs8s8ja6ca" path="res://assets/keep_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" id="5_4s0cy"]
 
-[node name="Editor" type="Node2D"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0a35"]
+bg_color = Color(0.8, 0.8, 0.8, 1)
+border_width_left = 20
+border_width_top = 20
+border_width_right = 20
+border_width_bottom = 20
+border_color = Color(0.8001508, 0.8001509, 0.8001508, 0)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4s0cy"]
+bg_color = Color(0.8, 0.8, 0.8, 1)
+border_width_left = 20
+border_width_top = 20
+border_width_right = 20
+border_color = Color(0.8001508, 0.8001509, 0.8001508, 0)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="Editor" type="Node2D" unique_id=922788545]
 process_mode = 3
 script = ExtResource("1_wrb8p")
 
-[node name="LetterMenu" parent="." instance=ExtResource("1_vjobr")]
+[node name="LetterMenu" parent="." unique_id=1577656534 instance=ExtResource("1_vjobr")]
+
+[node name="DrawingBase" parent="." unique_id=95779502 instance=ExtResource("2_wrb8p")]
+
+[node name="Peace" type="CanvasLayer" parent="." unique_id=168367103]
 visible = false
 
-[node name="DrawingBase" parent="." instance=ExtResource("2_wrb8p")]
-
-[node name="Peace" type="CanvasLayer" parent="."]
-visible = false
-
-[node name="TextureRect" type="TextureRect" parent="Peace"]
+[node name="TextureRect" type="TextureRect" parent="Peace" unique_id=539033842]
 modulate = Color(1, 1, 1, 0.25098)
 anchors_preset = 8
 anchor_left = 0.5
@@ -32,7 +57,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("4_q0a35")
 
-[node name="UfoFilePicker" type="FileDialog" parent="."]
+[node name="UfoFilePicker" type="FileDialog" parent="." unique_id=718199281]
 auto_translate_mode = 1
 title = "Open a Directory"
 ok_button_text = "Select Current Folder"
@@ -40,8 +65,32 @@ file_mode = 2
 access = 2
 use_native_dialog = true
 
-[node name="PopupPanel" type="PopupPanel" parent="."]
-title = "oij"
-position = Vector2i(511, 217)
-size = Vector2i(570, 560)
-visible = true
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=242152374]
+
+[node name="Button" type="Button" parent="CanvasLayer" unique_id=355594106]
+z_index = 1
+custom_minimum_size = Vector2(15.73, 0)
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -5.0
+offset_top = -89.0
+offset_right = 83.0
+offset_bottom = -1.0
+grow_vertical = 0
+size_flags_horizontal = 0
+focus_mode = 0
+theme_override_colors/icon_normal_color = Color(0, 0, 0, 0.27450982)
+theme_override_colors/icon_pressed_color = Color(0.32127297, 0.20402595, 0.99999446, 1)
+theme_override_colors/icon_hover_color = Color(0.3828804, 0.37337273, 1, 1)
+theme_override_colors/icon_hover_pressed_color = Color(0.3828804, 0.37337273, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_q0a35")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_4s0cy")
+theme_override_styles/hover = SubResource("StyleBoxFlat_q0a35")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_4s0cy")
+toggle_mode = true
+action_mode = 0
+icon = ExtResource("5_4s0cy")
+icon_alignment = 1
+
+[connection signal="button_down" from="CanvasLayer/Button" to="." method="_OnButtonDown"]

@@ -34,8 +34,9 @@ public partial class GlyphPreview : TextureRect
             GV2 baselineOffset = MediumFontFile.GetGlyphOffset(0, FontSize, glyphIndex);
             GV2 glyphSize = MediumFontFile.GetGlyphSize(0, FontSize, glyphIndex);
             GV2 pos = (Size - glyphSize) / 2;
+            GV2 heightOffset = Selected ? new(0,-5) : new(0,0);
             Color charCol = Selected ? placeholderColorSelected : placeholderColor;
-            DrawChar(MediumFontFile, pos - baselineOffset, MyGlyph.ToString(), FontSize.X, charCol);
+            DrawChar(MediumFontFile, (pos - baselineOffset) + heightOffset, MyGlyph.ToString(), FontSize.X, charCol);
         }
     }
 
@@ -45,7 +46,7 @@ public partial class GlyphPreview : TextureRect
         if (Selected)
         {
             BackgroundSelected.Visible = true;
-            Scale = new(1.1f, 1.1f);
+            // Scale = new(1.1f, 1.1f);
         }
         else
         {

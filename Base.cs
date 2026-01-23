@@ -27,7 +27,6 @@ using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Vectordrawing;
 
@@ -99,17 +98,14 @@ public record UIConfig(
 public record Children(
     Sprite2D Tex,
     Sprite2D Cursor,
-    Sprite2D CursorShadow,
     Label CursorLabel,
     ColorRect Background,
     CanvasLayer ControlRoot,
-    Panel FocusIdentifier,
     Panel LayerSelector,
     HBoxContainer PreviewContainer,
-    TextureRect Preview1,
-    TextureRect TinyPreview1,
-    TextureRect TinyPreview2,
-    TextureRect Preview2,
+    TextureRect BigPreview,
+    TextureRect TinyPreviewUp,
+    TextureRect TinyPreviewDown,
     FileDialog SerafFilePicker,
     VBoxContainer VBox  
 );
@@ -162,12 +158,15 @@ public partial class Base : Node2D
     public static UiState ui = new();
     public static Children children = null!;
     Manager Manager = null!;
+    Editor Ed = null!;
 
     public static int FrameCounter = 0;
     public static float Counter = 0;
     List<float> DeltaTimeList = new();
     Timer FpsTimer = new();
     RichTextLabel FpsLabel = null!;
+    PackedScene IndicatorScene = GD.Load<PackedScene>("res://shape_indicator.tscn");
+    ShapeIndicator[] Indicators = new ShapeIndicator[10];
 
     string LastFramesSvg = "";
     public Shapes Shapes = new();
@@ -181,10 +180,22 @@ public partial class Base : Node2D
     public override void _Ready()
     {
         CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
+        Ed = (Editor)(GetParent().GetParent());
         Manager = ((Editor)GetParent().GetParent()).Manager;
         AddChild(input.UndoTimer);
         AddChild(input.MovementTimer);
         AddChild(FpsTimer);
+        for (int i = 0; i < 10; i++)
+        {
+            ShapeIndicator indicator = IndicatorScene.Instantiate<ShapeIndicator>();
+            AddChild(indicator);
+
+            indicator.SetNumber(
+                i < 9 ? i + 1 : 0
+                );
+            Indicators[i] = indicator;
+            indicator.Visible = false;
+        }
 
         input.MovementTimer.WaitTime = 0.01f;
         input.MovementTimer.OneShot = true;
@@ -203,17 +214,14 @@ public partial class Base : Node2D
         children = new(
             GetParent().GetNode<Sprite2D>("Tex"),
             _cursor,
-            (Sprite2D)_cursor.GetChild(0),
-            (Label)_cursor.GetChild(1),
+            (Label)_cursor.GetChild(0),
             GetParent().GetNode<ColorRect>("Background"),
             _controlroot,
-            _controlroot.GetNode<Panel>("LayerPanel/FocusIdentifier"),
             (Panel)FindChild("Selector"),
             _previewcontainer,
             _previewcontainer.GetChild<TextureRect>(0),
             (TextureRect)_previewcontainer.FindChild("TinyPreview"),
             (TextureRect)_previewcontainer.FindChild("TinyPreview2"),
-            _previewcontainer.GetChild<TextureRect>(2),
             GetParent().GetNode<FileDialog>("SerafFileDialog"),
             (VBoxContainer)FindChild("VBoxContainer_Layers")
         );
@@ -237,6 +245,9 @@ public partial class Base : Node2D
         float delta = (float)doubleDelta;
         Counter += delta;
 
+        UpdateUI(delta);
+        if (Ed.Throttling)
+            return;
         // SVG code goes here
         ui.CanvasImage.LoadSvgFromString(LastFramesSvg);
         Texture2D finalTexture = ImageTexture.CreateFromImage(ui.CanvasImage);
@@ -247,23 +258,57 @@ public partial class Base : Node2D
         else if (input.CurrentMode == Mode.Selecting) DrawSelecting();
 
         SvgString.Finish();
-        LastFramesSvg = SvgString.CurrentString;
+        LastFramesSvg = SvgString.CurrentString.ToString();
         children.Tex.Texture = finalTexture;
 
-        UpdateUI(delta);
         QueueRedraw();
     }
 
+
     public void UpdateUI(float delta)
     {
+        UpdateFpsLabel(delta);
         ProcessCursor(delta);
+        if (Ed.Throttling)
+            return;
         RenderThumbnails(delta);
         DrawLayers(delta);
         PositionSelectorWidget(delta);
-        UpdateFpsLabel(delta);
+        UpdateShapeIndicators();
 
-        V2 newScale = V2.Lerp(Fun.Vtv(children.FocusIdentifier.Scale), new(1.0f, 1.0f), delta * 30);
-        children.FocusIdentifier.Scale = Fun.Vtv(newScale);
+        // V2 newScale = V2.Lerp(Fun.Vtv(children.FocusIdentifier.Scale), new(1.0f, 1.0f), delta * 30);
+        // children.FocusIdentifier.Scale = Fun.Vtv(newScale);
+    }
+
+
+    public void UpdateShapeIndicators()
+    {
+        if (input.CurrentMode != Mode.Editing)
+        {
+            foreach (ShapeIndicator indicator in Indicators)
+                indicator.Visible = false;
+            return;
+        }
+
+        int c = 1;
+        foreach (Shape s in Shapes.S)
+        {
+            if (s.Anchors.Count < 3) continue;
+            V2 p0 = s.SegList()[0].InPoint;
+            V2 p1 = s.SegList()[0].OutPoint;
+            V2 p2 = s.SegList()[^1].InPoint;
+            V2 p3 = p0 - p1;
+            V2 p4 = p0 - p2;
+            V2 d = (V2.Normalize(p3) + V2.Normalize(p4)) / 2f;
+            // if (d.Length() < 0.1) GD.Print(d);
+            d = d.Length() > 0 ? d : V2.Transform(p3, Matrix3x2.CreateRotation(MathF.PI / 2));
+            p0 += V2.Normalize(d) * 30;
+            ShapeIndicator indic = Indicators[c - 1];
+            indic.Visible = true;
+            indic.Position = Fun.Vtv(p0);
+            indic.SetAngle(Fun.Vtv(d).Angle());
+            c += 1;
+        }
     }
 
 
@@ -290,19 +335,44 @@ public partial class Base : Node2D
     {
         Image tempImage = new();
         int shapeCounter = 0;
+        V2 size = new(90,90);
+        float f = size.Y / config.WindowSize.Y;
+        // float margin = .02f;
+        // f -= margin;
+
         foreach (TextureRect nde in children.VBox.GetChildren())
         {
             string currentString = (
-                $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"90\" >" +
-                $"<g transform=\"scale(0.5) translate(-30,-30) rotate(0)\">" +
-                $"<g transform=\"scale(0.1) translate(0,0) rotate(0)\">");
+                $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{size.X}\" height=\"{size.Y}\" >" +
+                $"<g transform=\"scale({f}) translate(0,0) rotate(0)\">" +
+                $"<g transform=\"scale(1) translate(0,0) rotate(0)\">");
+    
+            // currentString += (
+            //     $"<circle cx=\"{config.Origin.X}\" cy=\"{config.Origin.Y}\" r=\"{400}\" " + 
+            //     $"fill=\"{"black"}\" stroke=\"{"black"}\" fill-opacity=\"{0.5f}\" stroke-opacity=\"{0.5f}\" stroke-width=\"{0}\"/>"
+            // );
+    
             if (shapeCounter < Shapes.S.Count)
             {
-                if (Shapes.S[shapeCounter].Anchors.Count < 3)
+                Shape currentShape = Shapes.S[shapeCounter];
+                if (currentShape.Anchors.Count < 3)
                 {
                     continue;
                 }
-                Segment[] s = Shapes.S[shapeCounter].SegList();
+                if (currentShape == CurrentShape)
+                {
+                    float l = 0;
+                    currentString += (
+                        $"<path d=\"M {l} {0} L {config.WindowSize.X - l} {0}\"" + 
+                        $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
+                    );
+                    currentString += (
+                        $"<path d=\"M {l} {config.WindowSize.Y} L {config.WindowSize.X - l} {config.WindowSize.Y}\"" + 
+                        $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
+                    );
+
+                }
+                Segment[] s = currentShape.SegList();
                 float[] startSeg = s[0].Flat();
                 currentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
                 int innerCounter = 0;
@@ -318,7 +388,10 @@ public partial class Base : Node2D
                     innerCounter += 1;
                 }
                 currentString += $"Z\" ";
-                currentString += " fill =\"gray\" stroke =\"black\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
+                if (currentShape.Negative)
+                    currentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"0.2\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
+                else
+                    currentString += " fill =\"gray\" stroke =\"black\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
                 currentString += Shapes.S[shapeCounter];
             }
             currentString += (
@@ -326,6 +399,7 @@ public partial class Base : Node2D
             );
             tempImage.LoadSvgFromString(currentString);
             nde.Texture = ImageTexture.CreateFromImage(tempImage);
+            nde.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
 
             shapeCounter += 1;
         }
@@ -334,27 +408,30 @@ public partial class Base : Node2D
 
     public void RenderThumbnails(float delta)
     {
-        Image thumbnail = DrawThumbnail(new(200, 320));
-        Image prevthumb = new();
+        V2 size = new(260, 260);
+        Image thumbnail = DrawThumbnail(size);
+        Image prevthumb = new(); 
         prevthumb.CopyFrom(thumbnail);
-        prevthumb.Resize(200/3, 320/3); 
-        prevthumb.AdjustBcs(0.4f,1,1);
-        children.Preview1.Texture = ImageTexture.CreateFromImage(thumbnail);
-        PreviewTex = ImageTexture.CreateFromImage(prevthumb);
-        Image tinyThumbnail = new();
-        tinyThumbnail.CopyFrom(thumbnail);
+
+        children.BigPreview.Texture = ImageTexture.CreateFromImage(thumbnail);
+        children.BigPreview.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
+
+        // thumbnail.Resize((int)size.X / 4, (int)size.Y / 4, Image.Interpolation.Lanczos);
+        size = new(100, 100);
+        thumbnail = DrawThumbnail(size);
         thumbnail.AdjustBcs(0, 1, 1);
+        thumbnail.FlipY();
+        children.TinyPreviewDown.Texture = ImageTexture.CreateFromImage(thumbnail);
+        children.TinyPreviewDown.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
+
+        thumbnail.FlipY();
         thumbnail.FlipX();
-        children.Preview2.Texture = ImageTexture.CreateFromImage(thumbnail);
-        tinyThumbnail.Resize(200 / 4, 320 / 4, Image.Interpolation.Nearest);
-        tinyThumbnail.FlipY();
-        children.TinyPreview1.Texture = ImageTexture.CreateFromImage(tinyThumbnail);
-        children.TinyPreview1.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-        tinyThumbnail.AdjustBcs(0, 1, 1);
-        tinyThumbnail.FlipY();
-        Texture2D t = ImageTexture.CreateFromImage(tinyThumbnail);
-        children.TinyPreview2.Texture = t;
-        children.TinyPreview2.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
+        children.TinyPreviewUp.Texture = ImageTexture.CreateFromImage(thumbnail);
+        children.TinyPreviewUp.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
+
+        prevthumb.Resize((int)size.X / 3, (int)size.Y / 3); 
+        prevthumb.AdjustBcs(0.2f,1,1);
+        PreviewTex = ImageTexture.CreateFromImage(prevthumb);
     }
 
 
@@ -370,18 +447,26 @@ public partial class Base : Node2D
     public static void ProcessCursor(float delta)
     {
         if (ui.Zoom <= 1)
-            children.Cursor.Position = Fun.Vtv(V2.Lerp(Fun.Vtv(children.Cursor.Position), ((input.MarkerPos + ui.CursorOff) * ui.Zoom) + (config.Origin * (1f - ui.Zoom)), delta * 20f));
+        {
+            children.Cursor.Position = Fun.Vtv(V2.Lerp(
+                Fun.Vtv(children.Cursor.Position), 
+                ((input.MarkerPos + ui.CursorOff) * ui.Zoom) + (config.Origin * (1f - ui.Zoom)),
+                MathF.Min(delta, 0.1f) * 20f));
+        }
         else
+        {
             children.Cursor.Position = Fun.Vtv(config.Origin + ui.CursorOff);
-        children.Cursor.Scale = Fun.Vtv(V2.Lerp(Fun.Vtv(children.Cursor.Scale), new V2(.9f, .9f), delta * 10));
+        }
+        children.Cursor.Scale = Fun.Vtv(V2.Lerp(
+            Fun.Vtv(children.Cursor.Scale), 
+            new V2(.9f, .9f), 
+            MathF.Min(delta, 0.1f) * 10));
         if (children.Cursor.Scale.Length() < new V2(.85f, .85f).Length())
         {
             children.Cursor.Rotation = children.Cursor.Position.AngleToPoint(Fun.Vtv((input.MarkerPos * ui.Zoom) + (config.Origin * (1 - ui.Zoom))));
         }
-        children.CursorShadow.Position = children.Cursor.Position + new GV2(0,5);
+
         children.CursorLabel.Position = children.Cursor.Position + new GV2(30, 30);
-        children.CursorShadow.Scale = children.Cursor.Scale;
-        children.CursorShadow.Rotation = children.Cursor.Rotation;
         children.CursorLabel.Text = input.MarkerPos.X.ToString() + ", " + input.MarkerPos.Y.ToString();
         children.CursorLabel.Size = new(0, 10);
     }
@@ -530,9 +615,6 @@ public partial class Base : Node2D
                 {
                     SelectedHandles = [];
                     SelectedAnchors = [];
-                    ((Sprite2D)children.FocusIdentifier.GetChild(0)).Visible = true;
-                    ((Sprite2D)children.FocusIdentifier.GetChild(1)).Visible = false;
-                    children.FocusIdentifier.Scale = new GV2(0.3f, 3f);
                     input.CurrentFocus = Focus.Anchor;
                 }
                 else
@@ -862,9 +944,6 @@ public partial class Base : Node2D
                     fanchor = CurrentShape.Anchors.Last();
                 HandlePointer hp = new(fanchor, true);
                 SelectedHandles = [hp];
-                ((Sprite2D)children.FocusIdentifier.GetChild(0)).Visible = false;
-                ((Sprite2D)children.FocusIdentifier.GetChild(1)).Visible = true;
-                children.FocusIdentifier.Scale = new GV2(0.3f, 3f);
                 input.CurrentFocus = Focus.Handle;
             }
 
@@ -1301,16 +1380,25 @@ public partial class Base : Node2D
         {
             return;
         }
+
+        Segment[][] sss = Shapes.MergeShapesSkia();
+        // SvgString.SetStyle(Style.ShapeUnderlay);
+        // SvgString.AddSegmentsGroup(sss);
+
         foreach (Shape s in Shapes.S)
         {
             if (s.Anchors.Count < 3) continue;
 
             if (s.Negative)
             {
+                // SvgString.SetStyle(Style.ShapeShadow);
+                // SvgString.AddSegments(s.SegList());
                 SvgString.SetStyle(Style.ShapeNegative);
             }
             else
             {
+                // SvgString.SetStyle(Style.ShapeShadow);
+                // SvgString.AddSegments(s.SegList());
                 SvgString.SetStyle(Style.ShapeUnchanged);
             }
 
@@ -1320,12 +1408,37 @@ public partial class Base : Node2D
                 SvgString.AddSegments(s.SegList());
         }
 
-        // draw merged shapes
-        SvgString.SetStyle(Style.ShapePositive);
-        Segment[][] sss = Shapes.MergeShapesSkia();
+        foreach (Shape s in Shapes.S)
+        {
+            if (s.Anchors.Count < 3) continue;
 
+            if (s.Negative)
+            {
+                SvgString.SetStyle(Style.ShapeShadow);
+                SvgString.AddSegments(s.SegList(true));
+                SvgString.SetStyle(Style.ShapeNegative);
+            }
+            else
+            {
+                SvgString.SetStyle(Style.ShapeShadow);
+                SvgString.AddSegments(s.SegList(true));
+                SvgString.SetStyle(Style.ShapeUnchanged);
+            }
 
-        if (CurrentShape.Finished)
+            if (config.Debug)
+                SvgString.AddSegmentsDebug(s.SegList());
+            else
+                SvgString.AddSegments(s.SegList(true));
+        }
+        SvgString.SetStyle(Style.ShapeOverShadow);
+        SvgString.AddSegmentsGroup(sss);
+        if (CurrentShape.Anchors.Count >= 3)
+        {
+            SvgString.SetStyle(Style.ShapeUnchangedSelected); 
+            SvgString.AddSegments(CurrentShape.SegList(true));
+        }
+
+        if (CurrentShape.Finished && false)
         {
             V2 tan = Fun.Vtv(Player.ProjectOnShapeTangent(sss[0], input.MarkerPos));
             tan = V2.Transform(tan, Matrix3x2.CreateRotation(MathF.PI * .5f));
@@ -1359,7 +1472,6 @@ public partial class Base : Node2D
             // GD.Print($"point count: {pointcount}");
         }
         var lot = Shapes.ListOfTangents(sss);
-        SvgString.AddSegmentsGroup(sss);
 
 
         // draw ui overlays (anchors and handles)
@@ -1452,12 +1564,16 @@ public partial class Base : Node2D
 
     public Image DrawThumbnail(V2 size)
     {
-        SvgString.ClearString(0.2f, size / 2f - new V2(230,180), size, input.MarkerPos);
+        float f = size.Y / config.WindowSize.Y;
+        float margin = .02f;
+        f -= margin;
 
+        SvgString.ClearString(f, (size * (margin / f))/2, size, input.MarkerPos);
+        
         DrawPreviewing(true);
         SvgString.Finish();
         Image thumbnail = new();
-        thumbnail.LoadSvgFromString(SvgString.CurrentString);
+        thumbnail.LoadSvgFromString(SvgString.CurrentString.ToString());
         return thumbnail;
     }
 

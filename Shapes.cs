@@ -98,6 +98,15 @@ public struct Segment(V2 inPoint, V2 inHandle, V2 outHandle, V2 outPoint)
         return [InPoint.X, InPoint.Y, InHandle.X, InHandle.Y, OutHandle.X, OutHandle.Y, OutPoint.X, OutPoint.Y];
     }
 
+    public void Flat(Span<float> s)
+    {
+        s = s[..8];
+        s[0] = InPoint.X; s[1] = InPoint.Y; 
+        s[2] = InHandle.X; s[3] = InHandle.Y; 
+        s[4] = OutHandle.X; s[5] = OutHandle.Y; 
+        s[6] = OutPoint.X; s[7] = OutPoint.Y;
+    }
+
     public float LengthCubic()
     {
         if (Length != null)

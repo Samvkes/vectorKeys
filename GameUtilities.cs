@@ -114,4 +114,7 @@ static class StringNamesList
     public static readonly StringName debug = "debug";
     public static readonly StringName escape = "escape";
     public static readonly StringName export_ufo = "export_ufo";
+    public static readonly StringName f1 = "f1";
+    public static readonly StringName f2 = "f2";
+    public static readonly StringName f3 = "f3";
 }

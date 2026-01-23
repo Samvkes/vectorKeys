@@ -12,6 +12,7 @@ using System.Diagnostics.Metrics;
 using SkiaSharp;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace Vectordrawing;
 
@@ -23,6 +24,12 @@ enum Style  {
     ShapeUnchanged,
     ShapeNegative,
     ShapeSelected,
+    ShapeShadow,
+    ShapeUnderlay,
+    ShapeOverShadow,
+    ShapeShadowOutside,
+    ShapeUnchangedSelected,
+    ShapeNegativeSelected,
 }
 
 static class Styles
@@ -37,11 +44,11 @@ static class Styles
 
     public static string GetWidth(Width width)
     {
-        string[] widths = ["1", "3", "5"];
+        string[] widths = ["1", "3", "5", "30"];
         if (zoom > 1)
-            widths = ["0.5", "1", "2"];
+            widths = ["0.5", "1", "2", "8"];
         else if (zoom < 1)
-            widths = ["3", "5", "8"];
+            widths = ["3", "5", "8", "32"];
 
         return widths[(int)width];
     }
@@ -51,18 +58,18 @@ static class Styles
         new()
         {
         // shape positive
-            ["fill"] = "blue",
+            ["fill"] = "gray",
             ["stroke"] = "black",
-            ["fill-opacity"] = "0.1",
+            ["fill-opacity"] = "0.0",
             ["stroke-opacity"] = "1.0",
-            ["stroke-width"] = "2",
+            ["stroke-width"] = "3",
         },
         new()
         {
         // shape open
             ["fill"] = "red",
             ["stroke"] = "black",
-            ["fill-opacity"] = "0.2",
+            ["fill-opacity"] = "0.0",
             ["stroke-opacity"] = "1",
             ["stroke-width"] = "1",
         },
@@ -88,20 +95,21 @@ static class Styles
         {
         // shape unchanged
             ["fill"] = "gray",
-            ["stroke"] = "white",
-            ["fill-opacity"] = "0.4",
-            ["stroke-opacity"] = "1.0",
-            ["stroke-width"] = "1",
+            ["stroke"] = "#636363",
+            ["fill-opacity"] = "0.0",
+            ["stroke-opacity"] = "0.6",
+            ["stroke-width"] = "2",
         },
         new()
         {
         // shape negative
             // ["fill"] = "#d69c85",
-            ["fill"] = "#e08a85",
-            ["stroke"] = "black",
-            ["fill-opacity"] = "0.7",
+            // ["fill"] = "#e08a85",
+            ["fill"] = "#CCCCCC",
+            ["stroke"] = "#3363ff",
+            ["fill-opacity"] = "0.6",
             ["stroke-opacity"] = "0.8",
-            ["stroke-width"] = "1",
+            ["stroke-width"] = "2",
         },
         new()
         {
@@ -112,14 +120,76 @@ static class Styles
             ["stroke-opacity"] = "0.0",
             ["stroke-width"] = "3",
         },
+        new()
+        {
+        // shape shadow 
+            ["fill"] = "blue",
+            ["stroke"] = "#CCCCCC",
+            // ["stroke"] = "#bbbbbb",
+            ["fill-opacity"] = "0.00",
+            ["stroke-opacity"] = "1.0",
+            ["stroke-width"] = "4",
+
+        },
+        new()
+        {
+        // shape underlay 
+            ["fill"] = "#bbbbbb",
+            ["stroke"] = "#CCCCCC",
+            ["fill-opacity"] = "1.00",
+            ["stroke-opacity"] = "0.0",
+            ["stroke-width"] = "0",
+
+        },
+        new()
+        {
+        // shape overshadow 
+            ["fill"] = "#ff3333",
+            ["stroke"] = "black",
+            ["fill-opacity"] = "0.20",
+            ["stroke-opacity"] = "1.00",
+            ["stroke-width"] = "2",
+
+        },
+        new()
+        {
+        // shape overshadow outside
+            ["fill"] = "#ff3333",
+            ["stroke"] = "#CCCCCC",
+            ["fill-opacity"] = "0.00",
+            ["stroke-opacity"] = "1.00",
+            ["stroke-width"] = "3",
+
+        },
+        new()
+        {
+        // shape unchanged selected
+            ["fill"] = "#ff8800",
+            ["stroke"] = "#636363",
+            ["fill-opacity"] = "0.2",
+            ["stroke-opacity"] = "0.0",
+            ["stroke-width"] = "2",
+        },
+        new()
+        {
+        // shape negative selected
+            // ["fill"] = "#d69c85",
+            // ["fill"] = "#e08a85",
+            ["fill"] = "#808af5",
+            // ["fill"] = "#CCCCCC",
+            ["stroke"] = "#3363ff",
+            ["fill-opacity"] = "0.0",
+            ["stroke-opacity"] = "1.0",
+            ["stroke-width"] = "2",
+        },
     ];
 }
 
 static class SvgString
 {
-    public static string CurrentString = "";
-
+    // public static string CurrentString = "";
     static Dictionary<string, string> CurrentStyle = Styles.S[0];
+    public static readonly StringBuilder CurrentString = new(1 << 20);
 
     public static void SetStyle(Style s)
     {
@@ -132,19 +202,26 @@ static class SvgString
         {
             if (key == "stroke-width" && val != "0")
             {
-                CurrentString += key + "=\"" + Styles.GetWidth((Styles.Width)(int.Parse(val)-1)) + "\" ";
+                CurrentString.Append(key)
+                             .Append( "=\"")
+                             .Append(Styles.GetWidth((Styles.Width)(int.Parse(val)-1)))
+                             .Append("\" ");
             }
             else
             {
-                CurrentString += key + "=\"" + val + "\" ";
+                CurrentString.Append(key)
+                             .Append("=\"")
+                             .Append(val)
+                             .Append("\" ");
             }
         }
     }
 
     public static void AddSKPath(SKPath path)
     {
-        CurrentString += $"<path d=\" ";
-        CurrentString += path.ToSvgPathData();
+        CurrentString.Append($"<path d=\" ")
+                     .Append(path.ToSvgPathData());
+        CurrentString += ;
         CurrentString += $"Z\" ";
         //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
         Style();
@@ -176,7 +253,56 @@ static class SvgString
             counter += 1;
         }
     }
+
     public static void AddSegments(Segment[] s, bool debugInfo = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
+    {
+        Span<float> f = stackalloc float[8];  
+        s[0].Flat(f);
+        CurrentString.Append("<path d=\"M ")
+                     .Append(start[0])
+                     .Append(start[1])
+                     .Append(" C ");
+        // CurrentString += $"<path d=\"M {start[0]} {start[1]} C ";
+        // int counter = 0;
+        foreach (Segment seg in s)
+        {
+            seg.Flat(f);
+            CurrentString.Append(f[2]).Append(' ')
+                         .Append(f[3]).Append(' ')
+                         .Append(f[4]).Append(' ')
+                         .Append(f[5]).Append(' ')
+                         .Append(f[6]).Append(' ')
+                         .Append(f[7]).Append(' ');
+            // CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+            // if (counter != s.Length - 1)
+            // {
+            //     CurrentString += "C ";
+            // }
+            // CurrentString += " ";
+            // counter += 1;
+        }
+        // CurrentString += $"Z\" ";
+        CurrentString.Append("Z\" ");
+        if (debugInfo)
+        {
+        //     if (Shapes.IsSegmentListClockwise(s))
+        //     {
+        //         CurrentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>";
+        //     }
+        //     else
+        //     {
+        //         CurrentString += " fill =\"blue\" stroke =\"blue\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>";
+        //     }
+        //     // CurrentString += " fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
+        }
+        else
+        {
+            Style();
+        }
+        CurrentString.Append("/>");
+    }
+
+    public static void AddSegmentsShadow(Segment[] s, int shadow, bool debugInfo = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
     {
         // GD.Print(s[0]);
         float[] startSeg = s[0].Flat();
@@ -212,7 +338,6 @@ static class SvgString
         }
         CurrentString += "/>";
     }
-
     public static void AddSegmentsGroup_Debug(Segment[][] sGroup, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
     {
         foreach (Segment[] s in sGroup)

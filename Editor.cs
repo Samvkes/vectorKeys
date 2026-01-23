@@ -23,12 +23,22 @@ public partial class Editor : Node2D
 {
     Node2D DrawingBase = null!; 
     LetterMenu LetterMenu = null!; 
-    public Manager Manager = GD.Load<PackedScene>("res://Manager.tscn").Instantiate<Manager>();
+    public Manager Manager = GD.Load<PackedScene>("res://manager.tscn").Instantiate<Manager>();
     public FileDialog UfoFilePicker = null!;
     public FamilyConfig CurrentFamily = new();
+    Timer FpsTimer = null!;
+    float ThrottleWaitTime = 1f;
+    public bool Throttling = false;
 
     public override void _Ready()
     {
+        FpsTimer = new();
+        AddChild(FpsTimer);
+        FpsTimer.WaitTime = ThrottleWaitTime;
+        FpsTimer.Timeout += () => {Throttling = true;};
+        FpsTimer.OneShot = true;
+        FpsTimer.Start();
+
         AddChild(Manager);
         GetTree().Paused = true;
         DrawingBase = (Node2D)FindChild("DrawingBase");
@@ -42,6 +52,19 @@ public partial class Editor : Node2D
 
     public override async void _Process(double delta)
     {
+        // if (Throttling)
+        //     Engine.MaxFps = 45;
+        // else if (Engine.MaxFps == 45)
+        //     Engine.MaxFps = 0;
+
+        if (Input.IsAnythingPressed())
+        {
+            Throttling = false;
+            FpsTimer.WaitTime = ThrottleWaitTime;
+            if (FpsTimer.IsStopped())
+                FpsTimer.Start();
+        }
+
         if (Input.IsActionJustPressed(Snl.escape))
         {
             DrawingBase.Visible = false;
@@ -57,6 +80,14 @@ public partial class Editor : Node2D
         if (Input.IsActionJustPressed(Snl.export_ufo))
         {
             ExportUfo();
+        }
+        
+        if (Input.IsActionJustPressed(Snl.f1))
+        {
+            if (Engine.MaxFps == 0)
+                Engine.MaxFps = 30;
+            else
+                Engine.MaxFps = 0;
         }
     }
 
@@ -85,4 +116,11 @@ public partial class Editor : Node2D
             LetterMenu.Visible = false;
         });
     }
+
+    public void _OnButtonDown()
+    {
+        GetWindow().AlwaysOnTop = !GetWindow().AlwaysOnTop;
+    }
+
+
 }

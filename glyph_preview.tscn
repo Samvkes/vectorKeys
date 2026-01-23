@@ -1,28 +1,50 @@
-[gd_scene load_steps=4 format=3 uid="uid://byxxhlkfgaijo"]
+[gd_scene format=3 uid="uid://byxxhlkfgaijo"]
 
 [ext_resource type="Script" uid="uid://cgskdcnix2su5" path="res://GlyphPreview.cs" id="1_d55ov"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mu7r8"]
-bg_color = Color(0.670689, 0.67069, 0.670689, 1)
+bg_color = Color(0.8001508, 0.8001509, 0.8001508, 0)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.24521106, 0.24521106, 0.24521106, 0.43137255)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-shadow_color = Color(0.393086, 0.393086, 0.393085, 1)
-shadow_size = 1
-shadow_offset = Vector2(0, 4)
+
+[sub_resource type="Gradient" id="Gradient_p03pq"]
+offsets = PackedFloat32Array(0, 0.95102507, 1)
+colors = PackedColorArray(1, 1, 1, 0, 0, 0, 0, 0.039215688, 1, 1, 1, 0.15686275)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_d55ov"]
+gradient = SubResource("Gradient_p03pq")
+fill_from = Vector2(0.5363248, 1)
+fill_to = Vector2(0.52991456, 0.0064102565)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p03pq"]
-bg_color = Color(0.867274, 0.363338, 0.274729, 1)
+bg_color = Color(0.38761514, 0.4178293, 0.5601745, 1)
+border_width_left = 4
+border_width_top = 1
+border_width_right = 4
+border_width_bottom = 11
+border_color = Color(0.2913538, 0.25803304, 0.4554913, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-shadow_color = Color(0.935135, 0.521714, 0.51468, 1)
-shadow_size = 1
-shadow_offset = Vector2(0, 4)
 
-[node name="GlyphPreview" type="TextureRect"]
+[sub_resource type="Gradient" id="Gradient_d55ov"]
+offsets = PackedFloat32Array(0.16059226, 0.39749432, 0.9977221)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.019607844, 1, 1, 1, 0.12156863)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_1oxg1"]
+gradient = SubResource("Gradient_d55ov")
+fill_from = Vector2(0.55982906, 1)
+fill_to = Vector2(0.59615386, 0)
+
+[node name="GlyphPreview" type="TextureRect" unique_id=212032547]
 custom_minimum_size = Vector2(100, 100)
 offset_right = 100.0
 offset_bottom = 100.0
@@ -32,7 +54,7 @@ size_flags_vertical = 3
 stretch_mode = 3
 script = ExtResource("1_d55ov")
 
-[node name="Background" type="Panel" parent="."]
+[node name="Background" type="Panel" parent="." unique_id=269135151]
 z_index = -1
 layout_mode = 0
 offset_right = 100.0
@@ -40,7 +62,24 @@ offset_bottom = 100.0
 rotation = -0.00173422
 theme_override_styles/panel = SubResource("StyleBoxFlat_mu7r8")
 
-[node name="BackgroundSelected" type="Panel" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="Background" unique_id=2124774237]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="Background/MarginContainer" unique_id=599733622]
+z_index = -1
+layout_mode = 2
+texture = SubResource("GradientTexture2D_d55ov")
+
+[node name="BackgroundSelected" type="Panel" parent="." unique_id=1103763599]
 visible = false
 z_index = -1
 layout_mode = 0
@@ -48,3 +87,20 @@ offset_right = 100.0
 offset_bottom = 100.0
 rotation = -0.00173422
 theme_override_styles/panel = SubResource("StyleBoxFlat_p03pq")
+
+[node name="MarginContainer2" type="MarginContainer" parent="BackgroundSelected" unique_id=1306990132]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="BackgroundSelected/MarginContainer2" unique_id=850220340]
+z_index = 1
+layout_mode = 2
+texture = SubResource("GradientTexture2D_1oxg1")
