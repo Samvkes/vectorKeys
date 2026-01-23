@@ -189,7 +189,7 @@ static class SvgString
 {
     // public static string CurrentString = "";
     static Dictionary<string, string> CurrentStyle = Styles.S[0];
-    public static readonly StringBuilder CurrentString = new(1 << 20);
+    public static readonly StringBuilder CurrentString = new();
 
     public static void SetStyle(Style s)
     {
@@ -219,13 +219,11 @@ static class SvgString
 
     public static void AddSKPath(SKPath path)
     {
-        CurrentString.Append($"<path d=\" ")
-                     .Append(path.ToSvgPathData());
-        CurrentString += ;
-        CurrentString += $"Z\" ";
-        //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
+        CurrentString.Append("<path d=\" ")
+                     .Append(path.ToSvgPathData())
+                     .Append("Z\" ");
         Style();
-        CurrentString += "/>";
+        CurrentString.Append("/>");
     }
 
     public static void AddSegmentsDebug(Segment[] s, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
@@ -239,6 +237,7 @@ static class SvgString
         }
         float[] startSeg = s[0].Flat();
         int counter = 0;
+        Span<float> flatSeg = stackalloc float[8];
         foreach (Segment seg in s)
         {
             string color = color1;
@@ -246,10 +245,19 @@ static class SvgString
             {
                 color = color2;
             }
-            float[] flatSeg = seg.Flat();
+            seg.Flat(flatSeg);
             AddCircle(new(flatSeg[2], flatSeg[3]), 2, color, color, fOpacity = 0.2f, sWidth = 0.5f);
             AddCircle(new(flatSeg[4], flatSeg[5]), 2, color, color, fOpacity = 0.2f, sWidth = 0.5f);
-            CurrentString += $"<path d=\"M {flatSeg[0]} {flatSeg[1]} C {flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]} \" stroke=\"{color}\" fill-opacity=\"0.0\" stroke-width=\"2\"/>";
+            CurrentString.Append("<path d=\"M ")
+                         .Append(flatSeg[0]).Append(' ')
+                         .Append(flatSeg[1]).Append(' ')
+                         .Append(flatSeg[2]).Append(' ')
+                         .Append(flatSeg[3]).Append(' ')
+                         .Append(flatSeg[4]).Append(' ')
+                         .Append(flatSeg[5]).Append(' ')
+                         .Append(flatSeg[6]).Append(' ')
+                         .Append(flatSeg[7]).Append(' ')
+                         .Append("\" stroke=\"{color}\" fill-opacity=\"0.0\" stroke-width=\"2\"/>");
             counter += 1;
         }
     }
@@ -259,8 +267,8 @@ static class SvgString
         Span<float> f = stackalloc float[8];  
         s[0].Flat(f);
         CurrentString.Append("<path d=\"M ")
-                     .Append(start[0])
-                     .Append(start[1])
+                     .Append(f[0])
+                     .Append(f[1])
                      .Append(" C ");
         // CurrentString += $"<path d=\"M {start[0]} {start[1]} C ";
         // int counter = 0;
@@ -306,29 +314,38 @@ static class SvgString
     {
         // GD.Print(s[0]);
         float[] startSeg = s[0].Flat();
-        CurrentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
+        CurrentString.Append("<path d=\"M ")
+                     .Append(startSeg[0]).Append(' ')
+                     .Append(startSeg[1]).Append(" C ");
         int counter = 0;
+        Span<float> f = stackalloc float[8];
         foreach (Segment seg in s)
         {
-            float[] flatSeg = seg.Flat();
-            CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+            seg.Flat(f);
+            CurrentString.Append(f[2]).Append(' ')
+                         .Append(f[3]).Append(' ')
+                         .Append(f[4]).Append(' ')
+                         .Append(f[5]).Append(' ')
+                         .Append(f[6]).Append(' ')
+                         .Append(f[7]);
+            // CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
             if (counter != s.Length - 1)
             {
-                CurrentString += "C ";
+                CurrentString.Append("C ");
             }
-            CurrentString += " ";
+            CurrentString.Append(' ');
             counter += 1;
         }
-        CurrentString += $"Z\" ";
+        CurrentString.Append("Z\" ");
         if (debugInfo)
         {
             if (Shapes.IsSegmentListClockwise(s))
             {
-                CurrentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>";
+                CurrentString.Append(" fill =\"red\" stroke =\"red\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>");
             }
             else
             {
-                CurrentString += " fill =\"blue\" stroke =\"blue\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>";
+                CurrentString.Append(" fill =\"blue\" stroke =\"blue\" fill-opacity=\"1.2\" stroke-opacity=\"0.0\" stroke-width=\"2\"/>");
             }
             // CurrentString += " fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
         }
@@ -336,119 +353,134 @@ static class SvgString
         {
             Style();
         }
-        CurrentString += "/>";
+        CurrentString.Append("/>");
     }
+
     public static void AddSegmentsGroup_Debug(Segment[][] sGroup, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
     {
+        Span<float> f = stackalloc float[8];
         foreach (Segment[] s in sGroup)
         {
-            CurrentString += $"<path d=\"";
-            float[] startSeg = s[0].Flat();
-            CurrentString += $" M {startSeg[0]} {startSeg[1]} C ";
+            CurrentString.Append("<path d=\"");
+            s[0].Flat(f);
+            CurrentString.Append(" M ")
+                         .Append(f[0])
+                         .Append(f[1]).Append(" C ");
             int counter = 0;
             foreach (Segment seg in s)
             {
-                float[] flatSeg = seg.Flat();
-                CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+                seg.Flat(f);
+                CurrentString.Append(f[2]).Append(' ')
+                            .Append(f[3]).Append(' ')
+                            .Append(f[4]).Append(' ')
+                            .Append(f[5]).Append(' ')
+                            .Append(f[6]).Append(' ')
+                            .Append(f[7]);
+                // float[] flatSeg = seg.Flat();
+                // CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
                 if (counter != s.Length - 1)
                 {
-                    CurrentString += ",";
+                    CurrentString.Append(",");
                 }
-                CurrentString += " ";
+                CurrentString.Append(" ");
                 counter += 1;
             }
-            CurrentString += $"Z ";
-            CurrentString += "\"";
+            CurrentString.Append("Z ");
+            CurrentString.Append("\"");
             if (Shapes.IsSegmentListClockwise(s))
             {
-                CurrentString += "fill =\"red\" stroke =\"red\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"4\"";
+                CurrentString.Append("fill =\"red\" stroke =\"red\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"4\"");
             }
             else
             {
-                CurrentString += "fill =\"blue\" stroke =\"blue\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"4\"";
+                CurrentString.Append("fill =\"blue\" stroke =\"blue\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"4\"");
             }
             // Style(currentShape);
-            CurrentString += "/>";
+            CurrentString.Append("/>");
         }
         //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
     }
 
     public static void AddSegmentsGroup(Segment[][] sGroup, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
     {
-        CurrentString += $"<path d=\"";
+        CurrentString.Append("<path d=\"");
+        Span<float> f = stackalloc float[8]; 
         foreach (Segment[] s in sGroup)
         {
-            float[] startSeg = s[0].Flat();
-            CurrentString += $" M {startSeg[0]} {startSeg[1]} C ";
+            s[0].Flat(f);
+            // float[] startSeg = s[0].Flat();
+            CurrentString.Append(" M ")
+                         .Append(f[0]).Append(' ')
+                         .Append(f[1]).Append(" C ");
             int counter = 0;
             foreach (Segment seg in s)
             {
-                float[] flatSeg = seg.Flat();
-                CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+                seg.Flat(f);
+                CurrentString.Append(f[2]).Append(' ')
+                            .Append(f[3]).Append(' ')
+                            .Append(f[4]).Append(' ')
+                            .Append(f[5]).Append(' ')
+                            .Append(f[6]).Append(' ')
+                            .Append(f[7]);
+                // CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
                 if (counter != s.Length - 1)
                 {
-                    CurrentString += ",";
+                    CurrentString.Append(",");
                 }
-                CurrentString += " ";
+                CurrentString.Append(' ');
                 counter += 1;
             }
-            CurrentString += $"Z ";
+            CurrentString.Append("Z ");
         }
         //   fill =\"{fill}\" stroke =\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>";
-        CurrentString += "\"";
+        CurrentString.Append("\"");
         Style();
-        CurrentString += "/>";
+        CurrentString.Append("/>");
     }
 
     public static void AddCircle(V2 position, float radius, string fill = "black", string stroke = "black", float fOpacity = 1.0f, float sOpacity = 1.0f, float sWidth = 10f)
     { 
-        CurrentString += (
-            $"<circle cx=\"{position.X}\" cy=\"{position.Y}\" r=\"{radius}\" " + 
-            $"fill=\"{fill}\" stroke=\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>"
-        );
+        CurrentString.Append($"<circle cx=\"{position.X}\" cy=\"{position.Y}\" r=\"{radius}\" ")
+                     .Append($"fill=\"{fill}\" stroke=\"{stroke}\" fill-opacity=\"{fOpacity}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>");
     }
 
     public static void AddLine(V2 start, V2 end, string stroke = "red", float sWidth = 1f, float sOpacity = 1f)
     {
-        CurrentString += (
-            $"<path d=\"M {start.X} {start.Y} L {end.X} {end.Y}\"" + 
-            $"stroke =\"{stroke}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>"
-        );
+        CurrentString.Append($"<path d=\"M {start.X} {start.Y} L {end.X} {end.Y}\"")
+                     .Append($"stroke =\"{stroke}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\"/>");
     }
     
     public static void AddDashed(V2 start, V2 end, string dash, string stroke = "black", float sWidth = 1f, float sOpacity = 1f)
     {
-        CurrentString += (
-            $"<line x1=\"{start.X}\" y1=\"{start.Y}\"  x2=\"{end.X}\" y2=\"{end.Y}\"" +
-            $"stroke =\"{stroke}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\" " +
-            "stroke-dasharray=\"" + dash + "\" stroke-linecap=\"round\"" +
-            "/>"
-        );
+        CurrentString.Append($"<line x1=\"{start.X}\" y1=\"{start.Y}\"  x2=\"{end.X}\" y2=\"{end.Y}\"")
+                     .Append($"stroke =\"{stroke}\" stroke-opacity=\"{sOpacity}\" stroke-width=\"{sWidth}\" ")
+                     .Append("stroke-dasharray=\"" + dash + "\" stroke-linecap=\"round\"")
+                     .Append("/>");
     }
 
     public static void ClearString(float zoom, V2 origin, V2 windowSize, V2 markerPos)
     {
+        CurrentString.Clear();
         var tslating = origin;
         if (zoom > 1)
         {
             tslating = origin + 1.33333f * (markerPos - origin);
         }
         Styles.zoom = zoom;
-        CurrentString = (
-            $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\" >" +
-            $"<g transform=\"scale({1}) translate({tslating.X + Base.ui.CursorOff.X},{tslating.Y + Base.ui.CursorOff.Y}) rotate({0})\">" +
-            $"<g transform=\"scale({zoom:N3}) translate({-tslating.X},{-tslating.Y}) rotate({0})\">"
-        );
+
+        CurrentString.Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\" >")
+            .Append($"<g transform=\"scale({1}) translate({tslating.X + Base.ui.CursorOff.X},{tslating.Y + Base.ui.CursorOff.Y}) rotate({0})\">")
+            .Append($"<g transform=\"scale({zoom:N3}) translate({-tslating.X},{-tslating.Y}) rotate({0})\">");
     }
 
     public static void Add(string s)
     {
-        CurrentString += s;
+        CurrentString.Append(s);
     }
 
     public static void Finish()
     {
-        CurrentString += "</g></g></svg>";
+        CurrentString.Append("</g></g></svg>");
     }
 }
 
