@@ -271,7 +271,7 @@ public partial class Base : Node2D
         ProcessCursor(delta);
         if (Ed.Throttling)
             return;
-        RenderThumbnails(delta);
+        // RenderThumbnails(delta);
         DrawLayers(delta);
         PositionSelectorWidget(delta);
         UpdateShapeIndicators();
@@ -1611,8 +1611,8 @@ public partial class Base : Node2D
         foreach (Shape s in Shapes.S)
         {
             if (s != CurrentShape) continue;
-            SvgString.SetStyle(Style.ShapeSelected);
-            SvgString.AddSegments(s.SegList(), false);
+            // SvgString.SetStyle(Style.ShapeSelected);
+            // SvgString.AddSegments(s.SegList(), false);
 
             foreach (Anchor a in s.Anchors)
             {

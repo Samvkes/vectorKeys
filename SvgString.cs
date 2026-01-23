@@ -267,9 +267,9 @@ static class SvgString
         Span<float> f = stackalloc float[8];  
         s[0].Flat(f);
         CurrentString.Append("<path d=\"M ")
-                     .Append(f[0])
-                     .Append(f[1])
-                     .Append(" C ");
+                     .Append(f[0]).Append(' ')
+                     .Append(f[1]).Append(' ')
+                     .Append("C ");
         // CurrentString += $"<path d=\"M {start[0]} {start[1]} C ";
         // int counter = 0;
         foreach (Segment seg in s)
@@ -284,8 +284,9 @@ static class SvgString
             // CurrentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
             // if (counter != s.Length - 1)
             // {
-            //     CurrentString += "C ";
+            //     CurrentString.Append("C ");
             // }
+            // CurrentString.Append(' ');
             // CurrentString += " ";
             // counter += 1;
         }
