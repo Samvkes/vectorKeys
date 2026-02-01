@@ -1,6 +1,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Vectordrawing;
+using GV2 = Godot.Vector2;
+using V2 = System.Numerics.Vector2;
 
 public partial class PreviewGrid : VBoxContainer
 {
@@ -10,6 +13,8 @@ public partial class PreviewGrid : VBoxContainer
     List<GlyphPreview> Previews = [];
 
     float FSepTarget = 30;
+    float opentime = .3f;
+    float closetime = .3f;
     
 
     public override void _Ready()
@@ -19,11 +24,9 @@ public partial class PreviewGrid : VBoxContainer
         Grid = (GridContainer)FindChild("Grid");
     }
 
+
     public override void _Process(double delta)
     {
-        Vector2 mins = FrontSep.CustomMinimumSize;
-        if (MathF.Abs(mins.X - FSepTarget) > 10)
-            FrontSep.CustomMinimumSize = new(float.Lerp(mins.X, FSepTarget, (float)delta * 20), mins.Y);
     }
 
     public void AddPreview(GlyphPreview p)
@@ -36,9 +39,12 @@ public partial class PreviewGrid : VBoxContainer
     {
         if (Previews.Count <= Grid.Columns)
             return;
-        foreach(GlyphPreview p in Previews[Grid.Columns..])
+        foreach(GlyphPreview p in Previews)
         {
             p.Visible = true;
+            // p.ZIndex = 0;
+            CreateTween().TweenProperty(p, "modulate:a", 1, opentime*1.5);
+            CreateTween().SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.In).TweenProperty(Grid, "theme_override_constants/v_separation", 20, opentime);
         }
     }
 
@@ -48,9 +54,13 @@ public partial class PreviewGrid : VBoxContainer
         {
             HBoxContainer hb = (HBoxContainer)FindChild("HBoxContainer");
             FSepTarget = hb.Size.X - (target + Title.Size.X);
+            CreateTween().SetTrans(Tween.TransitionType.Quint).TweenProperty(FrontSep, "custom_minimum_size:x", FSepTarget, 0.3);
         }
         else
+        {
             FSepTarget = target;
+            CreateTween().SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic).TweenProperty(FrontSep, "custom_minimum_size:x", target, 0.5);
+        }
     }
 
     public void ClosePreviews()
@@ -59,6 +69,10 @@ public partial class PreviewGrid : VBoxContainer
             return;
         foreach(GlyphPreview p in Previews[Grid.Columns..])
         {
+            CreateTween().SetEase(Tween.EaseType.Out).TweenProperty(p, "modulate:a", 0, closetime*1.5);
+            // // p.ZIndex = -1;
+            CreateTween().SetTrans(Tween.TransitionType.Quint).SetEase(Tween.EaseType.In).TweenProperty(Grid, "theme_override_constants/v_separation", -100, closetime);
+            // // CreateTween().TweenProperty(Grid, "v_separation", -100, 1);
             p.Visible = false;
         }
     }

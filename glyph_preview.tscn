@@ -8,15 +8,14 @@ border_width_left = 2
 border_width_top = 1
 border_width_right = 2
 border_width_bottom = 4
-border_color = Color(0.24521106, 0.24521106, 0.24521106, 0.43137255)
+border_color = Color(0.24521106, 0.24521106, 0.24521106, 0.31764707)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [sub_resource type="Gradient" id="Gradient_p03pq"]
-offsets = PackedFloat32Array(0, 0.95102507, 1)
-colors = PackedColorArray(1, 1, 1, 0, 0, 0, 0, 0.039215688, 1, 1, 1, 0.15686275)
+colors = PackedColorArray(1, 1, 1, 0, 0, 0, 0, 0.039215688)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_d55ov"]
 gradient = SubResource("Gradient_p03pq")
@@ -75,6 +74,7 @@ theme_override_constants/margin_right = 3
 theme_override_constants/margin_bottom = 3
 
 [node name="TextureRect" type="TextureRect" parent="Background/MarginContainer" unique_id=599733622]
+modulate = Color(1, 1, 1, 0.5803922)
 z_index = -1
 layout_mode = 2
 texture = SubResource("GradientTexture2D_d55ov")

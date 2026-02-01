@@ -1,0 +1,15 @@
+[gd_resource type="FontVariation" format=3 uid="uid://dnofumtgkgptw"]
+
+[sub_resource type="SystemFont" id="SystemFont_vxoo4"]
+font_names = PackedStringArray("Recursive")
+
+[resource]
+base_font = SubResource("SystemFont_vxoo4")
+variation_opentype = {
+1128354636: 1,
+1129468758: 1,
+1297043023: 0,
+1936486004: 0,
+2003265652: 400
+}
+baseline_offset = -0.05

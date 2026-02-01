@@ -18,7 +18,7 @@ offset_left = 381.0
 offset_right = 381.0
 offset_bottom = 100.0
 size_flags_horizontal = 0
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 script = ExtResource("1_7qyjp")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=97286120]

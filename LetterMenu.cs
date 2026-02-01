@@ -8,9 +8,10 @@ using System.Linq;
 using Vectordrawing;
 using Snl = Vectordrawing.StringNamesList;
 using V2 = System.Numerics.Vector2;
+using GV2 = Godot.Vector2;
 
 
-public partial class LetterMenu : CanvasLayer
+public partial class LetterMenu : Control
 {
     public GlyphPreview CurrentlySelected = null!;
     Editor Ed = null!;
@@ -26,6 +27,8 @@ public partial class LetterMenu : CanvasLayer
     List<List<GlyphPreview>> Previews = [];
     List<List<int>> Rows = [];
     List<int> RowsFlat = [];
+    Panel Selector = null!;
+    GV2 SelectorGoalPos = GV2.Zero;
     List<PreviewGrid> PreviewGrids = [];
     public static Dictionary<char, (Shapes, Vectordrawing.UndoRedo)> ShapeDict = [];
     PackedScene PreviewGridScene = GD.Load<PackedScene>("res://preview_grid.tscn");
@@ -33,6 +36,7 @@ public partial class LetterMenu : CanvasLayer
     public override void _Ready()
     {
         Ed = (Editor)GetParent();
+        Selector = (Panel)FindChild("Selector");
         VBoxContainer glyphContainer = (VBoxContainer)FindChild("VBoxContainer");
         PackedScene glyphScene = GD.Load<PackedScene>("res://glyph_preview.tscn");
         Scroll = (ScrollContainer)FindChild("ScrollContainer");
@@ -59,19 +63,21 @@ public partial class LetterMenu : CanvasLayer
                     currentRowGroup.Add(counter % MaxGridColumns == 0 ? MaxGridColumns : counter % MaxGridColumns);
             }
             Rows.Add(currentRowGroup);
-
         }
         foreach (List<int> r in Rows)
             RowsFlat.AddRange(r);
         CurrentlySelected = Previews.First().First();
         CurrentlySelected.ToggleSelected();
+        
+        Fun.DelayOneFrame(this, () => {PreviewGrids.First().SetFSep(100, false);});
+        PreviewGrids.First().SetTitleColor(new("#000000"));
         foreach (List<GlyphPreview> prevs in Previews)
         {
             if (prevs.Count > MaxGridColumns && !prevs.Contains(CurrentlySelected))
             {
                 foreach (GlyphPreview p in prevs[MaxGridColumns..])
                 {
-                    p.Visible = false;
+                    // p.Visible = false;
                 }
             }
         }
@@ -85,35 +91,48 @@ public partial class LetterMenu : CanvasLayer
 
     public override void _Process(double delta)
     {
+        if (Ed.CurrentFocus != EditorFocus.Letters)
+            return;
+        Selector.Position = Selector.Position.Lerp(CurrentlySelected.GlobalPosition, (float)delta * 20);
         int oldGroup = GetCurrentGroup().currentGroup;
-        if (Input.IsActionJustPressed(Snl.left))
+        V2 normalizedMovement = Ed.GetMovementInput((float)delta, 0.07f, CurrentPos.Y == 0 || CurrentPos.Y == RowsFlat.Count()-1, 0.3f);
+        if (normalizedMovement.X < 0)
             CurrentPos.X = CurrentPos.X == 0 ? RowsFlat[(int)CurrentPos.Y] - 1 : CurrentPos.X - 1;
-        if (Input.IsActionJustPressed(Snl.right))
+        if (normalizedMovement.X > 0)
             CurrentPos.X = CurrentPos.X == RowsFlat[(int)CurrentPos.Y] - 1 ? 0 : CurrentPos.X + 1;
-        if (Input.IsActionJustPressed(Snl.up))
+        if (normalizedMovement.Y < 0)
             CurrentPos.Y = CurrentPos.Y == 0 ? RowsFlat.Count() - 1 : CurrentPos.Y - 1;
-
-        if (Input.IsActionJustPressed(Snl.down))
+        if (normalizedMovement.Y > 0)
             CurrentPos.Y = CurrentPos.Y == RowsFlat.Count() - 1? 0 : CurrentPos.Y + 1;
 
-        CurrentlySelected.ToggleSelected();
-        CurrentlySelected = GetCurrentPreview();
-        CurrentlySelected.ToggleSelected();
+        if (CurrentlySelected != GetCurrentPreview())
+        {
+            CurrentlySelected.ToggleSelected();
+            CurrentlySelected = GetCurrentPreview();
+            CurrentlySelected.ToggleSelected();
+            // SelectorGoalPos = CurrentlySelected.GlobalPosition;
+            // Selector.Position = CurrentlySelected.Position;
+
+            // CreateTween().TweenProperty(Selector, "position", CurrentlySelected.GlobalPosition, 0.2f);
+        }
 
         int newGroup = GetCurrentGroup().currentGroup;
         if (newGroup != oldGroup)
             OpenCloseGroups(oldGroup, newGroup);
-        if (GetWindow().Size.Y - CurrentlySelected.GlobalPosition.Y < 200)
-            Scroll.ScrollVertical += 14;
-        if (CurrentlySelected.GlobalPosition.Y < 200)
-            Scroll.ScrollVertical -= 14;
-        if (CurrentlySelected.GlobalPosition.Y < 0)
-            Scroll.ScrollVertical -= 80;
-        if (CurrentlySelected.GlobalPosition.Y > GetWindow().Size.Y)
-            Scroll.ScrollVertical += 80;
+        if (GetWindow().Size.Y - Selector.GlobalPosition.Y < 500)
+            Scroll.ScrollVertical += (int)(delta * 1200);
+        if (Selector.GlobalPosition.Y < 500)
+            Scroll.ScrollVertical -= (int)(delta * 1200);
+        if (Selector.GlobalPosition.Y < 0)
+            Scroll.ScrollVertical -= (int)(delta * 4000);
+        if (Selector.GlobalPosition.Y > GetWindow().Size.Y)
+            Scroll.ScrollVertical += (int)(delta * 4000);
 
         if (Input.IsActionJustPressed(Snl.add_new_point))
+        {
             Ed.OpenDrawingScene(CurrentlySelected);
+            Ed.CurrentFocus = EditorFocus.Workbench;
+        }
     }
 
 
@@ -144,10 +163,10 @@ public partial class LetterMenu : CanvasLayer
 
         o.SetTitleColor(new("#666666"));
         n.SetTitleColor(new("#000000"));
-        o.ClosePreviews();
+        // o.ClosePreviews();
         n.OpenPreviews();
         o.SetFSep(30);
-        n.SetFSep(100, true);
+        n.SetFSep(100, false);
 
     }
 

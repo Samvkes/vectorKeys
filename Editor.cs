@@ -19,7 +19,14 @@ public struct FamilyConfig
     }
 }
 
-public partial class Editor : Node2D
+public enum EditorFocus
+{
+    Letters,
+    Workbench,
+    WeightPicker,
+}
+
+public partial class Editor : CanvasLayer
 {
     Node2D DrawingBase = null!; 
     LetterMenu LetterMenu = null!; 
@@ -29,15 +36,37 @@ public partial class Editor : Node2D
     Timer FpsTimer = null!;
     float ThrottleWaitTime = 1f;
     public bool Throttling = false;
+    public Timer MovementTimer = new();
+    bool CanMoveAgain = true;
+    float MovementHeldTime = 0;
+    float ValidHoldTime = .2f;
+    bool StickyGuide = true;
+    ShaderMaterial blur1 = null!;
+    ShaderMaterial blur2 = null!;
+    CanvasLayer blurLayer1 = null!;
+    CanvasLayer blurLayer2 = null!;
+    CanvasLayer weightP = null!;
+    Tween? theTween = null;
+    public EditorFocus CurrentFocus = EditorFocus.Letters;
 
     public override void _Ready()
     {
+        weightP = (CanvasLayer)FindChild("WeightP");
+        blur1 = (ShaderMaterial)((ColorRect)FindChild("firstBlurShader")).Material;
+        blur2 = (ShaderMaterial)((ColorRect)FindChild("secondBlurShader")).Material;
+        blurLayer1 = (CanvasLayer)FindChild("firstBlur");
+        blurLayer2 = (CanvasLayer)FindChild("secondBlur");
         FpsTimer = new();
         AddChild(FpsTimer);
         FpsTimer.WaitTime = ThrottleWaitTime;
-        FpsTimer.Timeout += () => {Throttling = true;};
+        FpsTimer.Timeout += () => {Throttling = false;};
         FpsTimer.OneShot = true;
         FpsTimer.Start();
+
+        AddChild(MovementTimer);
+        MovementTimer.WaitTime = 0.01f;
+        MovementTimer.OneShot = true;
+        MovementTimer.Timeout += MovementTimerTimeout;
 
         AddChild(Manager);
         GetTree().Paused = true;
@@ -50,8 +79,44 @@ public partial class Editor : Node2D
         LetterMenu.ProcessMode = ProcessModeEnum.WhenPaused;
     }
 
-    public override async void _Process(double delta)
+    public override void _Process(double delta)
     {
+        if (CurrentFocus == EditorFocus.Letters && Input.IsActionJustPressed(Snl.select_mode))
+        {
+            // weightP.Visible = true;
+            GetTree().Paused = true;
+            CurrentFocus = EditorFocus.WeightPicker;
+            blurLayer1.Visible = true;
+            blurLayer2.Visible = true;
+            theTween?.Kill();
+            theTween = CreateTween();
+            theTween.TweenMethod(Callable.From((int s) =>
+            {
+                blur1.SetShaderParameter("blurSize", s);
+            }), 0, 15, .1f);
+            theTween.Parallel().TweenMethod(Callable.From((int s) =>
+            {
+                blur2.SetShaderParameter("blurSize", s);
+            }), 0, 15, .1f);
+            theTween.TweenCallback(Callable.From(()=>{weightP.Visible = true;}));
+            theTween.TweenCallback(Callable.From(()=>{GetTree().Paused = true;}));
+
+        }
+        if (CurrentFocus == EditorFocus.WeightPicker && Input.IsActionJustReleased(Snl.select_mode))
+        {
+            CurrentFocus = EditorFocus.Letters;
+            theTween?.Kill();
+            blurLayer1.Visible = false;
+            blurLayer2.Visible = false;
+            // blur1.SetShaderParameter("blurSize", 0);
+            // blur2.SetShaderParameter("blurSize", 0);
+            weightP.Visible = false;
+        }
+        if (Input.IsKeyPressed(Key.Backspace))
+        {
+			((TextureRect)FindChild("Peace")).Visible = true;
+            GetTree().Quit();
+        }
         // if (Throttling)
         //     Engine.MaxFps = 45;
         // else if (Engine.MaxFps == 45)
@@ -65,8 +130,9 @@ public partial class Editor : Node2D
                 FpsTimer.Start();
         }
 
-        if (Input.IsActionJustPressed(Snl.escape))
+        if (CurrentFocus == EditorFocus.Workbench && Input.IsActionJustPressed(Snl.escape))
         {
+            CurrentFocus = EditorFocus.Letters;
             DrawingBase.Visible = false;
             LetterMenu.Visible = true;
             DrawingBase.ProcessMode = ProcessModeEnum.Pausable;
@@ -122,5 +188,94 @@ public partial class Editor : Node2D
         GetWindow().AlwaysOnTop = !GetWindow().AlwaysOnTop;
     }
 
+    public void MovementTimerTimeout()
+    {
+        CanMoveAgain = true;
+    }
 
+    public V2 GetMovementInput(float delta, float wait = 0.01f, bool OnGuide = true, float guideWait = 0.2f)
+    {
+        if (OnGuide && StickyGuide)
+        {
+            MovementTimer.WaitTime = guideWait;
+            MovementTimer.Start();
+            CanMoveAgain = false;
+            StickyGuide = false;
+        }
+        else
+        {
+            MovementTimer.WaitTime = wait;
+        }
+        // int movementAmount = (int)(GridSize * GridModifier);
+        V2 normalizedMovement = V2.Zero;
+        if (MovementTimer.IsStopped())
+            MovementTimer.Start();
+        
+
+        if (Input.IsActionJustPressed(Snl.left))
+            normalizedMovement += new V2(-1,0);
+        
+        if (Input.IsActionJustPressed(Snl.right))
+            normalizedMovement += new V2(1,0);
+
+        if (Input.IsActionJustPressed(Snl.up))
+            normalizedMovement += new V2(0,-1);
+
+        if (Input.IsActionJustPressed(Snl.down))
+            normalizedMovement += new V2(0,1);
+        
+
+        bool pressingMovementKey = false;
+        if (Input.IsActionPressed(Snl.left))
+        {
+            pressingMovementKey = true;
+            if (MovementHeldTime > ValidHoldTime && CanMoveAgain)
+                normalizedMovement += new V2(-1,0);
+            else
+                MovementHeldTime += delta;
+        }
+        
+        if (Input.IsActionPressed(Snl.right))
+        {
+            pressingMovementKey = true;
+            if (MovementHeldTime > ValidHoldTime && CanMoveAgain)
+                normalizedMovement += new V2(1,0);
+            else
+                MovementHeldTime += delta;
+        }
+
+        if (Input.IsActionPressed(Snl.up))
+        {
+            pressingMovementKey = true;
+            if (MovementHeldTime > ValidHoldTime && CanMoveAgain)
+                normalizedMovement += new V2(0,-1);
+            else
+                MovementHeldTime += delta;
+        }
+
+        if (Input.IsActionPressed(Snl.down))
+        {
+            pressingMovementKey = true;
+            if (MovementHeldTime > ValidHoldTime && CanMoveAgain)
+                normalizedMovement += new V2(0,1);
+            else
+                MovementHeldTime += delta;
+        }
+
+        if (!pressingMovementKey)
+        {
+            MovementHeldTime = 0;
+        }
+        
+        if (normalizedMovement != V2.Zero)
+        {
+            CanMoveAgain = false;
+            if (!OnGuide)
+            {
+                StickyGuide = true;
+            }
+        } 
+
+    return normalizedMovement;
+    }
 }

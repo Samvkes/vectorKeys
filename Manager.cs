@@ -12,9 +12,9 @@ public partial class Manager : Node
 	Tween shakeTween = null!;
 	bool cameraShouldShake = false;
 	const int PLAYER_AMOUNT = 16;
-	AudioStreamPlayer[] streams = new AudioStreamPlayer[PLAYER_AMOUNT];
-	Dictionary<string, AudioStream> soundFiles = new Dictionary<string, AudioStream>();	
-	int counter = 0;
+	static AudioStreamPlayer[] streams = new AudioStreamPlayer[PLAYER_AMOUNT];
+	static Dictionary<string, AudioStream> soundFiles = new Dictionary<string, AudioStream>();	
+	static int counter = 0;
 	float noiseI = 0.0f;
 	float shakeStrength = 0.0f;
 
@@ -63,11 +63,6 @@ public partial class Manager : Node
 
 	public override void _Process(double delta)
 	{
-        if (Input.IsKeyPressed(Key.Backspace))
-        {
-			((CanvasLayer)GetParent().FindChild("Peace")).Visible = true;
-            GetTree().Quit();
-        }
 	}
 
 	public void Test()
@@ -75,7 +70,7 @@ public partial class Manager : Node
 		GD.Print("ditwerkt!!");
 	}
 
-	public void PlaySound(string audioName, float volume=1.0f, float minPitch = 1.0f, float maxPitch = 1.0f)
+	public static void PlaySound(string audioName, float volume=1.0f, float minPitch = 1.0f, float maxPitch = 1.0f)
 	{
 		// GD.Print(audioName);
 		if (!soundFiles.ContainsKey(audioName))

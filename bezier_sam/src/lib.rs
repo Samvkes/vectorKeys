@@ -716,7 +716,7 @@ impl Player {
         let bezier_path2 = array_to_subpath(shape2.clone());
         // let bez = Bezier::from_cubic_coordinates(x1, y1, x2, y2, x3, y3, x4, y4);
 
-        let inters: Vec<(usize, f64)> = bezier_path2.subpath_intersections(&bezier_path,Some(0.01),Some(0.1));
+        let inters: Vec<(usize, f64)> = bezier_path2.subpath_intersections(&bezier_path,Some(0.1),Some(0.1));
         for i in 0..bezier_path.len_segments()
         {
             let aj = bezier_path.get_segment(i).unwrap();

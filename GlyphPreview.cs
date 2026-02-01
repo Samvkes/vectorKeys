@@ -23,7 +23,12 @@ public partial class GlyphPreview : TextureRect
     {
         Background = (Panel)FindChild("Background");
         BackgroundSelected = (Panel)FindChild("BackgroundSelected");
+
         QueueRedraw();
+    }
+
+    public override void _Process(double delta)
+    {
     }
 
     public override void _Draw()
@@ -45,13 +50,18 @@ public partial class GlyphPreview : TextureRect
         Selected = !Selected;
         if (Selected)
         {
-            BackgroundSelected.Visible = true;
+            // BackgroundSelected.Visible = true;
             // Scale = new(1.1f, 1.1f);
+            // if (GD.Randf() > 0.6)
+                // Manager.PlaySound("Rattle4.wav",.3f, 1.0f, 1.3f);
+            // else
+                Manager.PlaySound("Rattle3.wav",.15f, 1.0f, 1.5f);
+            CreateTween().SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Elastic).TweenProperty(this, "position:y", Position.Y, 1.5f).From(Position.Y + 30);
         }
         else
         {
-            BackgroundSelected.Visible = false;
-            Scale = Vector2.One;
+            // BackgroundSelected.Visible = false;
+            // Scale = Vector2.One;
         }
         QueueRedraw();
     }
@@ -72,8 +82,5 @@ public partial class GlyphPreview : TextureRect
         ShowPlaceholder = false;
         Texture = tex;
         QueueRedraw();
-    }
-    public override void _Process(double delta)
-    {
     }
 }

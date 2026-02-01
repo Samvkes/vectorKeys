@@ -125,14 +125,14 @@ public record UiState{
 public record InputState{
     public V2 MarkerPos = UIConfig.Default.Origin;
     public Timer UndoTimer = new();
-    public Timer MovementTimer = new();
+    // public Timer MovementTimer = new();
     public Mode CurrentMode = Mode.Editing;
     public Focus CurrentFocus = Focus.Anchor;
     public Anchor? FocussedAnchor = null;
-    public float MovementHeldTime = 0f;
+    // public float MovementHeldTime = 0f;
     public bool DebugSwitch = false;
-    public bool StickyGuide = true;
-    public bool CanMoveAgain = true;
+    // public bool StickyGuide = true;
+    // public bool CanMoveAgain = true;
     public bool CanUndoAgain = true;
     public bool AngledMoveMode = false;
 };
@@ -169,6 +169,7 @@ public partial class Base : Node2D
     ShapeIndicator[] Indicators = new ShapeIndicator[10];
 
     string LastFramesSvg = "";
+    Texture2D LastFramesTexture = new();
     public Shapes Shapes = new();
     public UndoRedo UndoRedo = null!;
     Shape CurrentShape = null!;
@@ -177,14 +178,31 @@ public partial class Base : Node2D
     public Texture2D PreviewTex = null!;
     public bool JustUnpaused = false;
 
+    Task<byte[]>? PreviewTask = null;
+    RichTextLabel S0 = null!;
+    RichTextLabel S1 = null!;
+    RichTextLabel S2 = null!;
+    RichTextLabel S3 = null!;
+    bool appliedOnce = false;
+
+    FontFile LatestGlyphPreviewTtf = new();
+    PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3", 
+                                      "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
+
     public override void _Ready()
     {
         CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
         Ed = (Editor)(GetParent().GetParent());
         Manager = ((Editor)GetParent().GetParent()).Manager;
         AddChild(input.UndoTimer);
-        AddChild(input.MovementTimer);
+        // AddChild(input.MovementTimer);
         AddChild(FpsTimer);
+
+        S0 = (RichTextLabel)FindChild("Size0");
+        S1 = (RichTextLabel)FindChild("Size1");
+        S2 = (RichTextLabel)FindChild("Size2");
+        S3 = (RichTextLabel)FindChild("Size3");
+
         for (int i = 0; i < 10; i++)
         {
             ShapeIndicator indicator = IndicatorScene.Instantiate<ShapeIndicator>();
@@ -197,9 +215,9 @@ public partial class Base : Node2D
             indicator.Visible = false;
         }
 
-        input.MovementTimer.WaitTime = 0.01f;
-        input.MovementTimer.OneShot = true;
-        input.MovementTimer.Timeout += MovementTimerTimeout;
+        // input.MovementTimer.WaitTime = 0.01f;
+        // input.MovementTimer.OneShot = true;
+        // input.MovementTimer.Timeout += MovementTimerTimeout;
         input.UndoTimer.WaitTime = 0.5f;
         input.UndoTimer.OneShot = true;
         input.UndoTimer.Timeout += DoUndoRedo;
@@ -228,6 +246,8 @@ public partial class Base : Node2D
 
         GetWindow().Size = new Vector2I((int)config.WindowSize.X, (int)config.WindowSize.Y);
         children.Background.Color = config.BackgroundColor;
+        // Fun.Repeatedly(this, 0.5f, () => {UpdatePreviews();});
+
     }
     public void Initialize()
     {
@@ -239,8 +259,10 @@ public partial class Base : Node2D
         children.ControlRoot.Visible = !children.ControlRoot.Visible;    
     }
 
-    public override async void _Process(double doubleDelta)
+    public override void _Process(double doubleDelta)
     {
+        UpdatePreviews();
+        Task<Texture2D> createSvg = CreateSvgImage();
         HandleInput((float)doubleDelta);
         float delta = (float)doubleDelta;
         Counter += delta;
@@ -248,22 +270,46 @@ public partial class Base : Node2D
         UpdateUI(delta);
         if (Ed.Throttling)
             return;
-        // SVG code goes here
-        ui.CanvasImage.LoadSvgFromString(LastFramesSvg);
-        Texture2D finalTexture = ImageTexture.CreateFromImage(ui.CanvasImage);
-        SvgString.ClearString(ui.Zoom, config.Origin, config.WindowSize, input.MarkerPos);
 
+
+        // SVG code goes here
+        SvgString.ClearString(ui.Zoom, config.Origin, config.WindowSize, input.MarkerPos);
         if (input.CurrentMode == Mode.Editing) DrawEditing();
         else if (input.CurrentMode == Mode.Previewing) DrawPreviewing();
         else if (input.CurrentMode == Mode.Selecting) DrawSelecting();
 
         SvgString.Finish();
+
+        createSvg.Wait();
+        children.Tex.Texture = createSvg.Result;
         LastFramesSvg = SvgString.CurrentString.ToString();
-        children.Tex.Texture = finalTexture;
+        LastFramesTexture = children.Tex.Texture;
 
         QueueRedraw();
     }
 
+    public void UpdatePreviews()
+    {
+        if (Shapes.S.Count <= 1)
+            return;
+        PreviewTask ??= fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
+        if (!PreviewTask.IsCompleted)
+            return;
+        LatestGlyphPreviewTtf.Data = PreviewTask.Result;
+        S0.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        S1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        S2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        S3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        PreviewTask = fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
+    }
+
+    public async Task<Texture2D> CreateSvgImage()
+    {
+        if (Ed.Throttling)
+            return LastFramesTexture;
+        ui.CanvasImage.LoadSvgFromString(LastFramesSvg);
+        return ImageTexture.CreateFromImage(ui.CanvasImage);
+    }
 
     public void UpdateUI(float delta)
     {
@@ -271,7 +317,7 @@ public partial class Base : Node2D
         ProcessCursor(delta);
         if (Ed.Throttling)
             return;
-        // RenderThumbnails(delta);
+        RenderThumbnails(delta);
         DrawLayers(delta);
         PositionSelectorWidget(delta);
         UpdateShapeIndicators();
@@ -415,19 +461,6 @@ public partial class Base : Node2D
 
         children.BigPreview.Texture = ImageTexture.CreateFromImage(thumbnail);
         children.BigPreview.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-
-        // thumbnail.Resize((int)size.X / 4, (int)size.Y / 4, Image.Interpolation.Lanczos);
-        size = new(100, 100);
-        thumbnail = DrawThumbnail(size);
-        thumbnail.AdjustBcs(0, 1, 1);
-        thumbnail.FlipY();
-        children.TinyPreviewDown.Texture = ImageTexture.CreateFromImage(thumbnail);
-        children.TinyPreviewDown.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-
-        thumbnail.FlipY();
-        thumbnail.FlipX();
-        children.TinyPreviewUp.Texture = ImageTexture.CreateFromImage(thumbnail);
-        children.TinyPreviewUp.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
 
         prevthumb.Resize((int)size.X / 3, (int)size.Y / 3); 
         prevthumb.AdjustBcs(0.2f,1,1);
@@ -703,98 +736,20 @@ public partial class Base : Node2D
     public void HiMovement(float delta)
     {
         int movementAmount = (int)(config.GridSize * ui.GridModifier);
-        if (input.MovementTimer.IsStopped())
-        {
-            input.MovementTimer.Start();
-        }
-        V2 movingSelected = new(0, 0);
         if (Input.IsKeyPressed(Key.A))
         {
             movementAmount = 1;
         }
 
-        {
-            if (Input.IsActionJustPressed(Snl.left))
-            {
-                movingSelected.X -= movementAmount;
-            }
-            if (Input.IsActionJustPressed(Snl.right))
-            {
-                movingSelected.X += movementAmount;
-            }
-            if (Input.IsActionJustPressed(Snl.up))
-            {
-                movingSelected.Y -= movementAmount;
-            }
-            if (Input.IsActionJustPressed(Snl.down))
-            {
-                movingSelected.Y += movementAmount;
-            }
-        }
-
-        {
-            bool pressingMovementKey = false;
-            if (Input.IsActionPressed(Snl.left))
-            {
-                pressingMovementKey = true;
-                if (input.MovementHeldTime > config.ValidHoldTime && input.CanMoveAgain)
-                {
-                    movingSelected.X -= movementAmount;
-                }
-                else
-                {
-                    input.MovementHeldTime += delta;
-                }
-            }
-            if (Input.IsActionPressed(Snl.right))
-            {
-                pressingMovementKey = true;
-                if (input.MovementHeldTime > config.ValidHoldTime && input.CanMoveAgain)
-                {
-                    movingSelected.X += movementAmount;
-                }
-                else
-                {
-                    input.MovementHeldTime += delta;
-                }
-            }
-            if (Input.IsActionPressed(Snl.up))
-            {
-                pressingMovementKey = true;
-                if (input.MovementHeldTime > config.ValidHoldTime && input.CanMoveAgain)
-                {
-                    movingSelected.Y -= movementAmount;
-                }
-                else
-                {
-                    input.MovementHeldTime += delta;
-                }
-            }
-            if (Input.IsActionPressed(Snl.down))
-            {
-                pressingMovementKey = true;
-                if (input.MovementHeldTime > config.ValidHoldTime && input.CanMoveAgain)
-                {
-                    movingSelected.Y += movementAmount;
-                }
-                else
-                {
-                    input.MovementHeldTime += delta;
-                }
-            }
-            if (!pressingMovementKey)
-            {
-                input.MovementHeldTime = 0;
-            }
-        }
+        V2 movingSelected = Ed.GetMovementInput(delta, OnGuide: OnGuide()) * movementAmount;
 
         if (movingSelected != V2.Zero)
         {
-            input.CanMoveAgain = false;
-            if (!OnGuide())
-            {
-                input.StickyGuide = true;
-            }
+            // input.CanMoveAgain = false;
+            // if (!OnGuide())
+            // {
+            //     input.StickyGuide = true;
+            // }
             // move anchors
             if ((input.CurrentFocus == Focus.Anchor || input.CurrentFocus == Focus.Outline) && SelectedAnchors.Count > 0)
             {
@@ -914,17 +869,17 @@ public partial class Base : Node2D
         // TODO: make clockwise?
         input.MarkerPos = V2.Clamp(input.MarkerPos, config.Borders.Item1, config.Borders.Item2);
 
-        if (OnGuide() && input.StickyGuide)
-        {
-            input.MovementTimer.WaitTime = .2f;
-            input.MovementTimer.Start();
-            input.CanMoveAgain = false;
-            input.StickyGuide = false;
-        }
-        else
-        {
-            input.MovementTimer.WaitTime = .01f;
-        }
+        // if (OnGuide() && input.StickyGuide)
+        // {
+        //     input.MovementTimer.WaitTime = .2f;
+        //     input.MovementTimer.Start();
+        //     input.CanMoveAgain = false;
+        //     input.StickyGuide = false;
+        // }
+        // else
+        // {
+        //     input.MovementTimer.WaitTime = .01f;
+        // }
 
     }
 
@@ -1118,7 +1073,7 @@ public partial class Base : Node2D
         }
     }
 
-    public async Task HandleInput(float delta)
+    public async void HandleInput(float delta)
     {
         if (JustUnpaused)
         {
@@ -1177,6 +1132,7 @@ public partial class Base : Node2D
         {
             Uts();
             CurrentShape.Negative = !CurrentShape.Negative;
+            Shapes.ShapesCached = false;
         }
 
         if (Input.IsActionJustPressed(Snl.undo))
@@ -1307,10 +1263,10 @@ public partial class Base : Node2D
         input.CanUndoAgain = true;
     }
 
-    public void MovementTimerTimeout()
-    {
-        input.CanMoveAgain = true;
-    }
+    // public void MovementTimerTimeout()
+    // {
+    //     input.CanMoveAgain = true;
+    // }
 
     public void DrawPreviewing(bool white = false)
     {
@@ -1324,12 +1280,12 @@ public partial class Base : Node2D
         }
         if (config.Debug)
         {
-            var mgs = Shapes.MergeShapesSkia();
+            var mgs = Shapes.GetMergedShapes();
             if (mgs.Length > 0)
-                SvgString.AddSegmentsDebug(Shapes.MergeShapesSkia()[0]);
+                SvgString.AddSegmentsDebug(Shapes.GetMergedShapes()[0]);
         }
         else
-            SvgString.AddSegmentsGroup(Shapes.MergeShapesSkia());
+            SvgString.AddSegmentsGroup(Shapes.GetMergedShapes());
     }
 
     public void DrawGuides(float opac = 0.5f, float lesserOpac = 0.12f, float fwi = 2.0f)
@@ -1381,7 +1337,7 @@ public partial class Base : Node2D
             return;
         }
 
-        Segment[][] sss = Shapes.MergeShapesSkia();
+        Segment[][] sss = Shapes.GetMergedShapes();
         // SvgString.SetStyle(Style.ShapeUnderlay);
         // SvgString.AddSegmentsGroup(sss);
 
@@ -1611,8 +1567,8 @@ public partial class Base : Node2D
         foreach (Shape s in Shapes.S)
         {
             if (s != CurrentShape) continue;
-            // SvgString.SetStyle(Style.ShapeSelected);
-            // SvgString.AddSegments(s.SegList(), false);
+            SvgString.SetStyle(Style.ShapeSelected);
+            SvgString.AddSegments(s.SegList(), false);
 
             foreach (Anchor a in s.Anchors)
             {

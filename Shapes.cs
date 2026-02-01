@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Collections.Specialized;
 using SkiaSharp;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Text.Json.Serialization.Metadata;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
@@ -510,6 +511,7 @@ public class Shape
     {
     }
 
+    public Shapes MyShapes = null!;
     public bool AnchorsCached = true;
     public Segment[] Segments = [];
     public Segment[] RoundedSegments = [];
@@ -561,6 +563,7 @@ public class Shape
     public void AnchorsChanged()
     {
         AnchorsCached = false;
+        MyShapes.ShapesCached = false; 
     }
 
     public override string ToString()
@@ -759,6 +762,8 @@ public class HyperbezierShape: Shape
 
 public class Shapes
 {
+    public bool ShapesCached = false;
+    public Segment[][] CachedShapes = [];
     public List<Shape> S = [];
     public Shape NewShape()
     {
@@ -766,6 +771,7 @@ public class Shapes
         Shape s;
         s = new HyperbezierShape();
         // s = new Shape();
+        s.MyShapes = this;
         S.Add(s);
         return s;
     }
@@ -922,8 +928,12 @@ public class Shapes
         return roundingDict;
     }
 
-    public Segment[][] MergeShapesSkia()
+    public Segment[][] GetMergedShapes()
     {
+        if (ShapesCached)
+        {
+            return CachedShapes;
+        }
         // beoogd is shape -> rounded shape -> merge w stack -> round merges - |
         //           ^---                                              <------ |
         // voor elk segment van toMerge wordt gecheckt waar dit seg intersect met elke contour van de stack
@@ -954,7 +964,9 @@ public class Shapes
             }
             currentSKPath = SegmentListsToSKPath(currentSegLists);
         }
-        return SKPathToSegmentLists(currentSKPath);
+        CachedShapes = SKPathToSegmentLists(currentSKPath);
+        ShapesCached = true;
+        return CachedShapes;
 
         Segment[][] segLists = [];
         List<SKPath> splitPaths = SplitSKPathToContours(currentSKPath);

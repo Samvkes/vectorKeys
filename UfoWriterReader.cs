@@ -105,7 +105,7 @@ static class UfoWriterReader
             if (s.S.Count > 0)
             {
                 GD.Print("yeah");
-                Glyph glyph = new(name.ToString(), name, s.MergeShapesSkia());
+                Glyph glyph = new(name.ToString(), name, s.GetMergedShapes());
                 glyphs = [.. glyphs, glyph];
             }
         }
