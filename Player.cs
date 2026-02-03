@@ -86,14 +86,14 @@ public partial class Player : Node
         return outAr;
     }
 
-    public static (Segment[], int[]) AnchorsToHyperBeziers(List<Anchor> anchors)
+    public static (Segment[], int[]) AnchorsToHyperBeziers(List<Anker> anchors)
     {
         (Segment[], int[]) segs = ([],[]);
         Vector2 start = Fun.Vtv(anchors[0].Position);
         Array<float> inPoints = [];
-        foreach (Anchor a in anchors)
+        foreach (Anker a in anchors)
         {
-            Anchor next = a.NextAnchor();
+            Anker next = a.NextAnchor();
             V2 inh = a.OutHandle.Position();
             V2 outh = next.InHandle.Position();
             

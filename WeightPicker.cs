@@ -82,7 +82,7 @@ public partial class WeightPicker : Control
         Ed = GetParent().GetParent<Editor>();
         Vbox1 = (VBoxContainer)FindChild("vbox1");
         Vbox1.GlobalPosition = new(Vbox1.GlobalPosition.X, - step * 6);
-        StyleBoxFlat weightFlat = GD.Load<StyleBoxFlat>("res://weightLineFlat.tres");
+        StyleBoxFlat weightFlat = GD.Load<StyleBoxFlat>("res://weightLineFlatSimple.tres");
         for (int i = 0; i < 60; i++)
         {
             Panel h = new();
@@ -116,7 +116,7 @@ public partial class WeightPicker : Control
         else
             weightNameHalfLabel.Text = "";
         GV2 vpos = Vbox1.Position;
-        GV2 tpos = new(vpos.X, target - 28);
+        GV2 tpos = new(vpos.X, target - 32);
         if (vpos.DistanceTo(tpos) < 2)
             Vbox1.Position = tpos;
         else

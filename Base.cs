@@ -100,8 +100,8 @@ public record Children(
     Sprite2D Cursor,
     Label CursorLabel,
     ColorRect Background,
-    CanvasLayer ControlRoot,
-    Panel LayerSelector,
+    Control ControlRoot,
+    Label LayerSelector,
     HBoxContainer PreviewContainer,
     TextureRect BigPreview,
     TextureRect TinyPreviewUp,
@@ -128,7 +128,7 @@ public record InputState{
     // public Timer MovementTimer = new();
     public Mode CurrentMode = Mode.Editing;
     public Focus CurrentFocus = Focus.Anchor;
-    public Anchor? FocussedAnchor = null;
+    public Anker? FocussedAnchor = null;
     // public float MovementHeldTime = 0f;
     public bool DebugSwitch = false;
     // public bool StickyGuide = true;
@@ -151,7 +151,7 @@ public enum Focus
     Outline,
 }
 
-public partial class Base : Node2D
+public partial class Base : Control
 {
     public static readonly UIConfig config = UIConfig.Default;
     public static InputState input = new();
@@ -173,7 +173,7 @@ public partial class Base : Node2D
     public Shapes Shapes = new();
     public UndoRedo UndoRedo = null!;
     Shape CurrentShape = null!;
-    HashSet<Anchor> SelectedAnchors = new();
+    HashSet<Anker> SelectedAnchors = new();
     HashSet<HandlePointer> SelectedHandles = new();
     public Texture2D PreviewTex = null!;
     public bool JustUnpaused = false;
@@ -192,8 +192,8 @@ public partial class Base : Node2D
     public override void _Ready()
     {
         CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
-        Ed = (Editor)(GetParent().GetParent());
-        Manager = ((Editor)GetParent().GetParent()).Manager;
+        Ed = (Editor)(GetParent());
+        Manager = ((Editor)GetParent()).Manager;
         AddChild(input.UndoTimer);
         // AddChild(input.MovementTimer);
         AddChild(FpsTimer);
@@ -225,22 +225,22 @@ public partial class Base : Node2D
         FpsTimer.OneShot = true;
         FpsTimer.Start();
 
-        Sprite2D _cursor = GetParent().GetNode<Sprite2D>("Cursor");
-        CanvasLayer _controlroot = GetNode<CanvasLayer>("ControlRoot");
+        Sprite2D _cursor = GetNode<Sprite2D>("Cursor");
+        Control _controlroot = GetNode<Control>("ControlRoot");
         HBoxContainer _previewcontainer = (HBoxContainer)_controlroot.FindChild("PreviewContainer");
-        FpsLabel = GetParent().GetNode<RichTextLabel>("FpsLabel");
+        FpsLabel = GetNode<RichTextLabel>("FpsLabel");
         children = new(
-            GetParent().GetNode<Sprite2D>("Tex"),
+            GetNode<Sprite2D>("Tex"),
             _cursor,
             (Label)_cursor.GetChild(0),
-            GetParent().GetNode<ColorRect>("Background"),
+            GetNode<ColorRect>("Background"),
             _controlroot,
-            (Panel)FindChild("Selector"),
+            (Label)FindChild("Selector"),
             _previewcontainer,
             _previewcontainer.GetChild<TextureRect>(0),
             (TextureRect)_previewcontainer.FindChild("TinyPreview"),
             (TextureRect)_previewcontainer.FindChild("TinyPreview2"),
-            GetParent().GetNode<FileDialog>("SerafFileDialog"),
+            GetNode<FileDialog>("SerafFileDialog"),
             (VBoxContainer)FindChild("VBoxContainer_Layers")
         );
 
@@ -319,7 +319,6 @@ public partial class Base : Node2D
             return;
         RenderThumbnails(delta);
         DrawLayers(delta);
-        PositionSelectorWidget(delta);
         UpdateShapeIndicators();
 
         // V2 newScale = V2.Lerp(Fun.Vtv(children.FocusIdentifier.Scale), new(1.0f, 1.0f), delta * 30);
@@ -468,14 +467,6 @@ public partial class Base : Node2D
     }
 
 
-    public void PositionSelectorWidget(float delta)
-    {
-        GV2 goalPos = new(98, 100 + Shapes.S.IndexOf(CurrentShape) * 98);
-        children.LayerSelector.Position = Fun.Vtv(V2.Lerp(Fun.Vtv(children.LayerSelector.Position), Fun.Vtv(goalPos), delta * 30f));
-        children.LayerSelector.Scale = Fun.Vtv(V2.Lerp(Fun.Vtv(children.LayerSelector.Scale), new V2(1.0f, 1.0f), delta * 30));
-        ((RichTextLabel)children.LayerSelector.GetNode("PointAmountLabel")).Text = CurrentShape.Anchors.Count.ToString("D2") + "/24";
-    }
-
 
     public static void ProcessCursor(float delta)
     {
@@ -565,7 +556,7 @@ public partial class Base : Node2D
         char c = 'a';
         string tallLetters = "htldfiklb";
         string deepLetters = "qypg";
-        foreach (Anchor a in CurrentShape.Anchors)
+        foreach (Vectordrawing.Anker a in CurrentShape.Anchors)
         {
             Color charColor = Colors.Black;
             Color shadowColor = Colors.Black;
@@ -637,9 +628,11 @@ public partial class Base : Node2D
                 }
                 else
                 {
-                    Panel selector = (Panel)FindChild("Selector");
-                    selector.Scale = new Godot.Vector2(0.3f, 1.6f);
                     CurrentShape = Shapes.S[shapeToPick];
+                    Label sel = children.LayerSelector;
+                    CreateTween().SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint).TweenProperty(sel, "position", new GV2(-100, -3 + Shapes.S.IndexOf(CurrentShape) * 98), .2f);
+                    CreateTween().TweenProperty(sel, "scale", new GV2(1, 1), .2).From(new GV2(.7f,1.3f));
+                    children.LayerSelector.Text = CurrentShape.Anchors.Count.ToString("D2") + "\n24";
                 }
             }
             else if (at == "Semicolon")
@@ -670,7 +663,7 @@ public partial class Base : Node2D
 
     public void HandleSelectionText(string s)
     {
-        Anchor a = CurrentShape.GetAnchorFromLabel(s.ToLower());
+        Anker a = CurrentShape.GetAnchorFromLabel(s.ToLower());
         if (!SelectedAnchors.Remove(a))
         {
             if (input.CurrentFocus == Focus.Handle)
@@ -690,7 +683,7 @@ public partial class Base : Node2D
         float ang = rotationAmount * 2 * MathF.PI * delta;
         Uts();
         if (Input.IsActionPressed(Snl.rotate_cw_points)) ang *= -1;
-        foreach (Anchor a in SelectedAnchors)
+        foreach (Anker a in SelectedAnchors)
         {
             V2 spot = a.Position - input.MarkerPos;
             V2 displacement = new(MathF.Cos(ang) * spot[0] - MathF.Sin(ang) * spot[1], MathF.Sin(ang) * spot[0] + MathF.Cos(ang) * spot[1]);
@@ -724,7 +717,7 @@ public partial class Base : Node2D
         if (xScalar != 1 || yScalar != 1)
         {
             Uts();
-            foreach (Anchor a in SelectedAnchors)
+            foreach (Anker a in SelectedAnchors)
             {
                 V2 spot = a.Position - input.MarkerPos;
                 V2 displacement = new(spot[0] * xScalar, spot[1] * yScalar);
@@ -760,7 +753,7 @@ public partial class Base : Node2D
                     {
                         movingSelected *= 8;
                     }
-                    foreach (Anchor a in SelectedAnchors)
+                    foreach (Anker a in SelectedAnchors)
                     {
                         a.anchorRounding = Math.Clamp(a.anchorRounding + (int)(-movingSelected.Y) / 5, 1, 600);
                         a.intersectionRounding = Math.Clamp(a.intersectionRounding + (int)(movingSelected.X) / 5, 1, 600);
@@ -769,7 +762,7 @@ public partial class Base : Node2D
                 }
                 else
                 {
-                    foreach (Anchor a in SelectedAnchors)
+                    foreach (Anker a in SelectedAnchors)
                     {
                         a.Position += movingSelected;
                         a.AlignHandles();
@@ -890,7 +883,7 @@ public partial class Base : Node2D
         {
             if (Input.IsActionJustPressed(Snl.switch_segment_style) || Input.IsActionJustPressed(Snl.finish_shape))
             {
-                Anchor fanchor = null!;
+                Anker fanchor = null!;
                 if (SelectedAnchors.Count > 0)
                 {
                     fanchor = SelectedAnchors.Last();
@@ -932,7 +925,7 @@ public partial class Base : Node2D
 
             if (Input.IsActionJustPressed(Snl.insert_point))
             {
-                foreach (Anchor a in SelectedAnchors)
+                foreach (Anker a in SelectedAnchors)
                 {
                     if (SelectedAnchors.Contains(a.NextAnchor()))
                     {
@@ -1196,11 +1189,11 @@ public partial class Base : Node2D
             //                    Input.IsActionPressed(Snl.rotate_ccw_points)));
         
             {
-                foreach (Anchor a in CurrentShape.Anchors)
+                foreach (Anker a in CurrentShape.Anchors)
                 {
                     a.AutoHandles();
                 }
-                foreach (Anchor a in CurrentShape.Anchors)
+                foreach (Anker a in CurrentShape.Anchors)
                 {
                     a.AutoHandles();
                 }
@@ -1442,7 +1435,7 @@ public partial class Base : Node2D
                     SvgString.AddSegments(s.SegList(), false);
                 }
             }
-            foreach (Anchor a in s.Anchors)
+            foreach (Anker a in s.Anchors)
             {
 
                 // draw anchors
@@ -1570,7 +1563,7 @@ public partial class Base : Node2D
             SvgString.SetStyle(Style.ShapeSelected);
             SvgString.AddSegments(s.SegList(), false);
 
-            foreach (Anchor a in s.Anchors)
+            foreach (Anker a in s.Anchors)
             {
 
                 // draw anchors

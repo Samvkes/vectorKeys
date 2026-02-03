@@ -28,7 +28,7 @@ public enum EditorFocus
 
 public partial class Editor : CanvasLayer
 {
-    Node2D DrawingBase = null!; 
+    Control DrawingBase = null!; 
     LetterMenu LetterMenu = null!; 
     public Manager Manager = GD.Load<PackedScene>("res://manager.tscn").Instantiate<Manager>();
     public FileDialog UfoFilePicker = null!;
@@ -70,7 +70,7 @@ public partial class Editor : CanvasLayer
 
         AddChild(Manager);
         GetTree().Paused = true;
-        DrawingBase = (Node2D)FindChild("DrawingBase");
+        DrawingBase = (Control)FindChild("DrawingBase");
         LetterMenu = (LetterMenu)FindChild("LetterMenu");
         UfoFilePicker = (FileDialog)FindChild("UfoFilePicker");
         DrawingBase.Visible = false;
@@ -171,7 +171,7 @@ public partial class Editor : CanvasLayer
         OS.Execute("python3", ["-h"], a);
         GD.Print(a[0]);
         LetterMenu.ProcessMode = ProcessModeEnum.Pausable;
-        Base b = (Base)DrawingBase.FindChild("BaseTest");
+        Base b = (Base)DrawingBase;
         (b.Shapes, b.UndoRedo) = LetterMenu.ShapeDict[LetterMenu.CurrentlySelected.GetGlyph()];
         if (b.Shapes.S.Count == 0) b.Initialize();
         DrawingBase.ProcessMode = ProcessModeEnum.WhenPaused;

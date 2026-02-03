@@ -47,9 +47,9 @@ public enum SegmentType
     Cubic,
 }
 
-public struct HandlePointer(Anchor a, bool inHandle)
+public struct HandlePointer(Anker a, bool inHandle)
 {
-    public Anchor A = a;
+    public Anker A = a;
     public bool InHandle = inHandle;
 
     public Handle h()
@@ -169,7 +169,7 @@ public class Handle
     public bool Locked = false;
     public bool Selected = false;
     public bool IsInHandle = false;
-    public Anchor AdjacentAnchor = null!;
+    public Anker AdjacentAnchor = null!;
     public float DistanceFromAnchor = 200;
     public float Angle = 0;
 
@@ -228,7 +228,7 @@ public class Handle
         sibling.DistanceFromAnchor = 100;
     }
 
-    public void Init(Anchor adjacentAnchor, bool isInhandle, float angle = 0f, float distanceFromAnchor = 0)
+    public void Init(Anker adjacentAnchor, bool isInhandle, float angle = 0f, float distanceFromAnchor = 0)
     {
         IsInHandle = isInhandle;
         AdjacentAnchor = adjacentAnchor;
@@ -252,7 +252,7 @@ public class Handle
     }
 }
 
-public class Anchor
+public class Anker
 {
     public V2 Position
     {
@@ -352,8 +352,8 @@ public class Anchor
          
         //normalize!!!
         if (MyShape.Anchors.Count <= 2 || !Auto) return; 
-        Anchor prev = PreviousAnchor();
-        Anchor next = NextAnchor();
+        Anker prev = PreviousAnchor();
+        Anker next = NextAnchor();
         GV2 v1 = Fun.Vtv(V2.Normalize(Position - prev.Position));
         GV2 v2 = Fun.Vtv(V2.Normalize(Position - next.Position));
         float inhAng;
@@ -476,9 +476,9 @@ public class Anchor
         return ts;
     }
 
-    public Anchor NextAnchor()
+    public Anker NextAnchor()
     {
-        List<Anchor> anchors = MyShape.Anchors;
+        List<Anker> anchors = MyShape.Anchors;
         int myIndex = anchors.IndexOf(this);
         if (myIndex == anchors.Count - 1)
         {
@@ -490,9 +490,9 @@ public class Anchor
         }
     }
 
-    public Anchor PreviousAnchor()
+    public Anker PreviousAnchor()
     {
-        List<Anchor> anchors = MyShape.Anchors;
+        List<Anker> anchors = MyShape.Anchors;
         int myIndex = anchors.IndexOf(this);
         if (myIndex == 0)
         {
@@ -516,7 +516,7 @@ public class Shape
     public Segment[] Segments = [];
     public Segment[] RoundedSegments = [];
     public bool Ssselected = false;
-    public List<Anchor> Anchors = [];
+    public List<Anker> Anchors = [];
     public bool Finished = false;
     public bool Negative = false;
 
@@ -554,7 +554,7 @@ public class Shape
 
     public void AlignAllHandles()
     {
-        foreach (Anchor a in Anchors)
+        foreach (Anker a in Anchors)
         {
             a.AlignHandles();
         }
@@ -582,7 +582,7 @@ public class Shape
     public bool IsClockwise()
     {
         float lowestY = 100000000;
-        Anchor lowestAnchor = Anchors[0];
+        Anker lowestAnchor = Anchors[0];
         foreach (var a in Anchors)
         {
             if (a.Position.Y < lowestY)
@@ -633,9 +633,9 @@ public class Shape
         }
     }
 
-    public virtual void AddAnchor(V2 pos, bool makeCubic = false, Anchor? insertAfter = null, bool broken = false)
+    public virtual void AddAnchor(V2 pos, bool makeCubic = false, Anker? insertAfter = null, bool broken = false)
     {
-        Anchor a = new();
+        Anker a = new();
         a.Init(pos, this);
         a.Broken = broken;
         AnchorsChanged();
@@ -708,21 +708,21 @@ public class Shape
     public virtual int[] CornerRoundings()
     {
         int[] cornerRoundings = [];
-        foreach (Anchor a in Anchors)
+        foreach (Anker a in Anchors)
         {
             cornerRoundings = [.. cornerRoundings, a.anchorRounding];
         }
         return cornerRoundings;
     }
 
-    public string GetLabel(Anchor a)
+    public string GetLabel(Anker a)
     {
         int index = Anchors.IndexOf(a);
         Debug.Assert(index != -1);
         return C.Alfabet[index].ToString();
     }
 
-    public Anchor GetAnchorFromLabel(string s)
+    public Anker GetAnchorFromLabel(string s)
     {
         int index = s[0] - 97;
         return Anchors[index];
@@ -903,7 +903,7 @@ public class Shapes
 
         foreach ((int bezIndex, V2 intersectCoord) in intersections)
         {
-            Anchor anchorThatIntersectingBezierBelongsTo = shape.Anchors[0]; 
+            Anker anchorThatIntersectingBezierBelongsTo = shape.Anchors[0]; 
             if (shape is HyperbezierShape hbShape)
             {
                 int[] bpa = hbShape.BeziersPerAnchorPair;
