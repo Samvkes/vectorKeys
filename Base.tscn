@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://nq848ct5jjb0"]
 
 [ext_resource type="FontFile" uid="uid://bp6obah0nqddo" path="res://assets/DepartureMono-Regular.otf" id="1_nopgj"]
+[ext_resource type="FontVariation" uid="uid://dnofumtgkgptw" path="res://recursive_var.tres" id="2_4phwr"]
 [ext_resource type="Script" uid="uid://mlikt7xk4omk" path="res://Player.cs" id="2_nopgj"]
 [ext_resource type="FontFile" uid="uid://cxbup0l5ngyia" path="res://assets/DraftingMono/DraftingMono-LightItalic.otf" id="3_22hco"]
 [ext_resource type="Script" uid="uid://bxgca61n8ryny" path="res://undo_redo.gd" id="3_i812h"]
@@ -8,6 +9,20 @@
 [ext_resource type="Texture2D" uid="uid://cvnp47h0jkfrx" path="res://assets/DraftingMono/Star 1.png" id="5_swcnr"]
 [ext_resource type="Script" uid="uid://2bmjt7gcu005" path="res://Trail.cs" id="7_4phwr"]
 [ext_resource type="Script" uid="uid://bnr0pvrmsiqey" path="res://PointCanvas.cs" id="8_2lvr1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yii2e"]
+content_margin_left = 30.0
+content_margin_top = 20.0
+content_margin_right = 30.0
+content_margin_bottom = 20.0
+bg_color = Color(0.92699605, 0.33468115, 0.37718657, 1)
+border_width_bottom = 4
+border_color = Color(0.6981973, 0, 0.1832349, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+corner_detail = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4phwr"]
 content_margin_left = 6.0
@@ -202,6 +217,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("5_nopgj")
+
+[node name="LineEdit" type="LineEdit" parent="." unique_id=1241176326]
+visible = false
+top_level = true
+z_index = 100
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -250.0
+offset_right = -90.0
+offset_bottom = -185.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.92376274, 0.9209571, 0.917422, 0.9098039)
+theme_override_colors/caret_color = Color(0.87329805, 0.87329847, 0.8732987, 1)
+theme_override_constants/caret_width = 2
+theme_override_fonts/font = ExtResource("2_4phwr")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_yii2e")
+expand_to_text_length = true
 
 [node name="Tex" type="Sprite2D" parent="." unique_id=2040925610]
 z_index = -1

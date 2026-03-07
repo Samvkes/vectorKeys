@@ -4,12 +4,12 @@
 [ext_resource type="FontFile" uid="uid://cxbup0l5ngyia" path="res://assets/DraftingMono/DraftingMono-LightItalic.otf" id="1_oprf2"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_7qyjp"]
-color = Color(0, 0, 0, 0.23529412)
+color = Color(0, 0, 0, 0.11764706)
 grow_end = 3.0
 thickness = 2
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_oprf2"]
-color = Color(0, 0, 0, 0.23529412)
+color = Color(0, 0, 0, 0.11764706)
 grow_end = -10.0
 thickness = 2
 

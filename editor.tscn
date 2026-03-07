@@ -6,8 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://b7n7y1vp6yjil" path="res://assets/270C_black.png" id="4_q0a35"]
 [ext_resource type="Texture2D" uid="uid://dqgbs8s8ja6ca" path="res://assets/keep_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" id="5_4s0cy"]
 [ext_resource type="PackedScene" uid="uid://cwalmnm10vq61" path="res://weight_picker.tscn" id="6_1ys5w"]
-[ext_resource type="Shader" uid="uid://4jhjrc181an7" path="res://gb1.gdshader" id="8_t27w5"]
-[ext_resource type="Shader" uid="uid://cmaup1jya6l58" path="res://gb2.gdshader" id="9_k4288"]
+[ext_resource type="PackedScene" uid="uid://bfmr5rxaagrc" path="res://text_input.tscn" id="9_3btpq"]
+[ext_resource type="PackedScene" uid="uid://bdby0vtv3lnms" path="res://project_picker.tscn" id="9_8yjtx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0a35"]
 bg_color = Color(0.8, 0.8, 0.8, 1)
@@ -34,36 +34,22 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_8yjtx"]
-shader = ExtResource("8_t27w5")
-shader_parameter/blurSize = 0
-shader_parameter/blurSmoothness = 0.400000019
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_3btpq"]
-shader = ExtResource("9_k4288")
-shader_parameter/blurSize = 0
-shader_parameter/blurSmoothness = 0.50000002375
-
-[sub_resource type="Gradient" id="Gradient_t27w5"]
-offsets = PackedFloat32Array(0.045553144, 0.1626898, 0.86117136, 0.9848156)
-colors = PackedColorArray(0.3647059, 0.3647059, 0.3647059, 1, 0.368102, 0.368102, 0.368102, 0, 0.368102, 0.368102, 0.368102, 0, 0.3647059, 0.3647059, 0.3647059, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_k4288"]
-gradient = SubResource("Gradient_t27w5")
-fill_to = Vector2(0, 1)
-
 [node name="Editor" type="CanvasLayer" unique_id=413202171]
 process_mode = 3
+layer = 0
 script = ExtResource("1_wrb8p")
 
 [node name="LetterMenu" parent="." unique_id=1577656534 instance=ExtResource("1_vjobr")]
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+metadata/_edit_lock_ = true
 
 [node name="DrawingBase" parent="." unique_id=95779502 instance=ExtResource("2_wrb8p")]
+visible = false
 
 [node name="Peace" type="TextureRect" parent="." unique_id=539033842]
 visible = false
@@ -117,45 +103,16 @@ action_mode = 0
 icon = ExtResource("5_4s0cy")
 icon_alignment = 1
 
-[node name="firstBlur" type="CanvasLayer" parent="." unique_id=240698126]
+[node name="ProjectPicker" parent="." unique_id=1114109679 instance=ExtResource("9_8yjtx")]
+z_index = -1
 
-[node name="firstBlurShader" type="ColorRect" parent="firstBlur" unique_id=1179513694]
-material = SubResource("ShaderMaterial_8yjtx")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+[node name="WeightPicker" parent="." unique_id=1711986609 instance=ExtResource("6_1ys5w")]
 
-[node name="secondBlur" type="CanvasLayer" parent="." unique_id=1252438716]
-
-[node name="secondBlurShader" type="ColorRect" parent="secondBlur" unique_id=715681648]
-material = SubResource("ShaderMaterial_3btpq")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="WeightP" type="CanvasLayer" parent="." unique_id=194063823]
+[node name="MarginContainer" parent="." unique_id=842216023 instance=ExtResource("9_3btpq")]
 visible = false
-
-[node name="TextureRect" type="TextureRect" parent="WeightP" unique_id=1255888626]
-visible = false
-z_index = 4
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = SubResource("GradientTexture2D_k4288")
-
-[node name="WeightPicker" parent="WeightP" unique_id=1711986609 instance=ExtResource("6_1ys5w")]
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 2
+offset_left = 1034.0
+offset_top = 88.0
+offset_right = 1678.0
+offset_bottom = 321.0
 
 [connection signal="button_down" from="Button" to="." method="_OnButtonDown"]

@@ -1,0 +1,400 @@
+[gd_scene format=3 uid="uid://bfmr5rxaagrc"]
+
+[ext_resource type="Script" uid="uid://bu720j2q3rhnm" path="res://TextInput.cs" id="1_527td"]
+[ext_resource type="FontFile" uid="uid://bvggvdr238tay" path="res://assets/DraftingMono/DraftingMono-Light.otf" id="1_av4f4"]
+[ext_resource type="FontFile" uid="uid://cp6ap3relqd7k" path="res://assets/DraftingMono/DraftingMono-Regular.otf" id="1_ww44w"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fbk06"]
+bg_color = Color(0.7784154, 0.77841294, 0.7877358, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2258x"]
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.23529412)
+shadow_size = 41
+shadow_offset = Vector2(10, 25)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f7b4x"]
+bg_color = Color(0.47605914, 0.48424566, 0.50061804, 1)
+skew = Vector2(-0.2, -0.2)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 12.0
+expand_margin_top = 11.0
+expand_margin_right = 10.0
+expand_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_527td"]
+bg_color = Color(0.7464225, 0.74641764, 0.7597607, 1)
+skew = Vector2(-0.2, -0.2)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+expand_margin_left = 10.0
+expand_margin_top = 9.0
+expand_margin_right = 8.0
+expand_margin_bottom = 10.0
+
+[sub_resource type="Gradient" id="Gradient_2258x"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_giscq"]
+gradient = SubResource("Gradient_2258x")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xqat"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 1)
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 0)
+border_blend = true
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="Gradient" id="Gradient_quj6r"]
+offsets = PackedFloat32Array(0.1826087, 1)
+colors = PackedColorArray(0.8217, 0.8217, 0.83, 0.15686275, 0.6378435, 0.6378431, 0.63784313, 0.5803922)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_b3q1u"]
+gradient = SubResource("Gradient_quj6r")
+fill_from = Vector2(0, 0.5363248)
+fill_to = Vector2(1, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_giscq"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 0.0
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_527td"]
+content_margin_left = 4.0
+content_margin_top = 0.0
+content_margin_right = 4.0
+content_margin_bottom = 10.0
+color = Color(0, 0, 0, 0.23529412)
+grow_begin = 40.0
+grow_end = 40.0
+thickness = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0kxes"]
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 30.0
+content_margin_bottom = 14.0
+bg_color = Color(0.15418988, 0.17028153, 0.24033326, 0.65882355)
+border_width_left = 5
+border_width_top = 7
+border_color = Color(0.0375, 0.060000006, 0.15, 0.87058824)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 10.0
+expand_margin_right = 10.0
+shadow_color = Color(1, 1, 1, 0.47058824)
+shadow_size = 1
+shadow_offset = Vector2(1.47, 1.81)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ww44w"]
+
+[sub_resource type="Gradient" id="Gradient_527td"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(0.8, 0.8, 0.8, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_2258x"]
+gradient = SubResource("Gradient_527td")
+fill = 1
+fill_from = Vector2(0.48290598, 0.508547)
+fill_to = Vector2(0.9188034, 0.91239315)
+
+[node name="MarginContainer" type="MarginContainer" unique_id=842216023]
+z_index = 1000
+offset_right = 634.0
+offset_bottom = 204.0
+pivot_offset_ratio = Vector2(0.5, 1)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+script = ExtResource("1_527td")
+
+[node name="Main" type="Panel" parent="." unique_id=976328213]
+custom_minimum_size = Vector2(100, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fbk06")
+
+[node name="Shadow" type="Panel" parent="Main" unique_id=199852759]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.9, 0.7)
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_2258x")
+
+[node name="Right" type="Panel" parent="Main" unique_id=1795937600]
+visible = false
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -5.0
+offset_bottom = 5.0
+grow_horizontal = 0
+grow_vertical = 2
+rotation = 0.7853982
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_f7b4x")
+
+[node name="Horizontal" type="MarginContainer" parent="Main" unique_id=1346313685]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="control" type="Control" parent="Main/Horizontal" unique_id=1759698295]
+layout_mode = 2
+
+[node name="Left" type="Panel" parent="Main/Horizontal/control" unique_id=1246990651]
+visible = false
+z_index = -1
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -50.0
+offset_right = 50.0
+grow_vertical = 0
+rotation = 2.3561945
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_f7b4x")
+
+[node name="Foreground" type="Panel" parent="Main/Horizontal/control/Left" unique_id=1230758488]
+z_index = 1
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_527td")
+
+[node name="Right" type="Panel" parent="Main/Horizontal/control" unique_id=1778083572]
+visible = false
+z_index = -1
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+rotation = 2.3561945
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_f7b4x")
+
+[node name="Foreground" type="Panel" parent="Main/Horizontal/control/Right" unique_id=777965502]
+z_index = 1
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_527td")
+
+[node name="Vertical" type="MarginContainer" parent="Main" unique_id=727691060]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_right = 40
+
+[node name="control" type="Control" parent="Main/Vertical" unique_id=1827497068]
+layout_mode = 2
+
+[node name="Down" type="Panel" parent="Main/Vertical/control" unique_id=770868184]
+z_index = -1
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -25.0
+offset_top = -50.00006
+offset_right = 25.0
+grow_horizontal = 2
+grow_vertical = 0
+rotation = 0.7853982
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_f7b4x")
+
+[node name="foreground" type="Panel" parent="Main/Vertical/control/Down" unique_id=740725754]
+z_index = 1
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_527td")
+
+[node name="Up" type="Panel" parent="Main/Vertical/control" unique_id=2027360221]
+visible = false
+z_index = -1
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+offset_right = 50.0
+offset_bottom = 50.0
+rotation = 0.7853982
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_f7b4x")
+
+[node name="Foreground" type="Panel" parent="Main/Vertical/control/Up" unique_id=1830149654]
+z_index = 2
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset_ratio = Vector2(0.5, 0.5)
+theme_override_styles/panel = SubResource("StyleBoxFlat_527td")
+
+[node name="Sprite2D" type="Sprite2D" parent="Main" unique_id=266899884]
+visible = false
+texture = SubResource("GradientTexture2D_giscq")
+
+[node name="Panel" type="Panel" parent="Main" unique_id=1586099145]
+clip_children = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0xqat")
+
+[node name="TextureRect" type="TextureRect" parent="Main/Panel" unique_id=1112696696]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_b3q1u")
+
+[node name="Control" type="Control" parent="Main" unique_id=1471212440]
+anchors_preset = 0
+offset_right = 604.0
+offset_bottom = 193.0
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1221950022]
+z_index = 2
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 28
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=968766932]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=602168408]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_av4f4")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxEmpty_giscq")
+text = "Please enter a project name."
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=419289179]
+layout_mode = 2
+theme_override_constants/separation = 0
+theme_override_styles/separator = SubResource("StyleBoxLine_527td")
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/VBoxContainer" unique_id=1642763612]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_placeholder_color = Color(1, 1, 1, 0.6901961)
+theme_override_colors/caret_color = Color(1, 1, 1, 0.2509804)
+theme_override_constants/outline_size = 0
+theme_override_constants/caret_width = 2
+theme_override_fonts/font = ExtResource("1_ww44w")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_0kxes")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ww44w")
+placeholder_text = "project name"
+expand_to_text_length = true
+caret_blink = true
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=416159503]
+visible = false
+z_index = -2
+position = Vector2(368.99997, 118.00001)
+scale = Vector2(30.992188, 22.191406)
+texture = SubResource("GradientTexture2D_2258x")
+
+[connection signal="editing_toggled" from="MarginContainer/VBoxContainer/LineEdit" to="." method="_OnEditingToggled"]

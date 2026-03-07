@@ -693,7 +693,7 @@ public class Shape
         }
 
         Segment[] roundedSegments;
-        if (Base.input.DebugSwitch)
+        if (Editor.DebugSwitch)
             roundedSegments = Shapes.RoundCornersSegmentsOld(segments, CornerRoundings());
         else
             roundedSegments = Shapes.RoundCornersSegments(segments, CornerRoundings());
@@ -726,7 +726,7 @@ public class Shape
     {
         int index = s[0] - 97;
         return Anchors[index];
-   }
+    }
 }
 
 public class HyperbezierShape: Shape
@@ -738,7 +738,7 @@ public class HyperbezierShape: Shape
         if (AnchorsCached) return rounded ? RoundedSegments : Segments;
 
         (Segments, BeziersPerAnchorPair) = Player.AnchorsToHyperBeziers(Anchors);
-        RoundedSegments = Base.input.DebugSwitch 
+        RoundedSegments = Editor.DebugSwitch 
             ? Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair) 
             : Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair); 
 
@@ -1126,7 +1126,7 @@ public class Shapes
             beziersBetween += 1;
         }
         beziersToSkip = [.. beziersToSkip, beziersBetween];
-        if (Base.input.DebugSwitch)
+        if (Editor.DebugSwitch)
             return RoundCornersSegmentsOld(originalShape, cornerSizes, beziersToSkip);
         else
             return RoundCornersSegments(originalShape, cornerSizes, beziersToSkip);

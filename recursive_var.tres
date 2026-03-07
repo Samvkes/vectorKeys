@@ -6,10 +6,10 @@ font_names = PackedStringArray("Recursive")
 [resource]
 base_font = SubResource("SystemFont_vxoo4")
 variation_opentype = {
-1128354636: 1,
+1128354636: 0,
 1129468758: 1,
-1297043023: 0,
+1297043023: 1,
 1936486004: 0,
-2003265652: 400
+2003265652: 500
 }
 baseline_offset = -0.05

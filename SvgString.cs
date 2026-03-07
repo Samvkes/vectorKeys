@@ -459,7 +459,7 @@ static class SvgString
                      .Append("/>");
     }
 
-    public static void ClearString(float zoom, V2 origin, V2 windowSize, V2 markerPos)
+    public static void ClearString(float zoom, V2 origin, V2 windowSize, V2 markerPos, V2 cursorOff)
     {
         CurrentString.Clear();
         var tslating = origin;
@@ -470,7 +470,7 @@ static class SvgString
         Styles.zoom = zoom;
 
         CurrentString.Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{windowSize.X}\" height=\"{windowSize.Y}\" >")
-            .Append($"<g transform=\"scale({1}) translate({tslating.X + Base.ui.CursorOff.X},{tslating.Y + Base.ui.CursorOff.Y}) rotate({0})\">")
+            .Append($"<g transform=\"scale({1}) translate({tslating.X + cursorOff.X},{tslating.Y + cursorOff.Y}) rotate({0})\">")
             .Append($"<g transform=\"scale({zoom:N3}) translate({-tslating.X},{-tslating.Y}) rotate({0})\">");
     }
 

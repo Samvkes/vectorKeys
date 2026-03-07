@@ -6,6 +6,7 @@ using Snl = Vectordrawing.StringNamesList;
 using Vectordrawing;
 using System.Threading.Tasks;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
 
 public struct FamilyConfig
 {
@@ -24,15 +25,27 @@ public enum EditorFocus
     Letters,
     Workbench,
     WeightPicker,
+    ProjectPicker,
+}
+
+public record RawInput {
+    public string? NumberPressed = null;
+    public  string? LetterPressed = null;
+    public string? NumberJustPressed = null;
+    public string? LetterJustPressed = null;
+    public string? Raw = null;
+    public string? RawJustPressed = null;
 }
 
 public partial class Editor : CanvasLayer
 {
     Control DrawingBase = null!; 
     LetterMenu LetterMenu = null!; 
+    ProjectPicker ProjectPicker = null!;
     public Manager Manager = GD.Load<PackedScene>("res://manager.tscn").Instantiate<Manager>();
     public FileDialog UfoFilePicker = null!;
     public FamilyConfig CurrentFamily = new();
+    public static bool DebugSwitch = false;
     Timer FpsTimer = null!;
     float ThrottleWaitTime = 1f;
     public bool Throttling = false;
@@ -41,21 +54,28 @@ public partial class Editor : CanvasLayer
     float MovementHeldTime = 0;
     float ValidHoldTime = .2f;
     bool StickyGuide = true;
-    ShaderMaterial blur1 = null!;
-    ShaderMaterial blur2 = null!;
-    CanvasLayer blurLayer1 = null!;
-    CanvasLayer blurLayer2 = null!;
-    CanvasLayer weightP = null!;
-    Tween? theTween = null;
-    public EditorFocus CurrentFocus = EditorFocus.Letters;
+    public WeightPicker weightP = null!;
+    ProjectPicker PPicker = null!;
+    TextInput textInput = null!;
+    public RawInput R = new();
+    EditorFocus currentFocus = EditorFocus.ProjectPicker;
+    public EditorFocus CurrentFocus
+    {
+        get { return currentFocus;}
+        set { 
+            LastEditorFocus = currentFocus; 
+            currentFocus = value;
+        }
+    }
+    EditorFocus LastEditorFocus = EditorFocus.ProjectPicker;
+    string? oldNum = null;
+    string? oldLetter = null;
+    string? oldRaw = null;
 
     public override void _Ready()
     {
-        weightP = (CanvasLayer)FindChild("WeightP");
-        blur1 = (ShaderMaterial)((ColorRect)FindChild("firstBlurShader")).Material;
-        blur2 = (ShaderMaterial)((ColorRect)FindChild("secondBlurShader")).Material;
-        blurLayer1 = (CanvasLayer)FindChild("firstBlur");
-        blurLayer2 = (CanvasLayer)FindChild("secondBlur");
+        weightP = (WeightPicker)FindChild("WeightPicker");
+        textInput = (TextInput)FindChild("TextInput");
         FpsTimer = new();
         AddChild(FpsTimer);
         FpsTimer.WaitTime = ThrottleWaitTime;
@@ -72,48 +92,25 @@ public partial class Editor : CanvasLayer
         GetTree().Paused = true;
         DrawingBase = (Control)FindChild("DrawingBase");
         LetterMenu = (LetterMenu)FindChild("LetterMenu");
+        ProjectPicker = (ProjectPicker)FindChild("ProjectPicker");
         UfoFilePicker = (FileDialog)FindChild("UfoFilePicker");
         DrawingBase.Visible = false;
-        LetterMenu.Visible = true;
+        // LetterMenu.Visible = true;
         DrawingBase.ProcessMode = ProcessModeEnum.Pausable;
         LetterMenu.ProcessMode = ProcessModeEnum.WhenPaused;
     }
 
+    
     public override void _Process(double delta)
     {
-        if (CurrentFocus == EditorFocus.Letters && Input.IsActionJustPressed(Snl.select_mode))
-        {
-            // weightP.Visible = true;
-            GetTree().Paused = true;
-            CurrentFocus = EditorFocus.WeightPicker;
-            blurLayer1.Visible = true;
-            blurLayer2.Visible = true;
-            theTween?.Kill();
-            theTween = CreateTween();
-            theTween.TweenMethod(Callable.From((int s) =>
-            {
-                blur1.SetShaderParameter("blurSize", s);
-            }), 0, 15, .1f);
-            theTween.Parallel().TweenMethod(Callable.From((int s) =>
-            {
-                blur2.SetShaderParameter("blurSize", s);
-            }), 0, 15, .1f);
-            theTween.TweenCallback(Callable.From(()=>{weightP.Visible = true;}));
-            theTween.TweenCallback(Callable.From(()=>{GetTree().Paused = true;}));
+        if (TextInput.BeingEdited) return;
+        if (Input.IsActionJustPressed(Snl.debug))
+            DebugSwitch = !DebugSwitch;
 
-        }
-        if (CurrentFocus == EditorFocus.WeightPicker && Input.IsActionJustReleased(Snl.select_mode))
-        {
-            CurrentFocus = EditorFocus.Letters;
-            theTween?.Kill();
-            blurLayer1.Visible = false;
-            blurLayer2.Visible = false;
-            // blur1.SetShaderParameter("blurSize", 0);
-            // blur2.SetShaderParameter("blurSize", 0);
-            weightP.Visible = false;
-        }
+
         if (Input.IsKeyPressed(Key.Backspace))
         {
+            SaveEverything();
 			((TextureRect)FindChild("Peace")).Visible = true;
             GetTree().Quit();
         }
@@ -154,6 +151,36 @@ public partial class Editor : CanvasLayer
                 Engine.MaxFps = 30;
             else
                 Engine.MaxFps = 0;
+        }
+
+        R.NumberJustPressed = R.NumberPressed is null || R.NumberPressed == oldNum ? null : R.NumberPressed;
+        R.LetterJustPressed = R.LetterPressed is null || R.LetterPressed == oldLetter ? null : R.LetterPressed;
+        R.RawJustPressed = R.Raw is null || R.Raw == oldRaw ? null : R.Raw;
+        oldNum = R.NumberPressed;
+        oldLetter = R.LetterPressed;
+        oldRaw = R.Raw;
+    }
+
+    public override void _Input(InputEvent ev)
+    {
+        R.Raw = ev.AsText();
+        R.NumberPressed = null;
+        R.LetterPressed = null;
+        if (TextInput.BeingEdited) return;
+        if (ev is InputEventKey && ev.IsPressed())
+        {
+            if ("0123456789".Contains(R.Raw))
+            {
+                R.NumberPressed = R.Raw;
+            }
+            else if (R.Raw.Length == 1)
+            {
+                R.LetterPressed = R.Raw.ToLower();
+            }
+            else if (R.Raw.Length == 7 && R.Raw.StartsWith("Shift"))
+            {
+                R.LetterPressed = R.Raw.Substr(6, 1);
+            }
         }
     }
 
@@ -277,5 +304,18 @@ public partial class Editor : CanvasLayer
         } 
 
     return normalizedMovement;
+    }
+
+    public void ResetEditorFocus()
+    {
+        CurrentFocus = LastEditorFocus;
+    }
+
+    public void SaveEverything()
+    {
+        foreach (ProjectTemplate p in ProjectPicker.RecentProjects)
+        {
+            p.Project().UpdateInfo();
+        }
     }
 }

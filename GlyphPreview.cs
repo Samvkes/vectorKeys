@@ -39,7 +39,7 @@ public partial class GlyphPreview : TextureRect
             GV2 baselineOffset = MediumFontFile.GetGlyphOffset(0, FontSize, glyphIndex);
             GV2 glyphSize = MediumFontFile.GetGlyphSize(0, FontSize, glyphIndex);
             GV2 pos = (Size - glyphSize) / 2;
-            GV2 heightOffset = Selected ? new(0,-5) : new(0,0);
+            GV2 heightOffset = new(0,0);
             Color charCol = Selected ? placeholderColorSelected : placeholderColor;
             DrawChar(MediumFontFile, (pos - baselineOffset) + heightOffset, MyGlyph.ToString(), FontSize.X, charCol);
         }

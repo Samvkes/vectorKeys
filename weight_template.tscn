@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://bdsiqvbeasc35"]
+
+[ext_resource type="Script" uid="uid://cu6xit74syh5c" path="res://WeightTemplate.cs" id="1_8ac5m"]
+[ext_resource type="FontFile" uid="uid://cp6ap3relqd7k" path="res://assets/DraftingMono/DraftingMono-Regular.otf" id="2_c3ad7"]
+[ext_resource type="FontFile" uid="uid://bvggvdr238tay" path="res://assets/DraftingMono/DraftingMono-Light.otf" id="3_s2kt4"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_7xswi"]
+color = Color(0.5019608, 0.5019608, 0.5019608, 1)
+thickness = 2
+vertical = true
+
+[node name="WeightTemplate" type="HBoxContainer" unique_id=630894846]
+offset_right = 1555.0
+offset_bottom = 75.0
+size_flags_horizontal = 0
+theme_override_constants/separation = 20
+script = ExtResource("1_8ac5m")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=946116203]
+layout_mode = 2
+alignment = 1
+
+[node name="LastEditDate" type="Label" parent="VBoxContainer" unique_id=1409185581]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.13137859, 0.13137859, 0.13137859, 1)
+theme_override_fonts/font = ExtResource("3_s2kt4")
+theme_override_font_sizes/font_size = 26
+text = "13 / 2 / 26"
+horizontal_alignment = 2
+
+[node name="GlyphsCount" type="Label" parent="VBoxContainer" unique_id=1593470947]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.13, 0.13, 0.13, 0.7058824)
+theme_override_fonts/font = ExtResource("3_s2kt4")
+theme_override_font_sizes/font_size = 26
+text = "208 glyphs"
+horizontal_alignment = 2
+
+[node name="VSeparator" type="VSeparator" parent="." unique_id=1101766793]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+theme_override_styles/separator = SubResource("StyleBoxLine_7xswi")
+
+[node name="Name" type="Label" parent="." unique_id=1039287310]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_c3ad7")
+theme_override_font_sizes/font_size = 30
+text = "300, mono, italic"
+vertical_alignment = 1

@@ -32,13 +32,24 @@ public partial class LetterMenu : Control
     List<PreviewGrid> PreviewGrids = [];
     public static Dictionary<char, (Shapes, Vectordrawing.UndoRedo)> ShapeDict = [];
     PackedScene PreviewGridScene = GD.Load<PackedScene>("res://preview_grid.tscn");
+    public int CurrentWeight = 500;
+    public List<Axis> CurrentAxes = [];
+    Control CurrentTitle = null!;
+    Timer weightPickerSwitchTimer = null!;
 
     public override void _Ready()
     {
         Ed = (Editor)GetParent();
         Selector = (Panel)FindChild("Selector");
+        Selector.PivotOffsetRatio = new GV2(.5f,.5f);
         VBoxContainer glyphContainer = (VBoxContainer)FindChild("VBoxContainer");
         PackedScene glyphScene = GD.Load<PackedScene>("res://glyph_preview.tscn");
+        CurrentTitle = (Control)FindChild("CurrentTitle");
+        weightPickerSwitchTimer = new();
+        weightPickerSwitchTimer.WaitTime = .5f;
+        weightPickerSwitchTimer.OneShot = true;
+        AddChild(weightPickerSwitchTimer);
+        
         Scroll = (ScrollContainer)FindChild("ScrollContainer");
         foreach (string glyphs in allGlyphs)
         {
@@ -91,11 +102,30 @@ public partial class LetterMenu : Control
 
     public override void _Process(double delta)
     {
+        if (TextInput.BeingEdited) return;
+
         if (Ed.CurrentFocus != EditorFocus.Letters)
             return;
-        Selector.Position = Selector.Position.Lerp(CurrentlySelected.GlobalPosition, (float)delta * 20);
+        float spd = delta < 0.03 ? 20 : 10;
+
+        if (Input.IsActionJustPressed(Snl.select_mode))
+        {
+            weightPickerSwitchTimer.Start();
+            Ed.weightP.SwitchActive();
+        }
+
+        if (Input.IsActionJustReleased(Snl.select_mode) && weightPickerSwitchTimer.TimeLeft <= 0)
+        {
+            Ed.weightP.SwitchActive();
+        }
+
+        Selector.Position += (CurrentlySelected.GlobalPosition - Selector.Position) * (1 - MathF.Exp( -(float)delta * spd));
+        // Selector.Position = Selector.Position.Lerp(CurrentlySelected.GlobalPosition, (float)delta * 20);
         int oldGroup = GetCurrentGroup().currentGroup;
-        V2 normalizedMovement = Ed.GetMovementInput((float)delta, 0.07f, CurrentPos.Y == 0 || CurrentPos.Y == RowsFlat.Count()-1, 0.3f);
+        V2 normalizedMovement = Ed.GetMovementInput((float)delta, 0.07f, 
+            CurrentPos.Y == 0 || CurrentPos.Y == RowsFlat.Count()-1 || CurrentPos.X == 0 || CurrentPos.X == RowsFlat[(int)CurrentPos.Y]-1,
+            0.3f);
+
         if (normalizedMovement.X < 0)
             CurrentPos.X = CurrentPos.X == 0 ? RowsFlat[(int)CurrentPos.Y] - 1 : CurrentPos.X - 1;
         if (normalizedMovement.X > 0)
@@ -133,6 +163,26 @@ public partial class LetterMenu : Control
             Ed.OpenDrawingScene(CurrentlySelected);
             Ed.CurrentFocus = EditorFocus.Workbench;
         }
+        var c = CurrentTitle.GetChildren();
+
+        if (((Label)c[0]).Text != CurrentWeight.ToString())
+        if (CurrentAxes.Count > 0)
+        {
+            ((Label)c[2]).Visible = true;
+            string axesString = "";
+            foreach (Axis a in CurrentAxes)
+            {
+                axesString += a.Name;
+                if (a != CurrentAxes.Last())
+                    axesString += ", ";
+            }
+            if (((Label)c[2]).Text != axesString)
+                ((Label)c[2]).Text = axesString;
+        }
+        else
+            ((Label)c[2]).Visible = false;
+        if (((Label)c[1]).Text != CurrentWeight.ToString())
+            ((Label)c[1]).Text = CurrentWeight.ToString();
     }
 
 
