@@ -56,6 +56,7 @@ public partial class Editor : CanvasLayer
     bool StickyGuide = true;
     public WeightPicker weightP = null!;
     ProjectPicker PPicker = null!;
+    public Project? CurrentProject = null;
     TextInput textInput = null!;
     public RawInput R = new();
     EditorFocus currentFocus = EditorFocus.ProjectPicker;

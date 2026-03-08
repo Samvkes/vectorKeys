@@ -7,72 +7,17 @@ using System.Linq;
 using Snl = Vectordrawing.StringNamesList;
 using System.Diagnostics;
 using System.Runtime;
+using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics.Metrics;
 
 namespace Vectordrawing;
 
-public class Axis(int index, Label l, WeightPicker wp, string name = "")
+public class Axis(int index, string name = "")
 {
-    readonly Color yella = new(.9f,.9f,.9f);
-    readonly WeightPicker Wp = wp;
-
-    Label Lab = l;
     public string Name = name;
     public bool TurnedOn = false;
     public bool Defined = false;
     public int Index = index;
-
-    public void Define(string name)
-    {
-        Defined = true;
-        ChangeName(name);
-        Lab.AddThemeColorOverride("font_color", yella);
-        StyleBoxFlat sbf = Lab.GetThemeStylebox("normal").Duplicate() as StyleBoxFlat;
-        sbf.BorderColor = yella;
-        Lab.AddThemeStyleboxOverride("normal", sbf);
-    }
-
-    public void ChangeName(string name)
-    {
-        Name = name;
-        Lab.Text = $"{Index + 1} {Name}";
-    }
-
-    public void Switch()
-    {
-        if (!Defined)
-        {
-           return; 
-        } 
-        if (!TurnedOn)
-        {
-            Manager.PlaySound("Rattle3.wav",.2f, 0.95f, 1.0f);
-            Lab.PivotOffsetRatio = new GV2(.5f,.5f);
-            StyleBoxFlat sbf = Lab.GetThemeStylebox("normal").Duplicate() as StyleBoxFlat;
-            sbf.BgColor = yella;
-            Wp.CreateTween().SetTrans(Tween.TransitionType.Expo).TweenProperty(sbf, "border_color", yella, .1f);
-            Wp.CreateTween().SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Sine).TweenProperty(sbf, "bg_color:a", 1f, .1f);
-            Wp.CreateTween().SetTrans(Tween.TransitionType.Expo).TweenProperty(Lab, "theme_override_colors/font_color", new Color(0,0,0), .1f);
-            // Wp.CreateTween().SetTrans(Tween.TransitionType.Sine).TweenProperty(Lab, "position", Lab.Position, .4f).From(Lab.Position + new GV2(0,10f));
-            Wp.CreateTween().SetTrans(Tween.TransitionType.Sine).TweenProperty(Lab, "scale", new GV2(1,1), .2f).From(new GV2(1.10f,1.10f));
-            Lab.AddThemeStyleboxOverride("normal", sbf);
-            GD.Print($"{TurnedOn}");
-            TurnedOn = true;
-            GD.Print($"{TurnedOn}");
-        }
-        else
-        {
-            Manager.PlaySound("Rattle3.wav",.2f, 0.7f, 0.75f);
-            Lab.PivotOffsetRatio = new GV2(.5f,.5f);
-            StyleBoxFlat sbf = Lab.GetThemeStylebox("normal").Duplicate() as StyleBoxFlat;
-            Wp.CreateTween().SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Expo).TweenProperty(sbf, "border_color", yella, .2f);
-            Wp.CreateTween().SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Expo).TweenProperty(sbf, "bg_color:a", 0f, .1f);
-            Wp.CreateTween().SetTrans(Tween.TransitionType.Expo).TweenProperty(Lab, "theme_override_colors/font_color", new Color(1,1,1), .1f);
-            Wp.CreateTween().SetTrans(Tween.TransitionType.Sine).TweenProperty(Lab, "scale", new GV2(1,1), .2f).From(new GV2(1.10f,1.10f));
-            // Wp.CreateTween().SetTrans(Tween.TransitionType.Sine).TweenProperty(Lab, "position", Lab.Position, .2f).From(Lab.Position + new GV2(0,10f));
-            Lab.AddThemeStyleboxOverride("normal", sbf);
-            TurnedOn = false;
-        }
-    }
 }
 
 public partial class WeightPicker : Node
@@ -88,6 +33,7 @@ public partial class WeightPicker : Node
     List<Panel> Clicks = [];
     HSeparator First = null!;
     HSeparator Last = null!;
+    Project? CurrentProject = null;
     bool canSoundAgain = true;
     Timer soundTimer = null!;
     Tween? theTween = null;
@@ -95,7 +41,6 @@ public partial class WeightPicker : Node
     int step = 108;
     float target = 0;
     bool ab = false;
-    bool Active = false;
     FontVariation rec = null!;
     int weight = 600;
     int count = 500;
@@ -107,8 +52,11 @@ public partial class WeightPicker : Node
     LetterMenu letterMenu = null!;
     bool huh = false;
     bool justActive = false;
-    Color yella = new(.9f,.9f,.9f);
     public List<Axis> Axes = [];
+    List<Label> LabelList = [];
+    StyleBoxFlat labelUndefined = GD.Load<StyleBoxFlat>("res://axisLabelStyleBox.tres");
+    StyleBoxFlat labelOff = (StyleBoxFlat)GD.Load<StyleBoxFlat>("res://axisLabelStyleBox.tres").Duplicate();
+    StyleBoxFlat labelOn = (StyleBoxFlat)GD.Load<StyleBoxFlat>("res://axisLabelStyleBox.tres").Duplicate();
     public string[] WeightNames = [
         "Hairline",
         "Hairline",
@@ -162,22 +110,25 @@ public partial class WeightPicker : Node
         Vbox = (VBoxContainer)FindChild("vbox1");
         Vbox.GlobalPosition = new(Vbox.GlobalPosition.X, - step * 6);
         StyleBoxFlat weightFlat = GD.Load<StyleBoxFlat>("res://weightLineFlat.tres");
-        StyleBoxFlat labelSb = GD.Load<StyleBoxFlat>("res://axisLabelStyleBox.tres");
         GridContainer LabelContainer = (GridContainer)FindChild("LabelContainer");
-        
+        labelOff.BorderColor = Colors.White; 
+        labelOn.BorderColor = Colors.White;
+        labelOn.BgColor = new(1f,1f,1f,1.0f);
         for (int i = 0; i < 9; i++)
         {
             Label l = new();
             l.CustomMinimumSize = new(380, 0);
-            l.AddThemeStyleboxOverride("normal", labelSb);
+            l.AddThemeStyleboxOverride("normal", labelUndefined);
             l.AddThemeFontSizeOverride("font_size", 30);
             l.AddThemeFontOverride("font", mediumF);
             l.AddThemeColorOverride("font_color", new Color(0.5f,0.5f,0.5f));
             l.Name = $"AxisLabel{i}";
+            l.PivotOffsetRatio = new GV2(.5f,.5f);
             LabelContainer.AddChild(l);
-            Axis ax = new(i, l, this);
+            LabelList.Add(l);
+            Axis ax = new(i);
             if (i == 0)
-                ax.Define("italic");
+                DefineAxis(ax,"italic");
             else
                 l.Text = (i+1).ToString();
             Axes.Add(ax);
@@ -207,7 +158,7 @@ public partial class WeightPicker : Node
         ti.Edit();
         string a = (string)(await ToSignal(ti.Le, LineEdit.SignalName.TextSubmitted))[0];
         GD.Print($"huh {a}"); 
-        Axes[i].Define(a);
+        DefineAxis(Axes[i], a);
     }
 
     public override void _Process(double delta)
@@ -216,7 +167,7 @@ public partial class WeightPicker : Node
             return;
         
         if (Input.IsActionJustPressed(Snl.add_new_point) && pickerLayer.Visible == true)
-            SwitchActive();
+            SwitchOff();
         if (Ed.R.NumberJustPressed is not null)
         {
             if (!Axes[Ed.R.NumberJustPressed.ToInt() - 1].Defined)
@@ -224,7 +175,7 @@ public partial class WeightPicker : Node
                 Define(Ed.R.NumberJustPressed.ToInt() - 1);
             }
             else
-                Axes[Ed.R.NumberJustPressed.ToInt() - 1].Switch();
+                SwitchAxis(Axes[Ed.R.NumberJustPressed.ToInt() - 1]);
         }
         currentWeightLabel.Text = count.ToString();
         weightNameLabel.Text = WeightNames[(int)((count - 100) / 50)];
@@ -311,43 +262,43 @@ public partial class WeightPicker : Node
         letterMenu.CurrentAxes = activeAxes;
     }
 
-    public void SwitchActive()
+    public void SwitchOn()
     {
-        if (!Active)
+        Axes = Ed.CurrentProject!.AvailableAxes;
+        UpdateAxisLabels();
+        Ed.CurrentFocus = EditorFocus.WeightPicker;
+        blurLayer1.Visible = true;
+        blurLayer2.Visible = true;
+        theTween?.Kill();
+        theTween = CreateTween();
+        theTween.TweenMethod(Callable.From((int s) =>
         {
-            Ed.CurrentFocus = EditorFocus.WeightPicker;
-            blurLayer1.Visible = true;
-            blurLayer2.Visible = true;
-            theTween?.Kill();
-            theTween = CreateTween();
-            theTween.TweenMethod(Callable.From((int s) =>
-            {
-                blur1.SetShaderParameter("blurSize", s);
-            }), 0, 15, .1f);
-            theTween.Parallel().TweenMethod(Callable.From((int s) =>
-            {
-                blur2.SetShaderParameter("blurSize", s);
-            }), 0, 15, .1f);
-            theTween.TweenCallback(Callable.From(()=>{pickerLayer.Visible = true;}));
-            justActive = true;
-        }
-        else
+            blur1.SetShaderParameter("blurSize", s);
+        }), 0, 15, .1f);
+        theTween.Parallel().TweenMethod(Callable.From((int s) =>
         {
-            Ed.ResetEditorFocus();
-            theTween?.Kill();
-            blurLayer1.Visible = false;
-            blurLayer2.Visible = false;
-            pickerLayer.Visible = false;
-            string weightString = count.ToString();
-            List<Axis> filledA = [.. Axes.Where(a => a.Name != "" && a.TurnedOn)];
-            foreach (Axis a in filledA)
-            {
-                weightString += " - ";
-                weightString += a.Name;
-            }
-            EmitSignal(SignalName.PickedWeight, weightString);
+            blur2.SetShaderParameter("blurSize", s);
+        }), 0, 15, .1f);
+        theTween.TweenCallback(Callable.From(()=>{pickerLayer.Visible = true;}));
+        justActive = true;
+    }    
+
+    public void SwitchOff()
+    {
+        Ed.CurrentProject!.AvailableAxes = Axes;
+        Ed.ResetEditorFocus();
+        theTween?.Kill();
+        blurLayer1.Visible = false;
+        blurLayer2.Visible = false;
+        pickerLayer.Visible = false;
+        string weightString = count.ToString();
+        List<Axis> filledA = [.. Axes.Where(a => a.Name != "" && a.TurnedOn)];
+        foreach (Axis a in filledA)
+        {
+            weightString += " - ";
+            weightString += a.Name;
         }
-        Active = !Active;
+        EmitSignal(SignalName.PickedWeight, weightString);
     }
 
     public (int, List<string>) GetWeightAndAxes()
@@ -363,6 +314,76 @@ public partial class WeightPicker : Node
             canSoundAgain = false;
             soundTimer.WaitTime = .07f;
             soundTimer.Start();
+        }
+    }
+
+    public void DefineAxis(Axis a, string name)
+    {
+        a.Defined = true;
+        ChangeAxisName(a, name);
+        Label Lab = LabelList[a.Index];
+        Lab.AddThemeColorOverride("font_color", Colors.White);
+        Lab.AddThemeStyleboxOverride("normal", labelOff);
+    }
+
+    public void UpdateAxisLabels()
+    {
+        for (int i = 0; i < LabelList.Count; i++)
+        {
+            Label l = LabelList[i];
+            Axis a = Axes[i];
+            l.Text = $"{a.Index + 1} {a.Name}";
+            if (!a.Defined)
+            {
+                l.AddThemeStyleboxOverride("normal", labelUndefined);
+            } 
+            if (a.Defined && !a.TurnedOn)
+            {
+                l.AddThemeStyleboxOverride("normal", labelUndefined);
+                l.AddThemeColorOverride("font_color", Colors.White);
+            }
+            if (a.Defined && a.TurnedOn)
+            {
+                l.AddThemeStyleboxOverride("normal", labelOn);
+                l.AddThemeColorOverride("font_color", Colors.Black);
+            }
+        }
+    }
+
+    public void ChangeAxisName(Axis a, string name)
+    {
+        Label Lab = LabelList[a.Index];
+        a.Name = name;
+        Lab.Text = $"{a.Index + 1} {a.Name}";
+    }
+
+    public void SwitchAxis(Axis a)
+    {
+        if (!a.Defined)
+        {
+           return; 
+        } 
+        Label Lab = LabelList[a.Index];
+        if (!a.TurnedOn)
+        {
+            Manager.PlaySound("Rattle3.wav",.2f, 0.95f, 1.0f);
+            StyleBoxFlat sbf = (StyleBoxFlat)labelOff.Duplicate();
+            sbf!.BgColor = Colors.White;
+            CreateTween().SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Sine).TweenProperty(sbf, "bg_color:a", 1f, .1f);
+            CreateTween().SetTrans(Tween.TransitionType.Expo).TweenProperty(Lab, "theme_override_colors/font_color", new Color(0,0,0), .1f);
+            CreateTween().SetTrans(Tween.TransitionType.Sine).TweenProperty(Lab, "scale", new GV2(1,1), .2f).From(new GV2(1.10f,1.10f));
+            Lab.AddThemeStyleboxOverride("normal", sbf);
+            a.TurnedOn = true;
+        }
+        else
+        {
+            Manager.PlaySound("Rattle3.wav",.2f, 0.7f, 0.75f);
+            StyleBoxFlat sbf = (StyleBoxFlat)labelOn.Duplicate();
+            CreateTween().SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Expo).TweenProperty(sbf, "bg_color:a", 0f, .1f);
+            CreateTween().SetTrans(Tween.TransitionType.Expo).TweenProperty(Lab, "theme_override_colors/font_color", new Color(1,1,1), .1f);
+            CreateTween().SetTrans(Tween.TransitionType.Sine).TweenProperty(Lab, "scale", new GV2(1,1), .2f).From(new GV2(1.10f,1.10f));
+            Lab.AddThemeStyleboxOverride("normal", sbf);
+            a.TurnedOn = false;
         }
     }
 

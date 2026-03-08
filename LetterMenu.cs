@@ -111,12 +111,12 @@ public partial class LetterMenu : Control
         if (Input.IsActionJustPressed(Snl.select_mode))
         {
             weightPickerSwitchTimer.Start();
-            Ed.weightP.SwitchActive();
+            Ed.weightP.SwitchOff();
         }
 
         if (Input.IsActionJustReleased(Snl.select_mode) && weightPickerSwitchTimer.TimeLeft <= 0)
         {
-            Ed.weightP.SwitchActive();
+            Ed.weightP.SwitchOn();
         }
 
         Selector.Position += (CurrentlySelected.GlobalPosition - Selector.Position) * (1 - MathF.Exp( -(float)delta * spd));

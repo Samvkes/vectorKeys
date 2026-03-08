@@ -1049,26 +1049,26 @@ public partial class Base : Control
             return;
         }
 
-        if (Input.IsActionJustPressed(Snl.save_project))
-        {
-            children.SerafFilePicker.FileMode = FileDialog.FileModeEnum.SaveFile;
-            children.SerafFilePicker.Visible = true;
-            string file = (string)(await ToSignal(children.SerafFilePicker, FileDialog.SignalName.FileSelected))[0];
-            var fileAc = Godot.FileAccess.Open(file, Godot.FileAccess.ModeFlags.Write);
-            fileAc.StoreString(Shapes.SaveState());
-            fileAc.Close();
-            fileAc.Dispose();
-        }
+        // if (Input.IsActionJustPressed(Snl.save_project))
+        // {
+        //     children.SerafFilePicker.FileMode = FileDialog.FileModeEnum.SaveFile;
+        //     children.SerafFilePicker.Visible = true;
+        //     string file = (string)(await ToSignal(children.SerafFilePicker, FileDialog.SignalName.FileSelected))[0];
+        //     var fileAc = Godot.FileAccess.Open(file, Godot.FileAccess.ModeFlags.Write);
+        //     fileAc.StoreString(Shapes.SaveState());
+        //     fileAc.Close();
+        //     fileAc.Dispose();
+        // }
 
-        if (Input.IsActionJustPressed(Snl.load_project))
-        {
-            children.SerafFilePicker.FileMode = FileDialog.FileModeEnum.OpenFile;
-            children.SerafFilePicker.Visible = true;
-            string file = (string)(await ToSignal(children.SerafFilePicker, FileDialog.SignalName.FileSelected))[0];
-            var fileAc = Godot.FileAccess.Open(file, Godot.FileAccess.ModeFlags.Read);
-            Shapes.LoadState(fileAc.GetAsText());
-            CurrentShape = Shapes.S[0]; 
-        }
+        // if (Input.IsActionJustPressed(Snl.load_project))
+        // {
+        //     children.SerafFilePicker.FileMode = FileDialog.FileModeEnum.OpenFile;
+        //     children.SerafFilePicker.Visible = true;
+        //     string file = (string)(await ToSignal(children.SerafFilePicker, FileDialog.SignalName.FileSelected))[0];
+        //     var fileAc = Godot.FileAccess.Open(file, Godot.FileAccess.ModeFlags.Read);
+        //     Shapes.LoadState(fileAc.GetAsText());
+        //     CurrentShape = Shapes.S[0]; 
+        // }
 
 
         if (Input.IsActionJustPressed(Snl.shape_negative))
