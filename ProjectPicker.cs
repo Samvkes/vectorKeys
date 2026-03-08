@@ -172,22 +172,28 @@ public partial class ProjectPicker : Control
                 InProject = false;
                 SelectedWeight = null;
             }
-            if (mi.Y > 0)
+            if (mi.Y < 0)
             {
                 SelectedWeight = SelectedWeight == null ? weights[0] : 
                     weights.IndexOf(SelectedWeight) == weights.Count-1 ? null 
                         : weights[weights.IndexOf(SelectedWeight) + 1];
+
+                GD.Print(weights.IndexOf(SelectedWeight));
             }
-            if (mi.Y < 0)
+            if (mi.Y > 0)
+            {
                 SelectedWeight = SelectedWeight == null ? weights[^1] : 
                     weights.IndexOf(SelectedWeight) == 0 ? null 
                         : weights[weights.IndexOf(SelectedWeight) - 1];
+
+                GD.Print(weights.IndexOf(SelectedWeight));
+            }
             if (Input.IsActionJustPressed(Snl.add_new_point) && SelectedWeight == null)
             {
                 GD.Print("hm");
                 CreateWeight(p);
             }
-            goalPos = SelectedWeight == null ? addWeight.GlobalPosition : ((WeightTemplate)WeightContainer.GetChildren()[weights.IndexOf(SelectedWeight) + 1]).GlobalPosition;
+            goalPos = SelectedWeight == null ? addWeight.GlobalPosition : weightTemplates[weights.IndexOf(SelectedWeight)].GlobalPosition;
         }
         if (SelectedProject != null && SelectedProject != lastSelected)
             UpdateWeightTemplates();
