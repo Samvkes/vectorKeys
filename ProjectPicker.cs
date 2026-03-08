@@ -278,6 +278,7 @@ public partial class ProjectPicker : Control
 
     void OpenWeight()
     {
+        // test
     }
 
     public async void CreateWeight()
