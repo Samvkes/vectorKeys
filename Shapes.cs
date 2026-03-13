@@ -505,12 +505,9 @@ public class Anker
     }
 }
 
-public class Shape 
+public class Shape
 {
-    public Shape()
-    {
-    }
-
+    public bool IsHyperBoolean = false;
     public Shapes MyShapes = null!;
     public bool AnchorsCached = true;
     public Segment[] Segments = [];
@@ -519,7 +516,18 @@ public class Shape
     public List<Anker> Anchors = [];
     public bool Finished = false;
     public bool Negative = false;
+    public int[] BeziersPerAnchorPair = [];
 
+    public  int[] CornerRoundings()
+    {
+        int[] cornerRoundings = [];
+        foreach (Anker a in Anchors)
+        {
+            cornerRoundings = [.. cornerRoundings, a.anchorRounding];
+        }
+        return cornerRoundings;
+    }
+    
     public void ReverseShape()
     {
         foreach (var a in Anchors)
@@ -529,7 +537,7 @@ public class Shape
         Anchors.Reverse();
     }
 
-    public virtual SKPath ToSKPath()
+    public SKPath ToSKPath()
     {
         SKPath retPath = new();
         retPath.MoveTo(Anchors[0].Position);
@@ -566,17 +574,17 @@ public class Shape
         MyShapes.ShapesCached = false; 
     }
 
-    public override string ToString()
+    public string GetLabel(Anker a)
     {
-        string ts = "bez: [";
-        int counter = 0;
-        foreach (var a in Anchors)
-        {
-            ts += counter + ": " + a.ToString() + " ";
-            counter += 1;
-        }
-        ts += "]";
-        return ts;
+        int index = Anchors.IndexOf(a);
+        Debug.Assert(index != -1);
+        return C.Alfabet[index].ToString();
+    }
+
+    public Anker GetAnchorFromLabel(string s)
+    {
+        int index = s[0] - 97;
+        return Anchors[index];
     }
 
     public bool IsClockwise()
@@ -633,7 +641,7 @@ public class Shape
         }
     }
 
-    public virtual void AddAnchor(V2 pos, bool makeCubic = false, Anker? insertAfter = null, bool broken = false)
+    public void AddAnchor(V2 pos, bool makeCubic = false, Anker? insertAfter = null, bool broken = false)
     {
         Anker a = new();
         a.Init(pos, this);
@@ -671,92 +679,78 @@ public class Shape
         return average;
     }
 
-
-    public virtual Segment[] SegList(bool rounded = false)
+    public Shape()
     {
-        if (AnchorsCached)
-        {
-            if (rounded) return RoundedSegments;
-            else         return Segments;
-        }
-
-        Segment[] segments = new Segment[Anchors.Count];
-        for (int i = 0; i < Anchors.Count; i += 1)
-        {
-            int after = i + 1;
-            if (i == Anchors.Count - 1)
-            {
-                after = 0;
-            }
-            Segment s = new(Anchors[i].Position, Anchors[i].OutHandle.Position(), Anchors[after].InHandle.Position(), Anchors[after].Position);
-            segments[i] = s;
-        }
-
-        Segment[] roundedSegments;
-        if (Editor.DebugSwitch)
-            roundedSegments = Shapes.RoundCornersSegmentsOld(segments, CornerRoundings());
-        else
-            roundedSegments = Shapes.RoundCornersSegments(segments, CornerRoundings());
-        Segments = segments;
-        RoundedSegments = roundedSegments;
-        AnchorsCached = true;
-
-        if (rounded) return roundedSegments;
-        else return segments;
-    }
-
-    public virtual int[] CornerRoundings()
-    {
-        int[] cornerRoundings = [];
-        foreach (Anker a in Anchors)
-        {
-            cornerRoundings = [.. cornerRoundings, a.anchorRounding];
-        }
-        return cornerRoundings;
-    }
-
-    public string GetLabel(Anker a)
-    {
-        int index = Anchors.IndexOf(a);
-        Debug.Assert(index != -1);
-        return C.Alfabet[index].ToString();
-    }
-
-    public Anker GetAnchorFromLabel(string s)
-    {
-        int index = s[0] - 97;
-        return Anchors[index];
-    }
-}
-
-public class HyperbezierShape: Shape
-{
-    public int[] BeziersPerAnchorPair = [];
-
-    public override Segment[] SegList(bool rounded = false)
-    {
-        if (AnchorsCached) return rounded ? RoundedSegments : Segments;
-
-        (Segments, BeziersPerAnchorPair) = Player.AnchorsToHyperBeziers(Anchors);
-        RoundedSegments = Editor.DebugSwitch 
-            ? Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair) 
-            : Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair); 
-
-        AnchorsCached = true;
-        return rounded ? RoundedSegments : Segments;
     }
 
     public override string ToString()
     {
-        string ts = "hyperbez: [";
-        int counter = 0;
-        foreach (var a in Anchors)
+        if (IsHyperBoolean)
         {
-            ts += counter + ": " + a.ToString() + " ";
-            counter += 1;
+            string ts = "hyperbez: [";
+            int counter = 0;
+            foreach (var a in Anchors)
+            {
+                ts += counter + ": " + a.ToString() + " ";
+                counter += 1;
+            }
+            ts += "]";
+            return ts;
         }
-        ts += "]";
-        return ts;
+        else
+        {
+            string ts = "bez: [";
+            int counter = 0;
+            foreach (var a in Anchors)
+            {
+                ts += counter + ": " + a.ToString() + " ";
+                counter += 1;
+            }
+            ts += "]";
+            return ts;
+        }
+    }
+
+    public Segment[] SegList(bool rounded = false)
+    {
+        if (AnchorsCached) return rounded ? RoundedSegments : Segments;
+
+        if (IsHyperBoolean)
+        {
+            (Segments, BeziersPerAnchorPair) = Player.AnchorsToHyperBeziers(Anchors);
+            RoundedSegments = Editor.DebugSwitch 
+                ? Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair) 
+                : Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair); 
+
+            AnchorsCached = true;
+            return rounded ? RoundedSegments : Segments;
+        }
+        else
+        {
+            Segment[] segments = new Segment[Anchors.Count];
+            for (int i = 0; i < Anchors.Count; i += 1)
+            {
+                int after = i + 1;
+                if (i == Anchors.Count - 1)
+                {
+                    after = 0;
+                }
+                Segment s = new(Anchors[i].Position, Anchors[i].OutHandle.Position(), Anchors[after].InHandle.Position(), Anchors[after].Position);
+                segments[i] = s;
+            }
+
+            Segment[] roundedSegments;
+            if (Editor.DebugSwitch)
+                roundedSegments = Shapes.RoundCornersSegmentsOld(segments, CornerRoundings());
+            else
+                roundedSegments = Shapes.RoundCornersSegments(segments, CornerRoundings());
+            Segments = segments;
+            RoundedSegments = roundedSegments;
+            AnchorsCached = true;
+
+            if (rounded) return roundedSegments;
+            else return segments;
+        }
     }
 }
 
@@ -767,10 +761,9 @@ public class Shapes
     public List<Shape> S = [];
     public Shape NewShape()
     {
-        // hyperbez
         Shape s;
-        s = new HyperbezierShape();
-        // s = new Shape();
+        s = new();
+        s.IsHyperBoolean = true;
         s.MyShapes = this;
         S.Add(s);
         return s;
@@ -904,9 +897,9 @@ public class Shapes
         foreach ((int bezIndex, V2 intersectCoord) in intersections)
         {
             Anker anchorThatIntersectingBezierBelongsTo = shape.Anchors[0]; 
-            if (shape is HyperbezierShape hbShape)
+            if (shape.IsHyperBoolean)
             {
-                int[] bpa = hbShape.BeziersPerAnchorPair;
+                int[] bpa = shape.BeziersPerAnchorPair;
                 int c = 0; 
                 int index = bezIndex;
                 foreach (int i in bpa)
