@@ -5,9 +5,9 @@
 [ext_resource type="Script" uid="uid://mlikt7xk4omk" path="res://Player.cs" id="2_nopgj"]
 [ext_resource type="FontFile" uid="uid://cxbup0l5ngyia" path="res://assets/DraftingMono/DraftingMono-LightItalic.otf" id="3_22hco"]
 [ext_resource type="Script" uid="uid://bxgca61n8ryny" path="res://undo_redo.gd" id="3_i812h"]
+[ext_resource type="Script" uid="uid://2bmjt7gcu005" path="res://Trail.cs" id="4_4phwr"]
 [ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://Base.cs" id="5_nopgj"]
 [ext_resource type="Texture2D" uid="uid://cvnp47h0jkfrx" path="res://assets/DraftingMono/Star 1.png" id="5_swcnr"]
-[ext_resource type="Script" uid="uid://2bmjt7gcu005" path="res://Trail.cs" id="7_4phwr"]
 [ext_resource type="Script" uid="uid://bnr0pvrmsiqey" path="res://PointCanvas.cs" id="8_2lvr1"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yii2e"]
@@ -54,6 +54,7 @@ fill_to = Vector2(0.954268, 0.978659)
 
 [sub_resource type="SystemFont" id="SystemFont_i812h"]
 font_names = PackedStringArray("Sans-Serif")
+subpixel_positioning = 0
 multichannel_signed_distance_field = true
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2lvr1"]
@@ -208,6 +209,7 @@ expand_margin_bottom = 10.0
 [sub_resource type="SystemFont" id="SystemFont_4phwr"]
 font_names = PackedStringArray("Helvetica Neue")
 font_weight = 275
+subpixel_positioning = 0
 
 [node name="Base" type="Control" unique_id=1932235728]
 layout_mode = 3
@@ -283,7 +285,6 @@ text = "adsf"
 vertical_alignment = 1
 
 [node name="Trail" type="Line2D" parent="Cursor" unique_id=208072645]
-visible = false
 show_behind_parent = true
 top_level = true
 z_index = -1
@@ -295,7 +296,7 @@ joint_mode = 1
 begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
-script = ExtResource("7_4phwr")
+script = ExtResource("4_4phwr")
 
 [node name="Circle" type="Sprite2D" parent="Cursor" unique_id=119660527]
 modulate = Color(0.17633331, 0.17249057, 0.16541857, 1)

@@ -2,7 +2,7 @@ using Godot;
 using System;
 using Vectordrawing;
 
-public partial class ProjectTemplate : GridContainer
+public partial class ProjectTemplate : PanelContainer
 {
     Label FontName = null!;
     Label LastEditDate = null!;

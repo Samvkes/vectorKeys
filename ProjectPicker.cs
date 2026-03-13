@@ -31,12 +31,6 @@ project ->
 project file creation -> weight folder creation (do once first glyph is opened) -> correct glyph amount
 saving glyphs -> other things
 */
-public class ProjectGlyph {
-    string name = "";
-    DateTime lastEdit = DateTime.Now;
-    int minutesSpent = 0;
-    int anchorCount = 0;
-}
 
 public class Project {
     public string Path;
@@ -51,7 +45,7 @@ public class Project {
     {
         string pinfoFilePath = Path + System.IO.Path.DirectorySeparatorChar + "pinfo";
         StreamWriter fs = File.CreateText(pinfoFilePath);
-        fs.Write(JsonSerializer.Serialize(this, ProjectPicker.JsonOpts));
+        fs.Write(JsonSerializer.Serialize(this, Editor.JsonOpts));
         fs.Close();
     }
     public Project(string path, string name) {
@@ -62,13 +56,17 @@ public class Project {
             AvailableAxes.Add(
                 new(i, "")
             );
+            if (i == 0)
+            {
+                AvailableAxes[0].Name = "italic";
+                AvailableAxes[0].Defined = true;
+            }
         }
     }
 }
 
 // has 1 weight 100 - 1000 and 0 or more axes. 
 public class ProjectWeight (int weight, List<string> axes) {
-    public List<ProjectGlyph> Glyphs = [];
     public int GlyphCount = 0;
     public int Weight = weight;
     public List<string> Axes = axes;
@@ -83,7 +81,6 @@ public class ProjectWeight (int weight, List<string> axes) {
         }
         return n;
     }
-    
 }
 
 public partial class ProjectPicker : Control
@@ -98,15 +95,10 @@ public partial class ProjectPicker : Control
     PackedScene WeightTemplateScene = GD.Load<PackedScene>("weight_template.tscn");
     public List<ProjectTemplate> RecentProjects = [];
     ProjectTemplate? SelectedTemplate = null;
-    ProjectWeight? SelectedWeight = null;
     Godot.FileAccess ProjectPaths = null!;
     Label addProject = null!;
     Label addWeight = null!;
     List<WeightTemplate> weightTemplates = [];
-    public static readonly JsonSerializerOptions JsonOpts = new()
-    {
-        IncludeFields = true,                        // serialize public fields
-    };
 
     public override void _Ready()
     {
@@ -141,14 +133,16 @@ public partial class ProjectPicker : Control
         if (Ed.CurrentFocus != EditorFocus.ProjectPicker || TextInput.BeingEdited) return;
         // Selecting in project list.
         ProjectTemplate? lastSelected = SelectedTemplate;
+        V2 mi = Ed.GetMovementInput((float)delta, 0.050f);
         if (Ed.CurrentProject == null)
         {
             if (RecentProjects.Count > 0)
             {
-                V2 mi = Ed.GetMovementInput((float)delta);
                 if (mi.X > 0 && SelectedTemplate != null)
                 {
                     Ed.CurrentProject = SelectedTemplate.Project();
+                    if (Ed.CurrentProject.Weights.Count > 0)
+                        Ed.CurrentWeight = Ed.CurrentProject.Weights.Last();
                 }
                 if (mi.Y < 0)
                     SelectedTemplate = SelectedTemplate == null ? RecentProjects[0] : 
@@ -163,14 +157,11 @@ public partial class ProjectPicker : Control
             {
                 CreateProject();
             }
-            goalPos = SelectedTemplate == null ? addProject.GlobalPosition : SelectedTemplate.GlobalPosition;
-            goalPos.X += 850;
         }
         else
         {
             Project p = SelectedTemplate!.Project();
             List<ProjectWeight> weights = p.Weights;
-            V2 mi = Ed.GetMovementInput((float)delta);
             if (mi.X > 0)
             {
                 OpenWeight();
@@ -178,32 +169,55 @@ public partial class ProjectPicker : Control
             if (mi.X < 0)
             {
                 Ed.CurrentProject = null;
-                SelectedWeight = null;
+                Ed.CurrentWeight = null;
             }
             if (mi.Y < 0)
             {
-                SelectedWeight = SelectedWeight == null ? weights[0] : 
-                    weights.IndexOf(SelectedWeight) == weights.Count-1 ? null 
-                        : weights[weights.IndexOf(SelectedWeight) + 1];
+                Ed.CurrentWeight = Ed.CurrentWeight == null ? weights[0] : 
+                    weights.IndexOf(Ed.CurrentWeight) == weights.Count-1 ? null 
+                        : weights[weights.IndexOf(Ed.CurrentWeight) + 1];
             }
             if (mi.Y > 0)
             {
-                SelectedWeight = SelectedWeight == null ? weights[^1] : 
-                    weights.IndexOf(SelectedWeight) == 0 ? null 
-                        : weights[weights.IndexOf(SelectedWeight) - 1];
+                Ed.CurrentWeight = Ed.CurrentWeight == null ? weights[^1] : 
+                    weights.IndexOf(Ed.CurrentWeight) == 0 ? null 
+                        : weights[weights.IndexOf(Ed.CurrentWeight) - 1];
             }
-            if (Input.IsActionJustPressed(Snl.add_new_point) && SelectedWeight == null)
+            if (Input.IsActionJustPressed(Snl.add_new_point) && Ed.CurrentWeight == null)
             {
                 GD.Print("hm");
                 CreateWeight();
             }
-            goalPos = SelectedWeight == null ? addWeight.GlobalPosition : weightTemplates[weights.IndexOf(SelectedWeight)].GlobalPosition;
+        }
+        GV2 goalSize = Selector.Size;
+        if (Ed.CurrentProject != null)
+        {
+            goalPos = Ed.CurrentWeight == null ? addWeight.GlobalPosition : weightTemplates[SelectedTemplate!.Project().Weights.IndexOf(Ed.CurrentWeight)].GlobalPosition;
+            if (Input.IsActionPressed(Snl.left) || Input.IsActionPressed(Snl.right) || Input.IsActionPressed(Snl.down) || Input.IsActionPressed(Snl.up))
+            {
+                goalSize = new(15, 100);
+            }
+            else if (Ed.CurrentWeight != null)
+            {
+                WeightTemplate currentTemplate = weightTemplates[SelectedTemplate!.Project().Weights.IndexOf(Ed.CurrentWeight)]; 
+                goalSize = currentTemplate.Size;
+            }
+        }
+        else
+        {
+            goalPos = SelectedTemplate == null ? addProject.GlobalPosition : SelectedTemplate.GlobalPosition + new GV2(0,10);
+            goalPos.X = addProject.GlobalPosition.X + 850;
         }
         if (SelectedTemplate != null && SelectedTemplate != lastSelected)
             UpdateWeightTemplates(SelectedTemplate.Project());
 
-        goalPos -= new GV2(30,15);
+        if (Input.IsActionPressed(Snl.left) || Input.IsActionPressed(Snl.right) || Input.IsActionPressed(Snl.down) || Input.IsActionPressed(Snl.up))
+        {
+            goalPos -= new GV2(30,15);
+        }
+
         Selector.Position += (goalPos - Selector.Position) * (1 - MathF.Exp( -(float)delta * 10));
+        Selector.Size += (goalSize - Selector.Size) * (1 - MathF.Exp( -(float)delta * 20));
     }
 
     public async void CreateProject()
@@ -216,7 +230,7 @@ public partial class ProjectPicker : Control
         Project project = new(filePath, name);
         string pinfoFilePath = filePath + Path.DirectorySeparatorChar + "pinfo";
         StreamWriter fs = File.CreateText(pinfoFilePath);
-        fs.Write(JsonSerializer.Serialize(project, JsonOpts));
+        fs.Write(JsonSerializer.Serialize(project, Editor.JsonOpts));
         fs.Close();
         RecentProjects.Add(AddProjectTemplate(project));
         ProjectPaths.StoreLine(filePath);
@@ -226,7 +240,7 @@ public partial class ProjectPicker : Control
     ProjectTemplate LoadProject(string path)
     {
         string pinfoFilePath = path + Path.DirectorySeparatorChar + "pinfo";
-        Project? project = JsonSerializer.Deserialize<Project>(File.OpenText(pinfoFilePath).ReadToEnd(), JsonOpts);
+        Project? project = JsonSerializer.Deserialize<Project>(File.OpenText(pinfoFilePath).ReadToEnd(), Editor.JsonOpts);
         if (project != null)
             return AddProjectTemplate(project);
         else
@@ -278,7 +292,7 @@ public partial class ProjectPicker : Control
 
     void OpenWeight()
     {
-        // test
+        Ed.SwitchToLettermenu();
     }
 
     public async void CreateWeight()
@@ -296,7 +310,7 @@ public partial class ProjectPicker : Control
         ProjectWeight pw = new(w.weight, w.axes);
         string winfoFilePath = filePath + Path.DirectorySeparatorChar + "winfo";
         StreamWriter fs = File.CreateText(winfoFilePath);
-        fs.Write(JsonSerializer.Serialize(pw, JsonOpts));
+        fs.Write(JsonSerializer.Serialize(pw, Editor.JsonOpts));
         fs.Close();
         p.Weights.Add(pw);
         p.UpdateInfo();

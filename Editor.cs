@@ -7,6 +7,10 @@ using Vectordrawing;
 using System.Threading.Tasks;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography.X509Certificates;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 public struct FamilyConfig
 {
@@ -39,7 +43,7 @@ public record RawInput {
 
 public partial class Editor : CanvasLayer
 {
-    Control DrawingBase = null!; 
+    public Base Workbench = null!; 
     LetterMenu LetterMenu = null!; 
     ProjectPicker ProjectPicker = null!;
     public Manager Manager = GD.Load<PackedScene>("res://manager.tscn").Instantiate<Manager>();
@@ -57,6 +61,8 @@ public partial class Editor : CanvasLayer
     public WeightPicker weightP = null!;
     ProjectPicker PPicker = null!;
     public Project? CurrentProject = null;
+    public ProjectWeight? CurrentWeight = null;
+    public Glyph? CurrentGlyph = null;
     TextInput textInput = null!;
     public RawInput R = new();
     EditorFocus currentFocus = EditorFocus.ProjectPicker;
@@ -72,6 +78,16 @@ public partial class Editor : CanvasLayer
     string? oldNum = null;
     string? oldLetter = null;
     string? oldRaw = null;
+    public static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        IncludeFields = true,
+    };
+    public static readonly JsonSerializerOptions JsonOptsRef = new()
+    {
+        IncludeFields = true,
+        ReferenceHandler = ReferenceHandler.Preserve, // avoid crashes on back-references
+        WriteIndented = false
+    };
 
     public override void _Ready()
     {
@@ -91,16 +107,15 @@ public partial class Editor : CanvasLayer
 
         AddChild(Manager);
         GetTree().Paused = true;
-        DrawingBase = (Control)FindChild("DrawingBase");
+        Workbench = (Base)FindChild("Workbench");
         LetterMenu = (LetterMenu)FindChild("LetterMenu");
         ProjectPicker = (ProjectPicker)FindChild("ProjectPicker");
         UfoFilePicker = (FileDialog)FindChild("UfoFilePicker");
-        DrawingBase.Visible = false;
+        Workbench.Visible = false;
         // LetterMenu.Visible = true;
-        DrawingBase.ProcessMode = ProcessModeEnum.Pausable;
+        Workbench.ProcessMode = ProcessModeEnum.Pausable;
         LetterMenu.ProcessMode = ProcessModeEnum.WhenPaused;
     }
-
     
     public override void _Process(double delta)
     {
@@ -108,12 +123,9 @@ public partial class Editor : CanvasLayer
         if (Input.IsActionJustPressed(Snl.debug))
             DebugSwitch = !DebugSwitch;
 
-
         if (Input.IsKeyPressed(Key.Backspace))
         {
-            SaveEverything();
-			((TextureRect)FindChild("Peace")).Visible = true;
-            GetTree().Quit();
+            QuitEditor();
         }
         // if (Throttling)
         //     Engine.MaxFps = 45;
@@ -127,18 +139,20 @@ public partial class Editor : CanvasLayer
             if (FpsTimer.IsStopped())
                 FpsTimer.Start();
         }
-
-        if (CurrentFocus == EditorFocus.Workbench && Input.IsActionJustPressed(Snl.escape))
+        if (Input.IsActionJustPressed(Snl.escape))
         {
-            CurrentFocus = EditorFocus.Letters;
-            DrawingBase.Visible = false;
-            LetterMenu.Visible = true;
-            DrawingBase.ProcessMode = ProcessModeEnum.Pausable;
-            LetterMenu.ProcessMode = ProcessModeEnum.WhenPaused;
-            Texture2D t = ((Base)DrawingBase.FindChild("BaseTest")).PreviewTex;
-            LetterMenu.CurrentlySelected.SetPreviewTexture(t);
-            Base b = (Base)DrawingBase.FindChild("BaseTest");
-            LetterMenu.ShapeDict[LetterMenu.CurrentlySelected.GetGlyph()] = (b.Shapes,b.UndoRedo);
+            if (CurrentFocus == EditorFocus.Workbench)
+            {
+                SwitchToLettermenu();
+            }
+            else if (CurrentFocus == EditorFocus.Letters)
+            {
+                SwitchToProjectPicker();
+            }
+            else if (CurrentFocus == EditorFocus.ProjectPicker)
+            {
+                QuitEditor();
+            }
         }
 
         if (Input.IsActionJustPressed(Snl.export_ufo))
@@ -190,25 +204,7 @@ public partial class Editor : CanvasLayer
         UfoFilePicker.FileMode = FileDialog.FileModeEnum.SaveFile;
         UfoFilePicker.Visible = true;
         string file = (string)(await ToSignal(UfoFilePicker, FileDialog.SignalName.FileSelected))[0];
-        UfoWriterReader.ExportUfo(file, CurrentFamily);
-    }
-
-    public void OpenDrawingScene(GlyphPreview preview)
-    {
-        Godot.Collections.Array a = [];
-        OS.Execute("python3", ["-h"], a);
-        GD.Print(a[0]);
-        LetterMenu.ProcessMode = ProcessModeEnum.Pausable;
-        Base b = (Base)DrawingBase;
-        (b.Shapes, b.UndoRedo) = LetterMenu.ShapeDict[LetterMenu.CurrentlySelected.GetGlyph()];
-        if (b.Shapes.S.Count == 0) b.Initialize();
-        DrawingBase.ProcessMode = ProcessModeEnum.WhenPaused;
-        b.JustUnpaused = true;
-        Fun.Delayed(this, 0.1f, () =>
-        {
-            DrawingBase.Visible = true;
-            LetterMenu.Visible = false;
-        });
+        UfoWriterReader.ExportUfo(file, CurrentFamily, this);
     }
 
     public void _OnButtonDown()
@@ -221,7 +217,7 @@ public partial class Editor : CanvasLayer
         CanMoveAgain = true;
     }
 
-    public V2 GetMovementInput(float delta, float wait = 0.01f, bool OnGuide = true, float guideWait = 0.2f)
+    public V2 GetMovementInput(float delta, float wait = 0.01f, bool OnGuide = false, float guideWait = 0.2f)
     {
         if (OnGuide && StickyGuide)
         {
@@ -307,6 +303,68 @@ public partial class Editor : CanvasLayer
     return normalizedMovement;
     }
 
+    public void SwitchToProjectPicker()
+    {
+        CurrentFocus = EditorFocus.ProjectPicker;
+        ProjectPicker.Visible = true;
+        LetterMenu.Visible = false;
+        Workbench.Visible = false;
+        ProjectPicker.ProcessMode = ProcessModeEnum.WhenPaused;
+        LetterMenu.ProcessMode = ProcessModeEnum.Pausable;
+        Workbench.ProcessMode = ProcessModeEnum.Pausable;
+    }
+
+    public void SwitchToLettermenu()
+    {
+        if (CurrentFocus == EditorFocus.Workbench)
+        {
+            CurrentGlyph.Contours = Workbench.Shapes.S;
+            Texture2D t = Workbench.PreviewTex;
+            LetterMenu.CurrentlySelected.SetPreviewTexture(t);
+            SaveGlyph(CurrentGlyph);
+        }
+        foreach (string glyphs in LetterMenu.allGlyphs)
+        {
+            foreach (char glyph in glyphs)
+            {
+                // create dictionary with chars : glyphplaceholder
+                // 
+                string filePath = CurrentProject.Path + Path.DirectorySeparatorChar + CurrentWeight.Name() + Path.DirectorySeparatorChar + GlyphNames.Names[glyph] + ".ginfo";
+                if (File.Exists(filePath))
+                {
+                    Glyph g = LoadGlyph(filePath);
+                    LetterMenu.ShapeDict[glyph] = g;
+                    Texture2D t = Workbench.CreatePreviewTex(g.Contours);
+                    LetterMenu.PreviewDict[glyph].SetPreviewTexture(t);
+                }
+            }
+        }
+        CurrentFocus = EditorFocus.Letters;
+        ProjectPicker.ProcessMode = ProcessModeEnum.Pausable;
+        LetterMenu.ProcessMode = ProcessModeEnum.WhenPaused;
+        Workbench.ProcessMode = ProcessModeEnum.Pausable;
+        ProjectPicker.Visible = false;
+        LetterMenu.Visible = true;
+        Workbench.Visible = false;
+    }
+
+    public void SwitchToWorkbench(List<Shape> contours)
+    {
+        CurrentFocus = EditorFocus.Workbench;
+        ProjectPicker.ProcessMode = ProcessModeEnum.Pausable;
+        LetterMenu.ProcessMode = ProcessModeEnum.Pausable;
+        Workbench.ProcessMode = ProcessModeEnum.WhenPaused;
+        // (Workbench.Shapes, Workbench.UndoRedo) = (CurrentGlyph.Contours, CurrentGlyph.Undos);
+        Workbench.Initialize(contours);
+        GD.Print("testing");
+        Fun.Delayed(this, 0.1f, () =>
+        {
+            Workbench.Visible = true;
+            LetterMenu.Visible = false;
+            ProjectPicker.Visible = false;
+        });
+    }
+
     public void ResetEditorFocus()
     {
         CurrentFocus = LastEditorFocus;
@@ -318,5 +376,33 @@ public partial class Editor : CanvasLayer
         {
             p.Project().UpdateInfo();
         }
+    }
+
+    public void QuitEditor()
+    {
+        SaveEverything();
+        ((TextureRect)FindChild("Peace")).Visible = true;
+        GetTree().Quit();
+    }
+
+    public void SaveGlyph(Glyph g)
+    {
+        string filePath = CurrentProject.Path + Path.DirectorySeparatorChar + CurrentWeight.Name() + Path.DirectorySeparatorChar + GlyphNames.Names[g.G] + ".ginfo";
+        var fileAc = Godot.FileAccess.Open(filePath, Godot.FileAccess.ModeFlags.Write);
+        fileAc.StoreString(JsonSerializer.Serialize(g, JsonOptsRef));
+        fileAc.Close();
+        fileAc.Dispose();
+    }
+
+    public Glyph LoadGlyph(string filePath)
+    {
+        var fileAc = Godot.FileAccess.Open(filePath, Godot.FileAccess.ModeFlags.Read);
+        Glyph? g = JsonSerializer.Deserialize<Glyph>(fileAc.GetAsText(),JsonOptsRef);
+        fileAc.Close();
+        fileAc.Dispose();
+        if (g != null)
+            return g;
+        else
+            throw new Exception($"\nFailed to deserialize glyph file at {filePath}\n");
     }
 }

@@ -16,7 +16,7 @@ enum UfoFiles
     plist,
 }
 
-struct Glyph
+struct UfoGlyph
 {
         public string Name;
         public int Unicode;
@@ -27,7 +27,7 @@ struct Glyph
         public float MaxX;
         public Segment[][] Contours;
 
-    public Glyph(string name, int unicode, Segment[][] contours, int lsb = 100, int rsb = 100, string note = "")
+    public UfoGlyph(string name, int unicode, Segment[][] contours, int lsb = 100, int rsb = 100, string note = "")
     {
         Name = name;
         Unicode = unicode;
@@ -71,12 +71,12 @@ static class UfoWriterReader
     static XDocument? CurrentDocument;
     public static float HeightFraction = 1.29f; 
 
-    public static void ExportUfo(string path, FamilyConfig family)
+    public static void ExportUfo(string path, FamilyConfig family, Editor ed)
     {
         GD.Print($"Exporting to {path}.ufo. Isn't that nice");
-        Glyph[] glyphs = GetGlyphs();
+        UfoGlyph[] glyphs = GetGlyphs(ed);
         SetUpFiles(path, glyphs, family);
-        foreach (Glyph glyph in glyphs)
+        foreach (UfoGlyph glyph in glyphs)
         {
             CreateGlyph(glyph);
         }
@@ -96,23 +96,24 @@ static class UfoWriterReader
             CurrentDocument.Add(new XElement("plist", new XAttribute("version", version)));
     }
 
-    static Glyph[] GetGlyphs()
+    static UfoGlyph[] GetGlyphs(Editor ed)
     {
-        Glyph[] glyphs = [];
-        foreach ((char name, (Shapes s, var _)) in LetterMenu.ShapeDict)
+        Shapes shapes = ed.Workbench.Shapes;
+        UfoGlyph[] glyphs = [];
+        foreach ((char name, Glyph g) in LetterMenu.ShapeDict)
         {
             GD.Print(name);
-            if (s.S.Count > 0)
+            if (shapes.S.Count > 0)
             {
                 GD.Print("yeah");
-                Glyph glyph = new(name.ToString(), name, s.GetMergedShapes());
+                UfoGlyph glyph = new(name.ToString(), name, shapes.GetMergedShapes());
                 glyphs = [.. glyphs, glyph];
             }
         }
         return glyphs;
     }
 
-    static void SetUpFiles(string path, Glyph[] glyphs, FamilyConfig family)
+    static void SetUpFiles(string path, UfoGlyph[] glyphs, FamilyConfig family)
     {
         path += ".ufo";
         if (Directory.Exists(path)) return;
@@ -160,11 +161,11 @@ static class UfoWriterReader
         SaveDoc("layercontents", UfoFiles.plist);
     }
 
-    static void CreateGlyphsContents(Glyph[] glyphs)
+    static void CreateGlyphsContents(UfoGlyph[] glyphs)
     {
         NewDoc(UfoFiles.plist);
         CurrentDocument!.Element("plist")!.Add(new XElement("dict"));
-        foreach (Glyph glyph in glyphs)
+        foreach (UfoGlyph glyph in glyphs)
         {
             CurrentDocument!.Element("plist")!.Element("dict")!.Add(
                 new XElement("key", glyph.Name),
@@ -203,7 +204,7 @@ static class UfoWriterReader
         CurrentDocument!.Save(writer);
     }
 
-    static void CreateGlyph(Glyph glyph)
+    static void CreateGlyph(UfoGlyph glyph)
     {
         NewDoc(UfoFiles.glif, glyph.Name);
         CurrentDocument!.Element("glyph")!.Add(

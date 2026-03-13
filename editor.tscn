@@ -48,7 +48,7 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_lock_ = true
 
-[node name="DrawingBase" parent="." unique_id=95779502 instance=ExtResource("2_wrb8p")]
+[node name="Workbench" parent="." unique_id=95779502 instance=ExtResource("2_wrb8p")]
 visible = false
 
 [node name="Peace" type="TextureRect" parent="." unique_id=539033842]

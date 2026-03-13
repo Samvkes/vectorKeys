@@ -2,7 +2,7 @@ using Godot;
 using System;
 using Vectordrawing;
 
-public partial class WeightTemplate : HBoxContainer
+public partial class WeightTemplate : PanelContainer
 {
     Label WeightName = null!;
     Label LastEditDate = null!;

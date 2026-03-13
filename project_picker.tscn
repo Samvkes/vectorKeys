@@ -16,7 +16,10 @@ corner_radius_bottom_left = 3
 corner_detail = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_truov"]
-bg_color = Color(1, 0.19999999, 0.50666654, 1)
+bg_color = Color(0.87, 0.64031994, 0.24359998, 1)
+border_width_bottom = 10
+border_color = Color(0.88243437, 0.52365047, 1.1551381e-06, 1)
+border_blend = true
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
@@ -45,8 +48,9 @@ metadata/_edit_lock_ = true
 
 [node name="Selector" type="Panel" parent="." unique_id=1828595160]
 layout_mode = 0
+offset_left = 1.0
 offset_top = 151.0
-offset_right = 15.0
+offset_right = 16.0
 offset_bottom = 251.0
 pivot_offset_ratio = Vector2(0.5, 0.5)
 theme_override_styles/panel = SubResource("StyleBoxFlat_truov")
@@ -67,8 +71,8 @@ layout_mode = 2
 theme_override_constants/separation = 300
 
 [node name="ProjectContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1635835193]
+custom_minimum_size = Vector2(800, 0)
 layout_mode = 2
-size_flags_horizontal = 0
 mouse_filter = 2
 theme_override_constants/separation = 60
 

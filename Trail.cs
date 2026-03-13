@@ -32,7 +32,7 @@ public partial class Trail : Line2D
         GlobalRotation = 0;
 
         Point = Cursor.GlobalPosition;
-        if (GetPointPosition(0).DistanceTo(Point) < 150)
+        if (GetPointCount() > 0 && GetPointPosition(0).DistanceTo(Point) < 150)
         {
             Visible = false;
             // Circle.Visible = true;

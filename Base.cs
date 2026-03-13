@@ -167,7 +167,7 @@ public partial class Base : Control
     Texture2D LastFramesTexture = new();
     public Shapes Shapes = new();
     public UndoRedo UndoRedo = null!;
-    Shape CurrentShape = null!;
+    public Shape CurrentShape = null!;
     HashSet<Anker> SelectedAnchors = new();
     HashSet<HandlePointer> SelectedHandles = new();
     public Texture2D PreviewTex = null!;
@@ -213,12 +213,6 @@ public partial class Base : Control
             indicator.Visible = false;
         }
 
-        // input.MovementTimer.WaitTime = 0.01f;
-        // input.MovementTimer.OneShot = true;
-        // input.MovementTimer.Timeout += MovementTimerTimeout;
-        input.UndoTimer.WaitTime = 0.5f;
-        input.UndoTimer.OneShot = true;
-        input.UndoTimer.Timeout += DoUndoRedo;
         FpsTimer.WaitTime = 0.5f;
         FpsTimer.OneShot = true;
         FpsTimer.Start();
@@ -247,9 +241,33 @@ public partial class Base : Control
         // Fun.Repeatedly(this, 0.5f, () => {UpdatePreviews();});
 
     }
-    public void Initialize()
+    public void Initialize(List<Shape> contours)
     {
-        CurrentShape = Shapes.NewShape();
+        PreviewTask?.Dispose();
+        ui = new();
+        LastFramesSvg = "";
+        LastFramesTexture = new();
+
+        input.MarkerPos = UIConfig.Default.Origin;
+        input.CurrentMode = Mode.Editing;
+        input.CurrentFocus = Focus.Anchor;
+        input.FocussedAnchor = null;
+        input.CanUndoAgain = true;
+        input.AngledMoveMode = false;
+
+        SelectedAnchors.Clear();
+        SelectedHandles.Clear();
+
+        PreviewTex = new();
+        Shapes.S = contours;
+        Shapes.ShapesCached = false;
+        UndoRedo = new(Shapes);
+        if (Shapes.S.Count == 0) 
+            CurrentShape = Shapes.NewShape();
+        else
+            CurrentShape = contours[0];
+        UpdateShapeIndicators();
+        JustUnpaused = true;
     }
 
     public void _OnVisibilityChanged()
@@ -268,7 +286,6 @@ public partial class Base : Control
         UpdateUI(delta);
         if (Ed.Throttling)
             return;
-
 
         // SVG code goes here
         SvgString.ClearString(ui.Zoom, config.Origin, config.WindowSize, input.MarkerPos, ui.CursorOff);
@@ -305,6 +322,7 @@ public partial class Base : Control
     {
         if (Ed.Throttling)
             return LastFramesTexture;
+        if (LastFramesSvg == "") return new();
         ui.CanvasImage.LoadSvgFromString(LastFramesSvg);
         return ImageTexture.CreateFromImage(ui.CanvasImage);
     }
@@ -333,24 +351,27 @@ public partial class Base : Control
             return;
         }
 
-        int c = 1;
-        foreach (Shape s in Shapes.S)
+        int c = -1;
+        foreach (ShapeIndicator indicator in Indicators)
         {
-            if (s.Anchors.Count < 3) continue;
+            c += 1;
+            if (c > Shapes.S.Count - 1 || Shapes.S[c].Anchors.Count < 3)
+            {
+                indicator.Visible = false;
+                continue;
+            }
+            Shape s = Shapes.S[c];
             V2 p0 = s.SegList()[0].InPoint;
             V2 p1 = s.SegList()[0].OutPoint;
             V2 p2 = s.SegList()[^1].InPoint;
             V2 p3 = p0 - p1;
             V2 p4 = p0 - p2;
             V2 d = (V2.Normalize(p3) + V2.Normalize(p4)) / 2f;
-            // if (d.Length() < 0.1) GD.Print(d);
             d = d.Length() > 0 ? d : V2.Transform(p3, Matrix3x2.CreateRotation(MathF.PI / 2));
             p0 += V2.Normalize(d) * 30;
-            ShapeIndicator indic = Indicators[c - 1];
-            indic.Visible = true;
-            indic.Position = Fun.Vtv(p0);
-            indic.SetAngle(Fun.Vtv(d).Angle());
-            c += 1;
+            indicator.Visible = true;
+            indicator.Position = Fun.Vtv(p0);
+            indicator.SetAngle(Fun.Vtv(d).Angle());
         }
     }
 
@@ -462,6 +483,29 @@ public partial class Base : Control
         prevthumb.Resize((int)size.X / 3, (int)size.Y / 3); 
         prevthumb.AdjustBcs(0.2f,1,1);
         PreviewTex = ImageTexture.CreateFromImage(prevthumb);
+    }
+
+    public Texture2D CreatePreviewTex(List<Shape> contours)
+    {
+        V2 size = new(86,86);
+
+        float f = size.Y / config.WindowSize.Y;
+        float margin = .02f;
+        f -= margin;
+
+        SvgString.ClearString(f, (size * (margin / f))/2, size, input.MarkerPos, ui.CursorOff);
+        SvgString.SetStyle(Style.ShapePreviewWhite);
+        Shapes.S = contours;
+        Shapes.ShapesCached = false;
+        SvgString.AddSegmentsGroup(Shapes.GetMergedShapes());
+        Shapes.S = [];
+        SvgString.Finish();
+
+        Image thumbnail = new();
+        thumbnail.LoadSvgFromString(SvgString.CurrentString.ToString());
+        thumbnail.AdjustBcs(0.2f,1,1);
+
+        return ImageTexture.CreateFromImage(thumbnail);
     }
 
 

@@ -9,7 +9,16 @@ using Vectordrawing;
 using Snl = Vectordrawing.StringNamesList;
 using V2 = System.Numerics.Vector2;
 using GV2 = Godot.Vector2;
+using System.IO;
 
+public class Glyph
+{
+    public char G;
+    public List<Shape> Contours = [];
+    public DateTime lastEdit = DateTime.Now;
+    public int minutesSpent = 0;
+    public int anchorCount = 0;
+}
 
 public partial class LetterMenu : Control
 {
@@ -22,15 +31,16 @@ public partial class LetterMenu : Control
     static string specialGlyphs = "-+_=@#$%^&*(){}[]<>\\/|";
     int MaxGridColumns = 10;
     V2 CurrentPos = new(0,0);
-    List<string> allGlyphs = [numberGlyphs, punctuationGlyphs, letterGlyphs, letterGlyphs.ToUpper(), specialGlyphs];
+    public List<string> allGlyphs = [numberGlyphs, punctuationGlyphs, letterGlyphs, letterGlyphs.ToUpper(), specialGlyphs];
     List<string> GroupTitles = ["numbers", "punctuation", "lowers", "uppers", "friends"];
     List<List<GlyphPreview>> Previews = [];
+    public Dictionary<char, GlyphPreview> PreviewDict = [];
     List<List<int>> Rows = [];
     List<int> RowsFlat = [];
     Panel Selector = null!;
     GV2 SelectorGoalPos = GV2.Zero;
     List<PreviewGrid> PreviewGrids = [];
-    public static Dictionary<char, (Shapes, Vectordrawing.UndoRedo)> ShapeDict = [];
+    public static Dictionary<char, Glyph> ShapeDict = [];
     PackedScene PreviewGridScene = GD.Load<PackedScene>("res://preview_grid.tscn");
     public int CurrentWeight = 500;
     public List<Axis> CurrentAxes = [];
@@ -49,6 +59,7 @@ public partial class LetterMenu : Control
         weightPickerSwitchTimer.WaitTime = .5f;
         weightPickerSwitchTimer.OneShot = true;
         AddChild(weightPickerSwitchTimer);
+        GlyphNames.PrepareNames();
         
         Scroll = (ScrollContainer)FindChild("ScrollContainer");
         foreach (string glyphs in allGlyphs)
@@ -64,12 +75,14 @@ public partial class LetterMenu : Control
             {
                 counter += 1;
                 GlyphPreview glyphPreview = glyphScene.Instantiate<GlyphPreview>();
+                PreviewDict[glyph] = glyphPreview;
                 glyphPreview.SetMyGlyph(glyph);
                 Previews.Last().Add(glyphPreview);
                 pg.AddPreview(glyphPreview);
                 Shapes shapes = new();
-                ShapeDict[glyph] = (shapes, new(shapes));
-                
+                ShapeDict[glyph] = new();
+                ShapeDict[glyph].G = glyph;
+                ShapeDict[glyph].Contours = shapes.S;
                 if (counter % MaxGridColumns == 0 || counter == glyphs.Count())
                     currentRowGroup.Add(counter % MaxGridColumns == 0 ? MaxGridColumns : counter % MaxGridColumns);
             }
@@ -111,12 +124,12 @@ public partial class LetterMenu : Control
         if (Input.IsActionJustPressed(Snl.select_mode))
         {
             weightPickerSwitchTimer.Start();
-            Ed.weightP.SwitchOff();
+            Ed.weightP.SwitchOn();
         }
 
         if (Input.IsActionJustReleased(Snl.select_mode) && weightPickerSwitchTimer.TimeLeft <= 0)
         {
-            Ed.weightP.SwitchOn();
+            Ed.weightP.SwitchOff();
         }
 
         Selector.Position += (CurrentlySelected.GlobalPosition - Selector.Position) * (1 - MathF.Exp( -(float)delta * spd));
@@ -160,9 +173,10 @@ public partial class LetterMenu : Control
 
         if (Input.IsActionJustPressed(Snl.add_new_point))
         {
-            Ed.OpenDrawingScene(CurrentlySelected);
-            Ed.CurrentFocus = EditorFocus.Workbench;
+            Ed.CurrentGlyph = ShapeDict[CurrentlySelected.GetGlyph()];
+            Ed.SwitchToWorkbench(ShapeDict[CurrentlySelected.GetGlyph()].Contours);
         }
+        
         var c = CurrentTitle.GetChildren();
 
         if (((Label)c[0]).Text != CurrentWeight.ToString())
@@ -184,7 +198,6 @@ public partial class LetterMenu : Control
         if (((Label)c[1]).Text != CurrentWeight.ToString())
             ((Label)c[1]).Text = CurrentWeight.ToString();
     }
-
 
     GlyphPreview GetCurrentPreview()
     {
