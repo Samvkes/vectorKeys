@@ -81,12 +81,13 @@ public partial class Editor : CanvasLayer
     public static readonly JsonSerializerOptions JsonOpts = new()
     {
         IncludeFields = true,
+        WriteIndented = true
     };
     public static readonly JsonSerializerOptions JsonOptsRef = new()
     {
         IncludeFields = true,
         ReferenceHandler = ReferenceHandler.Preserve, // avoid crashes on back-references
-        WriteIndented = false
+        WriteIndented = true
     };
 
     public override void _Ready()

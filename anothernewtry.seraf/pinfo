@@ -1,1 +1,187 @@
-{"Path":"/Users/sam/Documents/vectorkeys/vectorKeys/anothernewtry.seraf","Name":"anothernewtry","GlyphCount":0,"LastEdit":"2026-03-08T21:29:23.703203+01:00","AvailableAxes":[{"Name":"italic","TurnedOn":false,"Defined":true,"Index":0},{"Name":"test","TurnedOn":true,"Defined":true,"Index":1},{"Name":"","TurnedOn":false,"Defined":false,"Index":2},{"Name":"","TurnedOn":false,"Defined":false,"Index":3},{"Name":"","TurnedOn":false,"Defined":false,"Index":4},{"Name":"","TurnedOn":false,"Defined":false,"Index":5},{"Name":"","TurnedOn":false,"Defined":false,"Index":6},{"Name":"","TurnedOn":false,"Defined":false,"Index":7},{"Name":"","TurnedOn":false,"Defined":false,"Index":8}],"Weights":[{"GlyphCount":0,"Weight":500,"Axes":[],"LastEdit":"2026-03-08T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":700,"Axes":["italic"],"LastEdit":"2026-03-08T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":800,"Axes":["italic"],"LastEdit":"2026-03-08T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":100,"Axes":["italic"],"LastEdit":"2026-03-08T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":100,"Axes":[],"LastEdit":"2026-03-08T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":200,"Axes":[],"LastEdit":"2026-03-08T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":300,"Axes":[],"LastEdit":"2026-03-08T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":900,"Axes":["italic"],"LastEdit":"2026-03-09T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":1000,"Axes":[],"LastEdit":"2026-03-13T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":500,"Axes":["test"],"LastEdit":"2026-03-13T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}},{"GlyphCount":0,"Weight":600,"Axes":["test"],"LastEdit":"2026-03-13T00:00:00+01:00","StemAngle":{"X":0,"Y":1.5707964}}],"ReferenceFonts":[]}
+{
+  "Path": "/Users/sam/Documents/vectorkeys/vectorKeys/anothernewtry.seraf",
+  "Name": "anothernewtry",
+  "GlyphCount": 0,
+  "LastEdit": "2026-03-08T21:29:23.703203+01:00",
+  "AvailableAxes": [
+    {
+      "Name": "italic",
+      "TurnedOn": false,
+      "Defined": true,
+      "Index": 0
+    },
+    {
+      "Name": "test",
+      "TurnedOn": true,
+      "Defined": true,
+      "Index": 1
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 2
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 3
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 4
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 5
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 6
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 7
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 8
+    }
+  ],
+  "Weights": [
+    {
+      "GlyphCount": 0,
+      "Weight": 500,
+      "Axes": [],
+      "LastEdit": "2026-03-08T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 700,
+      "Axes": [
+        "italic"
+      ],
+      "LastEdit": "2026-03-08T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 800,
+      "Axes": [
+        "italic"
+      ],
+      "LastEdit": "2026-03-08T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 100,
+      "Axes": [
+        "italic"
+      ],
+      "LastEdit": "2026-03-08T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 100,
+      "Axes": [],
+      "LastEdit": "2026-03-08T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 200,
+      "Axes": [],
+      "LastEdit": "2026-03-08T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 300,
+      "Axes": [],
+      "LastEdit": "2026-03-08T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 900,
+      "Axes": [
+        "italic"
+      ],
+      "LastEdit": "2026-03-09T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 1000,
+      "Axes": [],
+      "LastEdit": "2026-03-13T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 500,
+      "Axes": [
+        "test"
+      ],
+      "LastEdit": "2026-03-13T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    },
+    {
+      "GlyphCount": 0,
+      "Weight": 600,
+      "Axes": [
+        "test"
+      ],
+      "LastEdit": "2026-03-13T00:00:00+01:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    }
+  ],
+  "ReferenceFonts": []
+}

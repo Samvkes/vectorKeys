@@ -259,6 +259,10 @@ public partial class Base : Control
         SelectedHandles.Clear();
 
         PreviewTex = new();
+        for (int i = 0; i < contours.Count; i++)
+        {
+            contours[i] = (HyperbezierShape)contours[i];
+        }
         Shapes.S = contours;
         Shapes.ShapesCached = false;
         UndoRedo = new(Shapes);
@@ -270,10 +274,10 @@ public partial class Base : Control
         JustUnpaused = true;
     }
 
-    public void _OnVisibilityChanged()
-    {
-        children.ControlRoot.Visible = !children.ControlRoot.Visible;    
-    }
+    // public void _OnVisibilityChanged()
+    // {
+    //     children.ControlRoot.Visible = !children.ControlRoot.Visible;    
+    // }
 
     public override void _Process(double doubleDelta)
     {
