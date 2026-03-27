@@ -11,10 +11,16 @@ using V2 = System.Numerics.Vector2;
 using GV2 = Godot.Vector2;
 using System.IO;
 
+// what to cache for lettermenu
+// last 5 dicts of glyphs?
+// last 5 previews of glyph families?
+// what of Shapes or Shape state should get saved?
+// Shape needs references back to Shapes, voorzichtig serializeren!!
+
 public class Glyph
 {
     public char G;
-    public List<Shape> Contours = [];
+    public Shapes Shapes = null!;
     public DateTime lastEdit = DateTime.Now;
     public int minutesSpent = 0;
     public int anchorCount = 0;
@@ -82,7 +88,7 @@ public partial class LetterMenu : Control
                 Shapes shapes = new();
                 ShapeDict[glyph] = new();
                 ShapeDict[glyph].G = glyph;
-                ShapeDict[glyph].Contours = shapes.S;
+                ShapeDict[glyph].Shapes = shapes;
                 if (counter % MaxGridColumns == 0 || counter == glyphs.Count())
                     currentRowGroup.Add(counter % MaxGridColumns == 0 ? MaxGridColumns : counter % MaxGridColumns);
             }
@@ -119,7 +125,7 @@ public partial class LetterMenu : Control
 
         if (Ed.CurrentFocus != EditorFocus.Letters)
             return;
-        float spd = delta < 0.03 ? 20 : 10;
+        float spd = delta < 0.03 ? 20 : 20;
 
         if (Input.IsActionJustPressed(Snl.select_mode))
         {
@@ -135,7 +141,7 @@ public partial class LetterMenu : Control
         Selector.Position += (CurrentlySelected.GlobalPosition - Selector.Position) * (1 - MathF.Exp( -(float)delta * spd));
         // Selector.Position = Selector.Position.Lerp(CurrentlySelected.GlobalPosition, (float)delta * 20);
         int oldGroup = GetCurrentGroup().currentGroup;
-        V2 normalizedMovement = Ed.GetMovementInput((float)delta, 0.07f, 
+        V2 normalizedMovement = Ed.GetMovementInput((float)delta, 0.06f, 
             CurrentPos.Y == 0 || CurrentPos.Y == RowsFlat.Count()-1 || CurrentPos.X == 0 || CurrentPos.X == RowsFlat[(int)CurrentPos.Y]-1,
             0.3f);
 
@@ -163,9 +169,9 @@ public partial class LetterMenu : Control
         if (newGroup != oldGroup)
             OpenCloseGroups(oldGroup, newGroup);
         if (GetWindow().Size.Y - Selector.GlobalPosition.Y < 500)
-            Scroll.ScrollVertical += (int)(delta * 1200);
+            Scroll.ScrollVertical += (int)(delta * 1800);
         if (Selector.GlobalPosition.Y < 500)
-            Scroll.ScrollVertical -= (int)(delta * 1200);
+            Scroll.ScrollVertical -= (int)(delta * 1800);
         if (Selector.GlobalPosition.Y < 0)
             Scroll.ScrollVertical -= (int)(delta * 4000);
         if (Selector.GlobalPosition.Y > GetWindow().Size.Y)
@@ -174,7 +180,7 @@ public partial class LetterMenu : Control
         if (Input.IsActionJustPressed(Snl.add_new_point))
         {
             Ed.CurrentGlyph = ShapeDict[CurrentlySelected.GetGlyph()];
-            Ed.SwitchToWorkbench(ShapeDict[CurrentlySelected.GetGlyph()].Contours);
+            Ed.SwitchToWorkbench(ShapeDict[CurrentlySelected.GetGlyph()].Shapes);
         }
         
         var c = CurrentTitle.GetChildren();

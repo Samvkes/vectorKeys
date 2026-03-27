@@ -1,19 +1,19 @@
 {
-  "Path": "/Users/sam/Documents/vectorkeys/vectorKeys/yetanothertesthah.seraf",
-  "Name": "yetanothertesthah",
+  "Path": "/Users/sam/Documents/vectorkeys/vectorKeys/newglyphtest.seraf",
+  "Name": "newglyphtest",
   "GlyphCount": 0,
-  "LastEdit": "2026-03-13T16:42:08.615945+01:00",
+  "LastEdit": "2026-03-17T09:27:20.255189+01:00",
   "AvailableAxes": [
     {
       "Name": "italic",
-      "TurnedOn": true,
+      "TurnedOn": false,
       "Defined": true,
       "Index": 0
     },
     {
-      "Name": "ultra wide",
-      "TurnedOn": true,
-      "Defined": true,
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
       "Index": 1
     },
     {
@@ -64,7 +64,7 @@
       "GlyphCount": 0,
       "Weight": 500,
       "Axes": [],
-      "LastEdit": "2026-03-13T00:00:00+01:00",
+      "LastEdit": "2026-03-17T00:00:00+01:00",
       "StemAngle": {
         "X": 0,
         "Y": 1.5707964
@@ -74,37 +74,7 @@
       "GlyphCount": 0,
       "Weight": 600,
       "Axes": [],
-      "LastEdit": "2026-03-13T00:00:00+01:00",
-      "StemAngle": {
-        "X": 0,
-        "Y": 1.5707964
-      }
-    },
-    {
-      "GlyphCount": 0,
-      "Weight": 700,
-      "Axes": [],
-      "LastEdit": "2026-03-13T00:00:00+01:00",
-      "StemAngle": {
-        "X": 0,
-        "Y": 1.5707964
-      }
-    },
-    {
-      "GlyphCount": 0,
-      "Weight": 800,
-      "Axes": [],
-      "LastEdit": "2026-03-13T00:00:00+01:00",
-      "StemAngle": {
-        "X": 0,
-        "Y": 1.5707964
-      }
-    },
-    {
-      "GlyphCount": 0,
-      "Weight": 1000,
-      "Axes": [],
-      "LastEdit": "2026-03-13T00:00:00+01:00",
+      "LastEdit": "2026-03-18T00:00:00+01:00",
       "StemAngle": {
         "X": 0,
         "Y": 1.5707964
@@ -114,20 +84,7 @@
       "GlyphCount": 0,
       "Weight": 200,
       "Axes": [],
-      "LastEdit": "2026-03-13T00:00:00+01:00",
-      "StemAngle": {
-        "X": 0,
-        "Y": 1.5707964
-      }
-    },
-    {
-      "GlyphCount": 0,
-      "Weight": 700,
-      "Axes": [
-        "italic",
-        "ultra wide"
-      ],
-      "LastEdit": "2026-03-16T00:00:00+01:00",
+      "LastEdit": "2026-03-23T00:00:00+01:00",
       "StemAngle": {
         "X": 0,
         "Y": 1.5707964

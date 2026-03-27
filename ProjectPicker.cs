@@ -85,14 +85,19 @@ public class ProjectWeight (int weight, List<string> axes) {
 
 public partial class ProjectPicker : Control
 {
+    ScrollContainer WeightScroll = null!;
+    ScrollContainer ProjectScroll = null!;
     Editor Ed = null!;
     Panel Selector = null!;
     GV2 goalPos = GV2.Zero;
+    int goalScroll = 0;
     VBoxContainer ProjectContainer = null!;
     VBoxContainer WeightContainer = null!;
     FileDialog ProjectFilePicker = null!;
     PackedScene ProjectTemplateScene = GD.Load<PackedScene>("project_template.tscn");
     PackedScene WeightTemplateScene = GD.Load<PackedScene>("weight_template.tscn");
+    StyleBoxFlat SelectorRegular = GD.Load<StyleBoxFlat>("res://assets/selectorRegular.tres");
+    StyleBoxFlat SelectorAdding = GD.Load<StyleBoxFlat>("res://assets/selectorAdding.tres");
     public List<ProjectTemplate> RecentProjects = [];
     ProjectTemplate? SelectedTemplate = null;
     Godot.FileAccess ProjectPaths = null!;
@@ -103,6 +108,8 @@ public partial class ProjectPicker : Control
     public override void _Ready()
     {
         // ClearProjectPaths();
+        WeightScroll = (ScrollContainer)FindChild("WeightScroller");
+        ProjectScroll = (ScrollContainer)FindChild("ProjectScroller");
         Ed = GetParent<Editor>();
         Selector = (Panel)FindChild("Selector");
         ProjectContainer = (VBoxContainer)FindChild("ProjectContainer");
@@ -133,7 +140,8 @@ public partial class ProjectPicker : Control
         if (Ed.CurrentFocus != EditorFocus.ProjectPicker || TextInput.BeingEdited) return;
         // Selecting in project list.
         ProjectTemplate? lastSelected = SelectedTemplate;
-        V2 mi = Ed.GetMovementInput((float)delta, 0.050f);
+        Selector.AddThemeStyleboxOverride("panel", SelectorRegular);
+        V2 mi = Ed.GetMovementInput((float)delta, 0.060f);
         if (Ed.CurrentProject == null)
         {
             if (RecentProjects.Count > 0)
@@ -141,12 +149,13 @@ public partial class ProjectPicker : Control
                 if (mi.X > 0 && SelectedTemplate != null)
                 {
                     Ed.CurrentProject = SelectedTemplate.Project();
+                    SelectedTemplate.ToggleSelected();
                     if (Ed.CurrentProject.Weights.Count > 0)
                         Ed.CurrentWeight = Ed.CurrentProject.Weights.Last();
                 }
                 if (mi.Y < 0)
-                    SelectedTemplate = SelectedTemplate == null ? RecentProjects[0] : 
-                        RecentProjects.IndexOf(SelectedTemplate) == RecentProjects.Count-1 ? null 
+                    SelectedTemplate = SelectedTemplate == null ? RecentProjects[0] :
+                        RecentProjects.IndexOf(SelectedTemplate) == RecentProjects.Count-1 ? null
                             : RecentProjects[RecentProjects.IndexOf(SelectedTemplate) + 1];
                 if (mi.Y > 0)
                     SelectedTemplate = SelectedTemplate == null ? RecentProjects[^1] : 
@@ -168,8 +177,10 @@ public partial class ProjectPicker : Control
             }
             if (mi.X < 0)
             {
+                SelectedTemplate.ToggleSelected();
                 Ed.CurrentProject = null;
                 Ed.CurrentWeight = null;
+                WeightScroll.ScrollVertical = 0;
             }
             if (mi.Y < 0)
             {
@@ -185,7 +196,6 @@ public partial class ProjectPicker : Control
             }
             if (Input.IsActionJustPressed(Snl.add_new_point) && Ed.CurrentWeight == null)
             {
-                GD.Print("hm");
                 CreateWeight();
             }
         }
@@ -195,19 +205,37 @@ public partial class ProjectPicker : Control
             goalPos = Ed.CurrentWeight == null ? addWeight.GlobalPosition : weightTemplates[SelectedTemplate!.Project().Weights.IndexOf(Ed.CurrentWeight)].GlobalPosition;
             if (Input.IsActionPressed(Snl.left) || Input.IsActionPressed(Snl.right) || Input.IsActionPressed(Snl.down) || Input.IsActionPressed(Snl.up))
             {
-                goalSize = new(15, 100);
+                goalSize = new(15, 50);
             }
             else if (Ed.CurrentWeight != null)
             {
                 WeightTemplate currentTemplate = weightTemplates[SelectedTemplate!.Project().Weights.IndexOf(Ed.CurrentWeight)]; 
                 goalSize = currentTemplate.Size;
             }
+            else if (Ed.CurrentWeight == null)
+            {
+                Selector.AddThemeStyleboxOverride("panel", SelectorAdding);
+                goalSize = addWeight.Size;
+            }
         }
         else
         {
-            goalPos = SelectedTemplate == null ? addProject.GlobalPosition : SelectedTemplate.GlobalPosition + new GV2(0,10);
-            goalPos.X = addProject.GlobalPosition.X + 850;
+            goalPos = SelectedTemplate == null ? addProject.GlobalPosition : SelectedTemplate.GlobalPosition;
+            if (Input.IsActionPressed(Snl.left) || Input.IsActionPressed(Snl.right) || Input.IsActionPressed(Snl.down) || Input.IsActionPressed(Snl.up))
+            {
+                goalSize = new(15, 50);
+            }
+            else if (SelectedTemplate != null)
+            {
+                goalSize = SelectedTemplate.Size;
+            }
+            else if (SelectedTemplate == null)
+            {
+                Selector.AddThemeStyleboxOverride("panel", SelectorAdding);
+                goalSize = addProject.Size;
+            }
         }
+
         if (SelectedTemplate != null && SelectedTemplate != lastSelected)
             UpdateWeightTemplates(SelectedTemplate.Project());
 
@@ -216,8 +244,20 @@ public partial class ProjectPicker : Control
             goalPos -= new GV2(30,15);
         }
 
-        Selector.Position += (goalPos - Selector.Position) * (1 - MathF.Exp( -(float)delta * 10));
-        Selector.Size += (goalSize - Selector.Size) * (1 - MathF.Exp( -(float)delta * 20));
+        Selector.Position += (goalPos - Selector.Position) * (1 - MathF.Exp( -(float)delta * 20));
+        Selector.Size += (goalSize - Selector.Size) * (1 - MathF.Exp( -(float)delta * 40));
+
+        if (GetWindow().Size.Y - Selector.GlobalPosition.Y < 300)
+            goalScroll += (int)(delta * 2000);
+        if (Selector.GlobalPosition.Y < 300)
+            goalScroll -= (int)(delta * 2000);
+        if (Selector.GlobalPosition.Y < 0)
+            goalScroll -= (int)(delta * 2000);
+        if (Selector.GlobalPosition.Y > GetWindow().Size.Y)
+            goalScroll += (int)(delta * 2000);
+        goalScroll = Mathf.Max(0,goalScroll);
+        // WeightScroll.ScrollVertical += (int)((goalScroll - WeightScroll.ScrollVertical) * (1 - MathF.Exp(-(float)delta * 10)));
+        WeightScroll.ScrollVertical = goalScroll;
     }
 
     public async void CreateProject()

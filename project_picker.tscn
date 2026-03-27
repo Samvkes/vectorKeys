@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bdby0vtv3lnms"]
 
 [ext_resource type="Script" uid="uid://bvotlfgjj54vo" path="res://ProjectPicker.cs" id="1_ds5rn"]
+[ext_resource type="StyleBox" uid="uid://cto13ynjlgap2" path="res://assets/selectorRegular.tres" id="2_fi6x8"]
 [ext_resource type="FontFile" uid="uid://b2xkt870wel26" path="res://assets/DraftingMono/DraftingMono-Bold.otf" id="2_truov"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ds5rn"]
@@ -15,15 +16,17 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_truov"]
-bg_color = Color(0.87, 0.64031994, 0.24359998, 1)
-border_width_bottom = 10
-border_color = Color(0.88243437, 0.52365047, 1.1551381e-06, 1)
-border_blend = true
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_truov"]
+content_margin_left = 4.0
+content_margin_top = 20.0
+content_margin_right = 4.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fi6x8"]
+content_margin_left = 4.0
+content_margin_top = 20.0
+content_margin_right = 4.0
+content_margin_bottom = 10.0
 
 [node name="ProjectPicker" type="Control" unique_id=1114109679]
 layout_mode = 3
@@ -53,13 +56,12 @@ offset_top = 151.0
 offset_right = 16.0
 offset_bottom = 251.0
 pivot_offset_ratio = Vector2(0.5, 0.5)
-theme_override_styles/panel = SubResource("StyleBoxFlat_truov")
+theme_override_styles/panel = ExtResource("2_fi6x8")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1083690362]
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_right = 1616.0
+layout_mode = 0
+offset_right = 1318.0
+offset_bottom = 275.0
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 50
@@ -68,36 +70,53 @@ metadata/_edit_lock_ = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1552339287]
 layout_mode = 2
-theme_override_constants/separation = 300
+theme_override_constants/separation = 700
 
-[node name="ProjectContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1635835193]
+[node name="ProjectScroller" type="ScrollContainer" parent="MarginContainer/HBoxContainer" unique_id=672961893]
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="ProjectContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/ProjectScroller" unique_id=1635835193]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 60
+alignment = 2
+
+[node name="AddProject" type="Label" parent="MarginContainer/HBoxContainer/ProjectScroller/ProjectContainer" unique_id=585762995]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0, 0, 0, 0.39215687)
+theme_override_fonts/font = ExtResource("2_truov")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_truov")
+text = "add project"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WeightScroller" type="ScrollContainer" parent="MarginContainer/HBoxContainer" unique_id=1679395436]
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="WeightContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/WeightScroller" unique_id=967705370]
 custom_minimum_size = Vector2(800, 0)
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 60
 
-[node name="AddProject" type="Label" parent="MarginContainer/HBoxContainer/ProjectContainer" unique_id=585762995]
-custom_minimum_size = Vector2(0, 75)
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 0.39215687)
-theme_override_fonts/font = ExtResource("2_truov")
-theme_override_font_sizes/font_size = 28
-text = "add project"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="WeightContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=967705370]
+[node name="AddWeight" type="Label" parent="MarginContainer/HBoxContainer/WeightScroller/WeightContainer" unique_id=1878542837]
 layout_mode = 2
 size_flags_horizontal = 0
-mouse_filter = 2
-theme_override_constants/separation = 60
-
-[node name="AddWeight" type="Label" parent="MarginContainer/HBoxContainer/WeightContainer" unique_id=1878542837]
-custom_minimum_size = Vector2(0, 75)
-layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 0.39215687)
 theme_override_fonts/font = ExtResource("2_truov")
 theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_fi6x8")
 text = "add weight"
 vertical_alignment = 1
 

@@ -243,24 +243,18 @@ ui fixing
 // finish shape
 // rotated movement mode
 
-uniqlo
-boekwinkel
-chinese supermarkt?
-westland peppers
+----- 
+- refactor a bit
+- scrolling in menus / responsiveness in menus
+- show shortcuts
+- previews lettermenu
+- theming
 
-mam
-    vaas
-    boek
-    lego
-ies
-    progboek
-    game
-    lego
-pap
-    trui?
-    heat sokken?
-    goeie snoertjes?
-    cool kook ingredient
-manoek
-    lego?
-    ies vragen
+-- workbench
+- multiple shapes
+- reference
+- copy paste
+- resizing
+- italic angle grid
+- fix merging multiple shapes
+- measuring

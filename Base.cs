@@ -32,37 +32,37 @@ namespace Vectordrawing;
 
 public record UIConfig(
     bool Debug,
-    int GridSize, 
-    int FarMoveBorder, 
-    float ValidHoldTime, 
-    int DefaultFontSize, 
-    int RotationStepSizeDegrees, 
-    V2 WindowSize, 
-    V2 OriginOff, 
-    V2 Origin, 
+    int GridSize,
+    int FarMoveBorder,
+    float ValidHoldTime,
+    int DefaultFontSize,
+    int RotationStepSizeDegrees,
+    V2 WindowSize,
+    V2 OriginOff,
+    V2 Origin,
 
-    float BaseLineHeight, 
-    float XLineHeight, 
-    float CapitalLineHeight, 
-    float AscenderLineHeight, 
-    float DescenderLineHeight, 
-    float LeftWidthLine, 
-    float RightWidthLine, 
+    float BaseLineHeight,
+    float XLineHeight,
+    float CapitalLineHeight,
+    float AscenderLineHeight,
+    float DescenderLineHeight,
+    float LeftWidthLine,
+    float RightWidthLine,
 
-    (V2, V2) Borders, 
-    Color GridColor, 
-    Color GuidesColor, 
-    Color BackgroundColor, 
-    Color SelectingColor, 
-    Color PreviewColor, 
-    Font LightFont, 
-    Font MediumFont, 
+    (V2, V2) Borders,
+    Color GridColor,
+    Color GuidesColor,
+    Color BackgroundColor,
+    Color SelectingColor,
+    Color PreviewColor,
+    Font LightFont,
+    Font MediumFont,
     Font BoldFont
 )
 {
     const int _gridsize = 16;
-    static V2 _windowsize = new V2(120,80) * UIConfig._gridsize;
-    static V2 _originoff = new(300,0);
+    static V2 _windowsize = new V2(120, 80) * UIConfig._gridsize;
+    static V2 _originoff = new(300, 0);
     public static UIConfig Default => new
     (
         Debug: false,
@@ -107,10 +107,11 @@ public record Children(
     TextureRect TinyPreviewUp,
     TextureRect TinyPreviewDown,
     FileDialog SerafFilePicker,
-    VBoxContainer VBox  
+    VBoxContainer VBox
 );
 
-public record UiState{
+public record UiState
+{
     public V2 CursorOff = V2.Zero;
     public Image CanvasImage = new();
     public (V2, string)[] MeasurementText = [];
@@ -122,7 +123,8 @@ public record UiState{
     public float CanvasScaleGoal = 1;
 };
 
-public record InputState{
+public record InputState
+{
     public V2 MarkerPos = UIConfig.Default.Origin;
     public Timer UndoTimer = new();
     public Mode CurrentMode = Mode.Editing;
@@ -179,11 +181,11 @@ public partial class Base : Control
     RichTextLabel S2 = null!;
     RichTextLabel S3 = null!;
     bool appliedOnce = false;
-
+    string a = "asdf";
     RawInput R = null!;
 
     FontFile LatestGlyphPreviewTtf = new();
-    PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3", 
+    PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3",
                                       "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
 
     public override void _Ready()
@@ -193,6 +195,7 @@ public partial class Base : Control
         R = Ed.R;
         Manager = ((Editor)GetParent()).Manager;
         AddChild(input.UndoTimer);
+        input.UndoTimer.Timeout += DoUndoRedo;
         // AddChild(input.MovementTimer);
         AddChild(FpsTimer);
 
@@ -239,9 +242,9 @@ public partial class Base : Control
         GetWindow().Size = new Vector2I((int)config.WindowSize.X, (int)config.WindowSize.Y);
         children.Background.Color = config.BackgroundColor;
         // Fun.Repeatedly(this, 0.5f, () => {UpdatePreviews();});
-
     }
-    public void Initialize(List<Shape> contours)
+
+    public void Initialize(Shapes shapes)
     {
         PreviewTask?.Dispose();
         ui = new();
@@ -259,13 +262,13 @@ public partial class Base : Control
         SelectedHandles.Clear();
 
         PreviewTex = new();
-        Shapes.S = contours;
+        Shapes = shapes;
         Shapes.ShapesCached = false;
         UndoRedo = new(Shapes);
-        if (Shapes.S.Count == 0) 
+        if (Shapes.S.Count == 0)
             CurrentShape = Shapes.NewShape();
         else
-            CurrentShape = contours[0];
+            CurrentShape = Shapes.S[0];
         UpdateShapeIndicators();
         JustUnpaused = true;
     }
@@ -326,7 +329,7 @@ public partial class Base : Control
         ui.CanvasImage.LoadSvgFromString(LastFramesSvg);
         return ImageTexture.CreateFromImage(ui.CanvasImage);
     }
-
+    // M workbenchUI
     public void UpdateUI(float delta)
     {
         UpdateFpsLabel(delta);
@@ -340,8 +343,7 @@ public partial class Base : Control
         // V2 newScale = V2.Lerp(Fun.Vtv(children.FocusIdentifier.Scale), new(1.0f, 1.0f), delta * 30);
         // children.FocusIdentifier.Scale = Fun.Vtv(newScale);
     }
-
-
+    // M workbenchUI
     public void UpdateShapeIndicators()
     {
         if (input.CurrentMode != Mode.Editing)
@@ -374,8 +376,7 @@ public partial class Base : Control
             indicator.SetAngle(Fun.Vtv(d).Angle());
         }
     }
-
-
+    // M workbenchUI
     public void UpdateFpsLabel(float delta)
     {
         if (DeltaTimeList.Count() > 30)
@@ -394,12 +395,11 @@ public partial class Base : Control
         }
     }
 
-
     public void DrawLayers(float delta)
     {
         Image tempImage = new();
         int shapeCounter = 0;
-        V2 size = new(90,90);
+        V2 size = new(90, 90);
         float f = size.Y / config.WindowSize.Y;
         // float margin = .02f;
         // f -= margin;
@@ -410,12 +410,12 @@ public partial class Base : Control
                 $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{size.X}\" height=\"{size.Y}\" >" +
                 $"<g transform=\"scale({f}) translate(0,0) rotate(0)\">" +
                 $"<g transform=\"scale(1) translate(0,0) rotate(0)\">");
-    
+
             // currentString += (
             //     $"<circle cx=\"{config.Origin.X}\" cy=\"{config.Origin.Y}\" r=\"{400}\" " + 
             //     $"fill=\"{"black"}\" stroke=\"{"black"}\" fill-opacity=\"{0.5f}\" stroke-opacity=\"{0.5f}\" stroke-width=\"{0}\"/>"
             // );
-    
+
             if (shapeCounter < Shapes.S.Count)
             {
                 Shape currentShape = Shapes.S[shapeCounter];
@@ -427,11 +427,11 @@ public partial class Base : Control
                 {
                     float l = 0;
                     currentString += (
-                        $"<path d=\"M {l} {0} L {config.WindowSize.X - l} {0}\"" + 
+                        $"<path d=\"M {l} {0} L {config.WindowSize.X - l} {0}\"" +
                         $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
                     );
                     currentString += (
-                        $"<path d=\"M {l} {config.WindowSize.Y} L {config.WindowSize.X - l} {config.WindowSize.Y}\"" + 
+                        $"<path d=\"M {l} {config.WindowSize.Y} L {config.WindowSize.X - l} {config.WindowSize.Y}\"" +
                         $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
                     );
 
@@ -459,7 +459,7 @@ public partial class Base : Control
                 currentString += Shapes.S[shapeCounter];
             }
             currentString += (
-                "</g></g></svg>" 
+                "</g></g></svg>"
             );
             tempImage.LoadSvgFromString(currentString);
             nde.Texture = ImageTexture.CreateFromImage(tempImage);
@@ -468,32 +468,31 @@ public partial class Base : Control
             shapeCounter += 1;
         }
     }
-
-
+    // M svgstring
     public void RenderThumbnails(float delta)
     {
         V2 size = new(260, 260);
         Image thumbnail = DrawThumbnail(size);
-        Image prevthumb = new(); 
+        Image prevthumb = new();
         prevthumb.CopyFrom(thumbnail);
 
         children.BigPreview.Texture = ImageTexture.CreateFromImage(thumbnail);
         children.BigPreview.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
 
-        prevthumb.Resize((int)size.X / 3, (int)size.Y / 3); 
-        prevthumb.AdjustBcs(0.2f,1,1);
+        prevthumb.Resize((int)size.X / 3, (int)size.Y / 3);
+        prevthumb.AdjustBcs(0.2f, 1, 1);
         PreviewTex = ImageTexture.CreateFromImage(prevthumb);
     }
 
     public Texture2D CreatePreviewTex(List<Shape> contours)
     {
-        V2 size = new(86,86);
+        V2 size = new(100, 100);
 
         float f = size.Y / config.WindowSize.Y;
         float margin = .02f;
         f -= margin;
 
-        SvgString.ClearString(f, (size * (margin / f))/2, size, input.MarkerPos, ui.CursorOff);
+        SvgString.ClearString(f, (size * (margin / f)) / 2, size, input.MarkerPos, ui.CursorOff);
         SvgString.SetStyle(Style.ShapePreviewWhite);
         Shapes.S = contours;
         Shapes.ShapesCached = false;
@@ -503,19 +502,17 @@ public partial class Base : Control
 
         Image thumbnail = new();
         thumbnail.LoadSvgFromString(SvgString.CurrentString.ToString());
-        thumbnail.AdjustBcs(0.2f,1,1);
+        thumbnail.AdjustBcs(0.2f, 1, 1);
 
         return ImageTexture.CreateFromImage(thumbnail);
     }
-
-
 
     public void ProcessCursor(float delta)
     {
         if (ui.Zoom <= 1)
         {
             children.Cursor.Position = Fun.Vtv(V2.Lerp(
-                Fun.Vtv(children.Cursor.Position), 
+                Fun.Vtv(children.Cursor.Position),
                 ((input.MarkerPos + ui.CursorOff) * ui.Zoom) + (config.Origin * (1f - ui.Zoom)),
                 MathF.Min(delta, 0.1f) * 20f));
         }
@@ -524,8 +521,8 @@ public partial class Base : Control
             children.Cursor.Position = Fun.Vtv(config.Origin + ui.CursorOff);
         }
         children.Cursor.Scale = Fun.Vtv(V2.Lerp(
-            Fun.Vtv(children.Cursor.Scale), 
-            new V2(.9f, .9f), 
+            Fun.Vtv(children.Cursor.Scale),
+            new V2(.9f, .9f),
             MathF.Min(delta, 0.1f) * 10));
         if (children.Cursor.Scale.Length() < new V2(.85f, .85f).Length())
         {
@@ -536,8 +533,7 @@ public partial class Base : Control
         children.CursorLabel.Text = input.MarkerPos.X.ToString() + ", " + input.MarkerPos.Y.ToString();
         children.CursorLabel.Size = new(0, 10);
     }
-
-
+    // M workbenchUI
     private void _DrawAngledMoveGuide()
     {
         V2 a = CurrentShape.Segments[^2].TangentAt(0.99f);
@@ -548,26 +544,26 @@ public partial class Base : Control
         {
             mAng -= MathF.Tau;
         }
-        float diff = Mathf.Abs(tanAng - mAng); 
+        float diff = Mathf.Abs(tanAng - mAng);
         GD.Print("tan: " + tanAng + "  mang: " + mAng + "  dif:" + diff);
         float d = MathF.Min(V2.Distance(input.MarkerPos, l), 100);
         DrawLine(Fun.Vtv(input.MarkerPos), Fun.Vtv(l), Colors.Red, 1);
         DrawLine(Fun.Vtv(l), Fun.Vtv(l + a * d), Colors.Red, 1);
         DrawArc(Fun.Vtv(l), d, tanAng, mAng, (int)(2 + 8 * MathF.Abs(diff / MathF.Tau)), Colors.Red, 2);
-        DrawString(config.MediumFont, Fun.Vtv(l + a * (d+30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
+        DrawString(config.MediumFont, Fun.Vtv(l + a * (d + 30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
     }
-
+    // M workbenchUI
     private void _DrawGrid()
     {
         V2 drawnGridSize = new(ui.Zoom * ui.GridModifier * config.GridSize);
-        GV2 gridAdjustment =  - new GV2(20,64);
+        GV2 gridAdjustment = -new GV2(20, 64);
         if (ui.Zoom > 1)
         {
-            gridAdjustment -= new GV2(0,128);
+            gridAdjustment -= new GV2(0, 128);
         }
         if (ui.Zoom < 1)
         {
-            gridAdjustment = new(32,32);
+            gridAdjustment = new(32, 32);
         }
         for (int i = 0; i < (config.WindowSize.X / drawnGridSize.X) + 30; i++)
         {
@@ -582,17 +578,17 @@ public partial class Base : Control
                 new GV2(i * drawnGridSize.Y - gridAdjustment.X, 5000), config.GridColor, 1.5f, true);
         }
     }
-
+    // M workbenchUI
     private void _DrawMeasurements()
     {
         Color bcol = config.BackgroundColor;
         foreach ((V2 pos, string text) t in ui.MeasurementText)
         {
-            DrawRect(new(t.pos.X-24, t.pos.Y-22, 10 + 13 * t.text.Length, 30), bcol);
-            DrawString(config.MediumFont, Fun.Vtv(t.pos) - new GV2(20,0), t.text, fontSize: 24, modulate: Colors.Black);
+            DrawRect(new(t.pos.X - 24, t.pos.Y - 22, 10 + 13 * t.text.Length, 30), bcol);
+            DrawString(config.MediumFont, Fun.Vtv(t.pos) - new GV2(20, 0), t.text, fontSize: 24, modulate: Colors.Black);
         }
     }
-    
+    // M workbenchUI
     private void _DrawLettersAtAnchors()
     {
         char c = 'a';
@@ -624,10 +620,10 @@ public partial class Base : Control
                 p -= new V2(4, -5);
             }
             V2 letterOffset = new(-9, 7);
-            V2 totalOffset = new(0,0);
+            V2 totalOffset = new(0, 0);
             var pp = a.OutHandle.Position();
             var ppp = a.InHandle.Position();
-            Color bc = new(bcol.R-.2f, bcol.G-.1f, bcol.B-.1f, 0.9f);
+            Color bc = new(bcol.R - .2f, bcol.G - .1f, bcol.B - .1f, 0.9f);
             if (tallLetters.Contains(c)) letterOffset += new V2(0, 3);
             if (deepLetters.Contains(c)) letterOffset -= new V2(0, 3);
             DrawRect(new(Fun.Vtv(p - new V2(12, 16) + totalOffset), new GV2(24, 30)), bcol);
@@ -635,8 +631,7 @@ public partial class Base : Control
             c = (char)((int)c + 1);
         }
     }
-
-
+    // M workbenchUI
     public override void _Draw()
     {
         if (input.CurrentMode == Mode.Editing)
@@ -669,13 +664,12 @@ public partial class Base : Control
                 CurrentShape = Shapes.S[shapeToPick];
                 Label sel = children.LayerSelector;
                 CreateTween().SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint).TweenProperty(sel, "position", new GV2(-100, -3 + Shapes.S.IndexOf(CurrentShape) * 98), .2f);
-                CreateTween().TweenProperty(sel, "scale", new GV2(1, 1), .2).From(new GV2(.7f,1.3f));
+                CreateTween().TweenProperty(sel, "scale", new GV2(1, 1), .2).From(new GV2(.7f, 1.3f));
                 children.LayerSelector.Text = CurrentShape.Anchors.Count.ToString("D2") + "\n24";
             }
         }
 
     }
-
 
     public void HandleSelectionText(string s)
     {
@@ -690,7 +684,6 @@ public partial class Base : Control
                 SelectedAnchors.Add(a);
         }
     }
-
 
     public void HiRotation(float delta, bool rotationInputPressed)
     {
@@ -741,7 +734,6 @@ public partial class Base : Control
             }
         }
     }
-
 
     public void HiMovement(float delta)
     {
@@ -805,7 +797,7 @@ public partial class Base : Control
                     {
                         h.Angle += angleChange;
                     }
-                    else 
+                    else
                     {
                         h.Angle += angleChange;
                         if (!SelectedHandles.Contains(sibling.Pointer()))
@@ -813,7 +805,7 @@ public partial class Base : Control
                             sibling.Angle += angleChange;
                         }
                     }
-                    
+
                     hp.A.MyShape.AnchorsChanged();
                     Manager.PlaySound("Rattle3.wav", 0.07f, 1.5f, 2.5f);
                     if (!Input.IsKeyPressed(Key.A))
@@ -833,7 +825,7 @@ public partial class Base : Control
 
                         }
                     }
-                    
+
                     //TODO align handles?
                 }
             }
@@ -855,7 +847,7 @@ public partial class Base : Control
                             if (dis < 30)
                                 ang = tan - MathF.PI * .5f;
                             else
-                                ang = MathF.Round((Fun.Vtv(lap).AngleToPoint(Fun.Vtv(input.MarkerPos)  ) - (tan % fr)) / fr) * fr  + (tan % fr);
+                                ang = MathF.Round((Fun.Vtv(lap).AngleToPoint(Fun.Vtv(input.MarkerPos)) - (tan % fr)) / fr) * fr + (tan % fr);
                         }
                         input.MarkerPos = lap + Fun.Vtv(GV2.FromAngle(ang)) * MathF.Max(dis, 30);
                     }
@@ -892,7 +884,6 @@ public partial class Base : Control
         // }
 
     }
-
 
     public void HiPointAdding(float delta)
     {
@@ -1089,7 +1080,7 @@ public partial class Base : Control
         if (TextInput.BeingEdited) return;
         if (JustUnpaused)
         {
-            Fun.DelayOneFrame(this, () => {JustUnpaused = false;});
+            Fun.DelayOneFrame(this, () => { JustUnpaused = false; });
             return;
         }
 
@@ -1127,7 +1118,10 @@ public partial class Base : Control
             UndoRedo.Undo();
             SelectedAnchors.Clear();
             SelectedHandles.Clear();
+            CurrentShape.AnchorsCached = false;
             CurrentShape = Shapes.S.Last();
+            CurrentShape.AnchorsCached = false;
+            Shapes.ShapesCached = false;
         }
 
         if (Input.IsActionJustPressed(Snl.redo))
@@ -1135,7 +1129,10 @@ public partial class Base : Control
             UndoRedo.Redo();
             SelectedAnchors.Clear();
             SelectedHandles.Clear();
+            CurrentShape.AnchorsCached = false;
             CurrentShape = Shapes.S.Last();
+            CurrentShape.AnchorsCached = false;
+            Shapes.ShapesCached = false;
         }
 
         if (Input.IsActionJustPressed(Snl.toggle_preview))
@@ -1184,7 +1181,7 @@ public partial class Base : Control
             // HiScaling(delta);
             // HiRotation(delta, (Input.IsActionPressed(Snl.rotate_cw_points) || 
             //                    Input.IsActionPressed(Snl.rotate_ccw_points)));
-        
+
             {
                 foreach (Anker a in CurrentShape.Anchors)
                 {
@@ -1238,19 +1235,18 @@ public partial class Base : Control
 
     public void SnapMarkerPos()
     {
-        V2 gridAdjustment =  new V2(-20,-64);
+        V2 gridAdjustment = new V2(-20, -64);
         int totalSize = (int)ui.GridModifier * config.GridSize;
         input.MarkerPos.X = (int)(input.MarkerPos.X / totalSize) * totalSize;
         input.MarkerPos.Y = (int)(input.MarkerPos.Y / totalSize) * totalSize;
         input.MarkerPos -= gridAdjustment;
     }
-
     //TODO implement
     public void SnapSelectedPos()
     {
         int totalSize = (int)ui.GridModifier * config.GridSize;
     }
-
+    // M undoredo
     public void Uts()
     {
         if (input.CanUndoAgain)
@@ -1264,17 +1260,12 @@ public partial class Base : Control
             input.UndoTimer.Start();
         }
     }
-
+    // M undoredo
     public void DoUndoRedo()
     {
         input.CanUndoAgain = true;
     }
-
-    // public void MovementTimerTimeout()
-    // {
-    //     input.CanMoveAgain = true;
-    // }
-
+    // M svgstring
     public void DrawPreviewing(bool white = false)
     {
         if (white)
@@ -1294,18 +1285,18 @@ public partial class Base : Control
         else
             SvgString.AddSegmentsGroup(Shapes.GetMergedShapes());
     }
-
+    // M svgstring
     public void DrawGuides(float opac = 0.5f, float lesserOpac = 0.12f, float fwi = 2.0f)
     {
         // draw guides
         V2 orig = config.Origin;
         if (ui.Zoom > 1)
         {
-            fwi /= 2; 
+            fwi /= 2;
         }
         else if (ui.Zoom < 1)
         {
-            fwi *= 1.5f; 
+            fwi *= 1.5f;
         }
         float zero = -5000;
         SvgString.AddLine(new V2(zero, orig.Y + config.AscenderLineHeight), new V2(5000, orig.Y + config.AscenderLineHeight), sWidth: fwi, sOpacity: lesserOpac);
@@ -1322,7 +1313,7 @@ public partial class Base : Control
         SvgString.AddLine(new V2(zero, orig.Y + config.BaseLineHeight), new V2(5000, orig.Y + config.BaseLineHeight), stroke: "rgb(204,204,204)", sWidth: 20, sOpacity: 1);
         SvgString.AddLine(new V2(zero, orig.Y + config.BaseLineHeight), new V2(5000, orig.Y + config.BaseLineHeight), sWidth: fwi, sOpacity: opac);
     }
-
+    // M svgstring
     public void DrawEditing()
     {
         DrawGuides(opac: 0.3f, fwi: 3f);
@@ -1330,12 +1321,12 @@ public partial class Base : Control
         float[] widths = [1, 3];
         if (ui.Zoom > 1)
         {
-            radiusSizes = [3,4];
+            radiusSizes = [3, 4];
             widths = [0.5f, 1.0f];
         }
         else if (ui.Zoom < 1)
         {
-            radiusSizes = [12,32];
+            radiusSizes = [12, 32];
             widths = [2f, 6f];
         }
         // draw unmerged shape underlays
@@ -1397,7 +1388,7 @@ public partial class Base : Control
         SvgString.AddSegmentsGroup(sss);
         if (CurrentShape.Anchors.Count >= 3)
         {
-            SvgString.SetStyle(Style.ShapeUnchangedSelected); 
+            SvgString.SetStyle(Style.ShapeUnchangedSelected);
             SvgString.AddSegments(CurrentShape.SegList(true));
         }
 
@@ -1412,7 +1403,7 @@ public partial class Base : Control
             foreach (Segment[] s in sss)
             {
                 pointcount += s.Length;
-                Segment measure = new(lineStart,lineStart, lineEnd, lineEnd);
+                Segment measure = new(lineStart, lineStart, lineEnd, lineEnd);
                 GV2[] inters = Player.SegmentShapeIntersections(s, measure);
                 List<V2> il = [];
                 foreach (GV2 gv in inters)
@@ -1423,7 +1414,7 @@ public partial class Base : Control
                     V2 current = il[i];
                     if (i < il.Count - 1)
                     {
-                        V2 next = il[i+1];
+                        V2 next = il[i + 1];
                         int d = (int)V2.Distance(current, next);
                         V2 halfway = (current + next) / 2.0f;
                         ui.MeasurementText = [.. ui.MeasurementText, new(halfway, d.ToString())];
@@ -1431,7 +1422,7 @@ public partial class Base : Control
                     SvgString.AddCircle(current, 7, fill: "red", fOpacity: 0.5f, sWidth: 0);
                 }
             }
-            SvgString.AddLine(lineStart,lineEnd);
+            SvgString.AddLine(lineStart, lineEnd);
             // GD.Print($"point count: {pointcount}");
         }
         var lot = Shapes.ListOfTangents(sss);
@@ -1457,13 +1448,13 @@ public partial class Base : Control
                 // visualize anchor type
                 if (SelectedAnchors.Contains(a))
                 {
-                    SvgString.AddCircle(a.Position, radiusSizes[1]+8, fill: "red", fOpacity: 0.2f, sOpacity: 1.0f, sWidth: widths[0]);
+                    SvgString.AddCircle(a.Position, radiusSizes[1] + 8, fill: "red", fOpacity: 0.2f, sOpacity: 1.0f, sWidth: widths[0]);
                 }
                 else if (SelectedHandles.Contains(a.InHandle.Pointer()) || SelectedHandles.Contains(a.OutHandle.Pointer()))
                 {
                     SvgString.AddCircle(a.Position, radiusSizes[1], fill: "white", fOpacity: 0.3f, sOpacity: 1.0f, sWidth: widths[0]);
                 }
-                else 
+                else
                 {
                     SvgString.AddCircle(a.Position, radiusSizes[0], fOpacity: 0, sOpacity: 1.0f, sWidth: widths[0]);
                 }
@@ -1473,46 +1464,46 @@ public partial class Base : Control
                 // visualize handle type
                 if (s == CurrentShape)
                 {
-                    float strobing = (MathF.Sin(Counter*2) + 1) / 2; 
+                    float strobing = (MathF.Sin(Counter * 2) + 1) / 2;
                     strobing = .5f;
-                    
+
                     if (SelectedHandles.Contains(a.InHandle.Pointer()))
                     {
                         SvgString.AddLine((2 * a.Position + a.InHandle.Position()) / 3, a.InHandle.Position(), stroke: "black", sOpacity: .5f);
-                        SvgString.AddCircle(a.InHandle.Position(), radiusSizes[1]-2, fill: "white", stroke: "black", fOpacity: 1.0f, sOpacity: 1.0f, sWidth: widths[1]);
+                        SvgString.AddCircle(a.InHandle.Position(), radiusSizes[1] - 2, fill: "white", stroke: "black", fOpacity: 1.0f, sOpacity: 1.0f, sWidth: widths[1]);
                     }
                     else
                     {
                         if (input.CurrentFocus == Focus.Handle)
                         {
                             SvgString.AddLine((2 * a.Position + a.InHandle.Position()) / 3, a.InHandle.Position(), stroke: "black", sOpacity: .5f);
-                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0]+1, fill: "black", stroke: "white", fOpacity: .4f, sOpacity: 1f, sWidth: widths[0]);
+                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f, sOpacity: 1f, sWidth: widths[0]);
                         }
                         else
-                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0]+1, fill: "black", stroke: "white", fOpacity: .4f * strobing, sOpacity: 1f * strobing, sWidth: widths[0]);
+                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f * strobing, sOpacity: 1f * strobing, sWidth: widths[0]);
                     }
 
                     if (SelectedHandles.Contains(a.OutHandle.Pointer()))
                     {
                         SvgString.AddLine((2 * a.Position + a.OutHandle.Position()) / 3, a.OutHandle.Position(), stroke: "black", sOpacity: .5f);
-                        SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[1]-2, fill: "white", stroke: "black", fOpacity: 1.0f, sOpacity: 1.0f, sWidth: widths[1]);
+                        SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[1] - 2, fill: "white", stroke: "black", fOpacity: 1.0f, sOpacity: 1.0f, sWidth: widths[1]);
                     }
                     else
                     {
                         if (input.CurrentFocus == Focus.Handle)
                         {
                             SvgString.AddLine((2 * a.Position + a.OutHandle.Position()) / 3, a.OutHandle.Position(), stroke: "black", sOpacity: .5f);
-                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0]+1, fill: "black", stroke: "white", fOpacity: .4f, sOpacity: 1f, sWidth: widths[0]);
+                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f, sOpacity: 1f, sWidth: widths[0]);
                         }
                         else
-                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0]+1, fill: "black", stroke: "white", fOpacity: .4f * strobing, sOpacity: 1f * strobing, sWidth: widths[0]);
+                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f * strobing, sOpacity: 1f * strobing, sWidth: widths[0]);
                     }
-                    
+
                 }
             }
         }
     }
-
+    // M util
     int CompareVectors(V2 one, V2 two)
     {
         if (one.X > two.X)
@@ -1524,22 +1515,22 @@ public partial class Base : Control
             return (int)(one.Y - two.Y);
         }
     }
-
+    // M svgstring
     public Image DrawThumbnail(V2 size)
     {
         float f = size.Y / config.WindowSize.Y;
         float margin = .02f;
         f -= margin;
 
-        SvgString.ClearString(f, (size * (margin / f))/2, size, input.MarkerPos, ui.CursorOff);
-        
+        SvgString.ClearString(f, (size * (margin / f)) / 2, size, input.MarkerPos, ui.CursorOff);
+
         DrawPreviewing(true);
         SvgString.Finish();
         Image thumbnail = new();
         thumbnail.LoadSvgFromString(SvgString.CurrentString.ToString());
         return thumbnail;
     }
-
+    // M svgstring
     public void DrawSelecting()
     {
         DrawGuides(0.04f, 0.04f, 8);
@@ -1547,12 +1538,12 @@ public partial class Base : Control
         float[] widths = [1, 3];
         if (ui.Zoom > 1)
         {
-            radiusSizes = [3,4];
+            radiusSizes = [3, 4];
             widths = [0.5f, 1.0f];
         }
         else if (ui.Zoom < 1)
         {
-            radiusSizes = [12,32];
+            radiusSizes = [12, 32];
             widths = [2f, 6f];
         }
         foreach (Shape s in Shapes.S)

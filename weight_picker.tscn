@@ -112,28 +112,26 @@ visible = false
 
 [node name="RootControl" type="Control" parent="Picker" unique_id=1711986609]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
+size_flags_horizontal = 0
+size_flags_vertical = 0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Picker/RootControl" unique_id=445903126]
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_top = -175.0
-offset_right = 2208.0
-offset_bottom = -175.0
-grow_vertical = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="Picker/RootControl" unique_id=412946761]
+layout_mode = 0
+offset_right = 1650.0
+offset_bottom = 386.0
+theme_override_constants/separation = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Picker/RootControl/VBoxContainer" unique_id=445903126]
+layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="MarginContainer" type="MarginContainer" parent="Picker/RootControl/HBoxContainer" unique_id=697578595]
+[node name="MarginContainer" type="MarginContainer" parent="Picker/RootControl/VBoxContainer/HBoxContainer" unique_id=697578595]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_constants/margin_left = 60
 
-[node name="CurrentWeight" type="Label" parent="Picker/RootControl/HBoxContainer/MarginContainer" unique_id=1453706793]
+[node name="CurrentWeight" type="Label" parent="Picker/RootControl/VBoxContainer/HBoxContainer/MarginContainer" unique_id=1453706793]
 custom_minimum_size = Vector2(500, 200)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -145,24 +143,25 @@ label_settings = SubResource("LabelSettings_6lbom")
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="AspectRatioContainer" type="AspectRatioContainer" parent="Picker/RootControl/HBoxContainer" unique_id=1146931903]
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="Picker/RootControl/VBoxContainer/HBoxContainer" unique_id=1146931903]
 layout_mode = 2
+size_flags_vertical = 4
 
-[node name="ShowsWhatsPicked" type="Panel" parent="Picker/RootControl/HBoxContainer/AspectRatioContainer" unique_id=902361163]
+[node name="ShowsWhatsPicked" type="Panel" parent="Picker/RootControl/VBoxContainer/HBoxContainer/AspectRatioContainer" unique_id=902361163]
 custom_minimum_size = Vector2(120, 8)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_yo73f")
 
-[node name="vbox1" type="VBoxContainer" parent="Picker/RootControl/HBoxContainer/AspectRatioContainer" unique_id=1236084073]
+[node name="vbox1" type="VBoxContainer" parent="Picker/RootControl/VBoxContainer/HBoxContainer/AspectRatioContainer" unique_id=1236084073]
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
 theme_override_constants/separation = 100
 
-[node name="WeightName" type="Label" parent="Picker/RootControl/HBoxContainer" unique_id=1316413948]
+[node name="WeightName" type="Label" parent="Picker/RootControl/VBoxContainer/HBoxContainer" unique_id=1316413948]
 custom_minimum_size = Vector2(850, 200)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.1638613, 0.16386127, 0.16386127, 0.48235294)
@@ -172,7 +171,7 @@ text = "Demi"
 label_settings = SubResource("LabelSettings_2owf6")
 vertical_alignment = 1
 
-[node name="WeightNameHalf" type="Label" parent="Picker/RootControl/HBoxContainer/WeightName" unique_id=18957676]
+[node name="WeightNameHalf" type="Label" parent="Picker/RootControl/VBoxContainer/HBoxContainer/WeightName" unique_id=18957676]
 custom_minimum_size = Vector2(200, 80)
 layout_mode = 1
 offset_left = 10.0
@@ -186,7 +185,7 @@ text = "semi"
 label_settings = SubResource("LabelSettings_a1c30")
 vertical_alignment = 1
 
-[node name="GlyphsDone" type="Label" parent="Picker/RootControl/HBoxContainer/WeightName" unique_id=405420979]
+[node name="GlyphsDone" type="Label" parent="Picker/RootControl/VBoxContainer/HBoxContainer/WeightName" unique_id=405420979]
 custom_minimum_size = Vector2(300, 100)
 layout_mode = 1
 anchors_preset = 2
@@ -204,23 +203,19 @@ text = "0 / 48"
 label_settings = SubResource("LabelSettings_huysm")
 vertical_alignment = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="Picker/RootControl" unique_id=1346102480]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -200.0
-offset_right = 900.0
-grow_vertical = 0
+[node name="MarginContainer" type="MarginContainer" parent="Picker/RootControl/VBoxContainer" unique_id=1346102480]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 theme_override_constants/margin_left = 50
 theme_override_constants/margin_bottom = 50
 
-[node name="Panel" type="PanelContainer" parent="Picker/RootControl/MarginContainer" unique_id=1309633552]
+[node name="Panel" type="PanelContainer" parent="Picker/RootControl/VBoxContainer/MarginContainer" unique_id=1309633552]
 custom_minimum_size = Vector2(1300, 120)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_6lbom")
 
-[node name="LabelContainer" type="GridContainer" parent="Picker/RootControl/MarginContainer/Panel" unique_id=1008150357]
+[node name="LabelContainer" type="GridContainer" parent="Picker/RootControl/VBoxContainer/MarginContainer/Panel" unique_id=1008150357]
 layout_mode = 2
 theme_override_constants/h_separation = 40
 theme_override_constants/v_separation = 40

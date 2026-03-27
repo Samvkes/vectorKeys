@@ -319,7 +319,7 @@ public partial class Editor : CanvasLayer
     {
         if (CurrentFocus == EditorFocus.Workbench)
         {
-            CurrentGlyph.Contours = Workbench.Shapes.S;
+            CurrentGlyph.Shapes = Workbench.Shapes;
             Texture2D t = Workbench.PreviewTex;
             LetterMenu.CurrentlySelected.SetPreviewTexture(t);
             SaveGlyph(CurrentGlyph);
@@ -335,7 +335,7 @@ public partial class Editor : CanvasLayer
                 {
                     Glyph g = LoadGlyph(filePath);
                     LetterMenu.ShapeDict[glyph] = g;
-                    Texture2D t = Workbench.CreatePreviewTex(g.Contours);
+                    Texture2D t = Workbench.CreatePreviewTex(g.Shapes.S);
                     LetterMenu.PreviewDict[glyph].SetPreviewTexture(t);
                 }
             }
@@ -349,14 +349,14 @@ public partial class Editor : CanvasLayer
         Workbench.Visible = false;
     }
 
-    public void SwitchToWorkbench(List<Shape> contours)
+    public void SwitchToWorkbench(Shapes shapes)
     {
         CurrentFocus = EditorFocus.Workbench;
         ProjectPicker.ProcessMode = ProcessModeEnum.Pausable;
         LetterMenu.ProcessMode = ProcessModeEnum.Pausable;
         Workbench.ProcessMode = ProcessModeEnum.WhenPaused;
         // (Workbench.Shapes, Workbench.UndoRedo) = (CurrentGlyph.Contours, CurrentGlyph.Undos);
-        Workbench.Initialize(contours);
+        Workbench.Initialize(shapes);
         GD.Print("testing");
         Fun.Delayed(this, 0.1f, () =>
         {

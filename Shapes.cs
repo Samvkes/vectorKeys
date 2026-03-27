@@ -69,7 +69,7 @@ public struct HandlePointer(Anker a, bool inHandle)
         if (InHandle)
             return new(a, false);
         else
-            return  new(a.NextAnchor(), true);
+            return new(a.NextAnchor(), true);
     }
 
     public HandlePointer Previous()
@@ -102,9 +102,9 @@ public struct Segment(V2 inPoint, V2 inHandle, V2 outHandle, V2 outPoint)
     public void Flat(Span<float> s)
     {
         s = s[..8];
-        s[0] = InPoint.X; s[1] = InPoint.Y; 
-        s[2] = InHandle.X; s[3] = InHandle.Y; 
-        s[4] = OutHandle.X; s[5] = OutHandle.Y; 
+        s[0] = InPoint.X; s[1] = InPoint.Y;
+        s[2] = InHandle.X; s[3] = InHandle.Y;
+        s[4] = OutHandle.X; s[5] = OutHandle.Y;
         s[6] = OutPoint.X; s[7] = OutPoint.Y;
     }
 
@@ -176,7 +176,7 @@ public class Handle
     public Handle()
     {
     }
-    
+
     public HandlePointer Pointer()
     {
         return new(AdjacentAnchor, IsInHandle);
@@ -349,9 +349,9 @@ public class Anker
         // ang1 %= 2 * MathF.PI;
         // ang2 %= 2 * MathF.PI;
         // float avAng = (ang1 + ang2) / 2f + (.5f * MathF.PI);
-         
+
         //normalize!!!
-        if (MyShape.Anchors.Count <= 2 || !Auto) return; 
+        if (MyShape.Anchors.Count <= 2 || !Auto) return;
         Anker prev = PreviousAnchor();
         Anker next = NextAnchor();
         GV2 v1 = Fun.Vtv(V2.Normalize(Position - prev.Position));
@@ -395,7 +395,7 @@ public class Anker
         float maxLength = 300;
         InHandle.Angle = inhAng;
         OutHandle.Angle = outhAng;
-        InHandle.DistanceFromAnchor = MathF.Min(maxLength,Fun.Vtv(Position).DistanceTo(Fun.Vtv(PreviousAnchor().Position)) / 2.6f);
+        InHandle.DistanceFromAnchor = MathF.Min(maxLength, Fun.Vtv(Position).DistanceTo(Fun.Vtv(PreviousAnchor().Position)) / 2.6f);
         OutHandle.DistanceFromAnchor = MathF.Min(maxLength, Fun.Vtv(Position).DistanceTo(Fun.Vtv(NextAnchor().Position)) / 2.6f);
     }
 
@@ -518,7 +518,7 @@ public class Shape
     public bool Negative = false;
     public int[] BeziersPerAnchorPair = [];
 
-    public  int[] CornerRoundings()
+    public int[] CornerRoundings()
     {
         int[] cornerRoundings = [];
         foreach (Anker a in Anchors)
@@ -527,7 +527,7 @@ public class Shape
         }
         return cornerRoundings;
     }
-    
+
     public void ReverseShape()
     {
         foreach (var a in Anchors)
@@ -571,7 +571,7 @@ public class Shape
     public void AnchorsChanged()
     {
         AnchorsCached = false;
-        MyShapes.ShapesCached = false; 
+        MyShapes.ShapesCached = false;
     }
 
     public string GetLabel(Anker a)
@@ -632,7 +632,7 @@ public class Shape
             ReverseShape();
         }
     }
-    
+
     public void MakeClockwise()
     {
         if (!IsClockwise())
@@ -718,9 +718,9 @@ public class Shape
         if (IsHyperBoolean)
         {
             (Segments, BeziersPerAnchorPair) = Player.AnchorsToHyperBeziers(Anchors);
-            RoundedSegments = Editor.DebugSwitch 
-                ? Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair) 
-                : Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair); 
+            RoundedSegments = Editor.DebugSwitch
+                ? Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair)
+                : Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair);
 
             AnchorsCached = true;
             return rounded ? RoundedSegments : Segments;
@@ -796,6 +796,12 @@ public class Shapes
     public void LoadState(string serialized)
     {
         S = JsonSerializer.Deserialize<List<Shape>>(serialized, JsonOpts);
+        foreach (Shape s in S)
+        {
+            s.AnchorsCached = false;
+            s.MyShapes = this;
+        }
+        ShapesCached = false;
     }
 
     public void DeleteShape(Shape s)
@@ -896,11 +902,11 @@ public class Shapes
 
         foreach ((int bezIndex, V2 intersectCoord) in intersections)
         {
-            Anker anchorThatIntersectingBezierBelongsTo = shape.Anchors[0]; 
+            Anker anchorThatIntersectingBezierBelongsTo = shape.Anchors[0];
             if (shape.IsHyperBoolean)
             {
                 int[] bpa = shape.BeziersPerAnchorPair;
-                int c = 0; 
+                int c = 0;
                 int index = bezIndex;
                 foreach (int i in bpa)
                 {
@@ -933,7 +939,7 @@ public class Shapes
         // schrijf coordinaten weg naar dict als keys met segRound als value
         // ga na het mergen alle punten langs, check of ze in de buurt liggen van coords in de dict, zoja round het met de segRound value
         Segment[] firstShapeRounded = [];
-         firstShapeRounded = S[0].SegList(true);
+        firstShapeRounded = S[0].SegList(true);
 
         if (S.Count < 2) return firstShapeRounded.Length > 0 ? [firstShapeRounded] : [];
 
@@ -942,6 +948,10 @@ public class Shapes
         foreach (Shape shape in S[1..])
         {
             if (!shape.Finished) continue;
+            if (shape.Negative)
+                shape.MakeCounterClockWise();
+            else
+                shape.MakeClockwise();
             SKPathOp currentOperation = shape.Negative ? SKPathOp.Difference : SKPathOp.Union;
             Segment[] roundedShape = shape.SegList(true);
 
@@ -1126,7 +1136,7 @@ public class Shapes
     }
 
     public static (Segment[], V2, V2) TrimmedSegmentGroup(Segment[] segmentGroup, float inLength, float outLength)
-    { 
+    {
         V2 inTan = V2.Zero;
         V2 outTan = V2.Zero;
         List<Segment> trimmedFromFront = [];
@@ -1141,7 +1151,7 @@ public class Shapes
                 float remaining = inLength - trimmedSoFar;
                 (Segment trimmed, inTan, V2 _) = currentSeg.TrimmedTangentAndPos(remaining / segLength, 1.0f);
                 trimmedFromFront.Add(trimmed);
-                trimmedFromFront.AddRange(segmentGroup[(index+1)..]);
+                trimmedFromFront.AddRange(segmentGroup[(index + 1)..]);
                 break;
             }
             trimmedSoFar += segLength;
@@ -1157,7 +1167,7 @@ public class Shapes
                 float remaining = outLength - trimmedSoFar;
                 (Segment trimmed, V2 _, outTan) = currentSeg.TrimmedTangentAndPos(0.0f, 1.0f - (remaining / segLength));
                 trimmedFromBack.Add(trimmed);
-                trimmedFromBack.AddRange(trimmedFromFront[(index+1)..]);
+                trimmedFromBack.AddRange(trimmedFromFront[(index + 1)..]);
                 break;
             }
             trimmedSoFar += segLength;
@@ -1261,12 +1271,12 @@ public class Shapes
                 {
                     V2 inPointSmaller = inPoint + prevEndTan * (previousCorners.outCorner * .10f);
                     V2 outPointSmaller = outPoint - startTan * (currentCorners.inCorner * .10f);
-                    V2 inHandlePosSmaller  = inPointSmaller  + prevEndTan * (roundness * previousCorners.outCorner);
-                    V2 outHandlePosSmaller = outPointSmaller - startTan   * (roundness * currentCorners.inCorner);
+                    V2 inHandlePosSmaller = inPointSmaller + prevEndTan * (roundness * previousCorners.outCorner);
+                    V2 outHandlePosSmaller = outPointSmaller - startTan * (roundness * currentCorners.inCorner);
                     Segment ordinaryRounding = new(inPointSmaller, inHandlePosSmaller, outHandlePosSmaller, outPointSmaller);
 
-                    V2 inHandlePos  = inPoint  + prevEndTan * (roundness * previousCorners.outCorner * .8f);
-                    V2 outHandlePos = outPoint - startTan   * (roundness * currentCorners.inCorner * .8f);
+                    V2 inHandlePos = inPoint + prevEndTan * (roundness * previousCorners.outCorner * .8f);
+                    V2 outHandlePos = outPoint - startTan * (roundness * currentCorners.inCorner * .8f);
                     V2 middle = ordinaryRounding.PointAt(0.5f);
                     V2 inMidHandle = V2.Normalize(inPoint - outPoint) * (previousCorners.outCorner * .14f);
                     V2 outMidHandle = V2.Normalize(inPoint - outPoint) * (currentCorners.inCorner * .14f);
@@ -1275,8 +1285,8 @@ public class Shapes
                 }
                 else
                 {
-                    V2 inHandlePos  = inPoint  + prevEndTan * (roundness * previousCorners.outCorner);
-                    V2 outHandlePos = outPoint - startTan   * (roundness * currentCorners.inCorner);
+                    V2 inHandlePos = inPoint + prevEndTan * (roundness * previousCorners.outCorner);
+                    V2 outHandlePos = outPoint - startTan * (roundness * currentCorners.inCorner);
                     roundedSegments.Add(new(inPoint, inHandlePos, outHandlePos, outPoint));
                 }
             }
@@ -1355,8 +1365,8 @@ public class Shapes
                 && startTan != V2.Zero
             )
             {
-                V2 inHandlePos  = inPoint  + prevEndTan * (roundness * previousCorners.outCorner);
-                V2 outHandlePos = outPoint - startTan   * (roundness * currentCorners.inCorner);
+                V2 inHandlePos = inPoint + prevEndTan * (roundness * previousCorners.outCorner);
+                V2 outHandlePos = outPoint - startTan * (roundness * currentCorners.inCorner);
                 roundedSegments.Add(new(inPoint, inHandlePos, outHandlePos, outPoint));
             }
             else

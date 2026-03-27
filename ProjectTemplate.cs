@@ -8,7 +8,10 @@ public partial class ProjectTemplate : PanelContainer
     Label LastEditDate = null!;
     Label WeightsAxesCount = null!;
     Label GlyphsCount = null!;
+    StyleBoxFlat Selected = GD.Load<StyleBoxFlat>("res://assets/selectedProject.tres");
+    StyleBoxFlat Regular = GD.Load<StyleBoxFlat>("res://assets/regularProject.tres");
     Project project = null!;
+    public bool SelectedProject = false;
 
     public override void _Ready()
     {
@@ -26,6 +29,15 @@ public partial class ProjectTemplate : PanelContainer
     {
         project = p;
         UpdateInfo();
+    }
+
+    public void ToggleSelected()
+    {
+        SelectedProject = !SelectedProject;
+        if (SelectedProject)
+            AddThemeStyleboxOverride("panel", Selected);
+        else
+            AddThemeStyleboxOverride("panel", Regular);
     }
 
     public Project Project()
