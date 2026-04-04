@@ -244,12 +244,14 @@ ui fixing
 // rotated movement mode
 
 ----- 
+
 - refactor a bit
 - scrolling in menus / responsiveness in menus
 - show shortcuts
 - previews lettermenu
 - theming
 
+(
 -- workbench
 - multiple shapes
 - reference
@@ -258,3 +260,21 @@ ui fixing
 - italic angle grid
 - fix merging multiple shapes
 - measuring
+
+[] promt generator bovenaan ofzo
+[] undo / redo better  
+[] jumping to points?
+[] set mode for default placing whole or broken points, straight or cubic curve
+[] good scaling/rotating visually
+[] angles and lengths visible
+[] add square & circle
+[] mirroring
+
+[] knife
+[] skewing
+)
+
+file / project operations
+exporting
+testing
+[] sensible keymap

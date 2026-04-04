@@ -1,9 +1,10 @@
 using Godot;
 using System;
 using System.Collections.Concurrent;
-using Vectordrawing;
 using GV2 = Godot.Vector2;
 using V2 = System.Numerics.Vector2;
+
+namespace Vectordrawing;
 
 public partial class GlyphPreview : TextureRect
 {

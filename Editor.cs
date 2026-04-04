@@ -3,14 +3,12 @@ using System;
 using V2 = System.Numerics.Vector2;
 using GV2 = Godot.Vector2;
 using Snl = Vectordrawing.StringNamesList;
-using Vectordrawing;
-using System.Threading.Tasks;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
+
+namespace Vectordrawing;
 
 public struct FamilyConfig
 {
@@ -43,6 +41,8 @@ public record RawInput {
 
 public partial class Editor : CanvasLayer
 {
+    public int FrameCounter = 0;
+    public float Counter = 0;
     public Base Workbench = null!; 
     LetterMenu LetterMenu = null!; 
     ProjectPicker ProjectPicker = null!;
@@ -59,6 +59,7 @@ public partial class Editor : CanvasLayer
     float ValidHoldTime = .2f;
     bool StickyGuide = true;
     public WeightPicker weightP = null!;
+    public RichTextLabel FpsLabel = null!;
     ProjectPicker PPicker = null!;
     public Project? CurrentProject = null;
     public ProjectWeight? CurrentWeight = null;
@@ -66,6 +67,7 @@ public partial class Editor : CanvasLayer
     TextInput textInput = null!;
     public RawInput R = new();
     EditorFocus currentFocus = EditorFocus.ProjectPicker;
+    List<float> DeltaTimeList = new();
     public EditorFocus CurrentFocus
     {
         get { return currentFocus;}
@@ -112,6 +114,9 @@ public partial class Editor : CanvasLayer
         LetterMenu = (LetterMenu)FindChild("LetterMenu");
         ProjectPicker = (ProjectPicker)FindChild("ProjectPicker");
         UfoFilePicker = (FileDialog)FindChild("UfoFilePicker");
+        FpsLabel = new();
+        AddChild(FpsLabel);
+        FpsLabel = GetNode<RichTextLabel>("FpsLabel");
         Workbench.Visible = false;
         // LetterMenu.Visible = true;
         Workbench.ProcessMode = ProcessModeEnum.Pausable;
@@ -120,6 +125,8 @@ public partial class Editor : CanvasLayer
     
     public override void _Process(double delta)
     {
+        Counter += (float)delta;
+        FrameCounter += 1;
         if (TextInput.BeingEdited) return;
         if (Input.IsActionJustPressed(Snl.debug))
             DebugSwitch = !DebugSwitch;
@@ -197,6 +204,22 @@ public partial class Editor : CanvasLayer
             {
                 R.LetterPressed = R.Raw.Substr(6, 1);
             }
+        }
+    }
+
+    public void UpdateFpsLabel(float delta)
+    {
+        if (DeltaTimeList.Count > 30)
+            DeltaTimeList.RemoveAt(0);
+        DeltaTimeList.Add(delta);
+        if (FpsTimer.TimeLeft <= 0)
+        {
+            FpsTimer.Start();
+            float totalDelta = 0f;
+            float totalPoints = 0f;
+            foreach (float t in DeltaTimeList)
+                totalDelta += t;
+            FpsLabel.Text = Mathf.Round(1.0 / (totalDelta / DeltaTimeList.Count)).ToString();
         }
     }
 
@@ -335,7 +358,7 @@ public partial class Editor : CanvasLayer
                 {
                     Glyph g = LoadGlyph(filePath);
                     LetterMenu.ShapeDict[glyph] = g;
-                    Texture2D t = Workbench.CreatePreviewTex(g.Shapes.S);
+                    Texture2D t = Workbench.ui.CreatePreviewTex(g.Shapes.S);
                     LetterMenu.PreviewDict[glyph].SetPreviewTexture(t);
                 }
             }

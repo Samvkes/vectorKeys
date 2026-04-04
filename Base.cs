@@ -1,32 +1,13 @@
 using Godot;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Vectordrawing;
 using System.Numerics;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Data;
 using V2 = System.Numerics.Vector2;
 using GV2 = Godot.Vector2;
-using System.Diagnostics.Metrics;
-using System.ComponentModel;
-using System.Diagnostics;
 using Snl = Vectordrawing.StringNamesList;
-using System.Text;
-using System.Net.Sockets;
 using System.Globalization;
-using System.Xml.XPath;
-using System.Diagnostics.SymbolStore;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using SkiaSharp;
-using System.IO;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Vectordrawing;
 
@@ -110,18 +91,18 @@ public record Children(
     VBoxContainer VBox
 );
 
-public record UiState
-{
-    public V2 CursorOff = V2.Zero;
-    public Image CanvasImage = new();
-    public (V2, string)[] MeasurementText = [];
-    public float GridModifier = 4;
-    public float Zoom = 1f;
-    public float SelectionFadeOutTime = 1;
-    public float SinceLastSelected = 0;
-    public float CanvasScale = 1;
-    public float CanvasScaleGoal = 1;
-};
+// public record UiState
+// {
+//     public V2 CursorOff = V2.Zero;
+//     public Image CanvasImage = new();
+//     public (V2, string)[] MeasurementText = [];
+//     public float GridModifier = 4;
+//     public float Zoom = 1f;
+//     public float SelectionFadeOutTime = 1;
+//     public float SinceLastSelected = 0;
+//     public float CanvasScale = 1;
+//     public float CanvasScaleGoal = 1;
+// };
 
 public record InputState
 {
@@ -152,21 +133,14 @@ public partial class Base : Control
 {
     public static readonly UIConfig config = UIConfig.Default;
     public InputState input = new();
-    public UiState ui = new();
     public Children children = null!;
+    public WorkbenchUi ui = null!;
     Manager Manager = null!;
     Editor Ed = null!;
 
-    public static int FrameCounter = 0;
-    public static float Counter = 0;
-    List<float> DeltaTimeList = new();
-    Timer FpsTimer = new();
-    RichTextLabel FpsLabel = null!;
     PackedScene IndicatorScene = GD.Load<PackedScene>("res://shape_indicator.tscn");
     ShapeIndicator[] Indicators = new ShapeIndicator[10];
 
-    string LastFramesSvg = "";
-    Texture2D LastFramesTexture = new();
     public Shapes Shapes = new();
     public UndoRedo UndoRedo = null!;
     public Shape CurrentShape = null!;
@@ -185,8 +159,9 @@ public partial class Base : Control
     RawInput R = null!;
 
     FontFile LatestGlyphPreviewTtf = new();
-    PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3",
-                                      "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
+    // TODO
+    // PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3",
+    //                                   "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
 
     public override void _Ready()
     {
@@ -197,7 +172,6 @@ public partial class Base : Control
         AddChild(input.UndoTimer);
         input.UndoTimer.Timeout += DoUndoRedo;
         // AddChild(input.MovementTimer);
-        AddChild(FpsTimer);
 
         S0 = (RichTextLabel)FindChild("Size0");
         S1 = (RichTextLabel)FindChild("Size1");
@@ -216,14 +190,9 @@ public partial class Base : Control
             indicator.Visible = false;
         }
 
-        FpsTimer.WaitTime = 0.5f;
-        FpsTimer.OneShot = true;
-        FpsTimer.Start();
-
         Sprite2D _cursor = GetNode<Sprite2D>("Cursor");
         Control _controlroot = GetNode<Control>("ControlRoot");
         HBoxContainer _previewcontainer = (HBoxContainer)_controlroot.FindChild("PreviewContainer");
-        FpsLabel = GetNode<RichTextLabel>("FpsLabel");
         children = new(
             GetNode<Sprite2D>("Tex"),
             _cursor,
@@ -244,13 +213,19 @@ public partial class Base : Control
         // Fun.Repeatedly(this, 0.5f, () => {UpdatePreviews();});
     }
 
+    public WorkbenchUi NewUI()
+    {
+        return new WorkbenchUi(children, Shapes, this);
+    }
+
+    public void UpdateUI()
+    {
+    }
+
     public void Initialize(Shapes shapes)
     {
         PreviewTask?.Dispose();
-        ui = new();
-        LastFramesSvg = "";
-        LastFramesTexture = new();
-
+        ui = NewUI();
         input.MarkerPos = UIConfig.Default.Origin;
         input.CurrentMode = Mode.Editing;
         input.CurrentFocus = Focus.Anchor;
@@ -269,7 +244,7 @@ public partial class Base : Control
             CurrentShape = Shapes.NewShape();
         else
             CurrentShape = Shapes.S[0];
-        UpdateShapeIndicators();
+        UpdateUI();
         JustUnpaused = true;
     }
 
@@ -280,371 +255,31 @@ public partial class Base : Control
 
     public override void _Process(double doubleDelta)
     {
-        UpdatePreviews();
-        Task<Texture2D> createSvg = CreateSvgImage();
+        // TODO svg
+        // Task<Texture2D> createSvg = CreateSvgImage();
         HandleInput((float)doubleDelta);
         float delta = (float)doubleDelta;
-        Counter += delta;
 
-        UpdateUI(delta);
+        UpdateUI();
         if (Ed.Throttling)
             return;
 
         // SVG code goes here
-        SvgString.ClearString(ui.Zoom, config.Origin, config.WindowSize, input.MarkerPos, ui.CursorOff);
-        if (input.CurrentMode == Mode.Editing) DrawEditing();
-        else if (input.CurrentMode == Mode.Previewing) DrawPreviewing();
-        else if (input.CurrentMode == Mode.Selecting) DrawSelecting();
+        // TODO svg
+        // SvgString.ClearString(ui.Zoom, config.Origin, config.WindowSize, input.MarkerPos, ui.CursorOff);
+        // if (input.CurrentMode == Mode.Editing) DrawEditing();
+        // else if (input.CurrentMode == Mode.Previewing) DrawPreviewing();
+        // else if (input.CurrentMode == Mode.Selecting) DrawSelecting();
 
         SvgString.Finish();
 
-        createSvg.Wait();
-        children.Tex.Texture = createSvg.Result;
-        LastFramesSvg = SvgString.CurrentString.ToString();
-        LastFramesTexture = children.Tex.Texture;
+        // TODO svg
+        // createSvg.Wait();
+        // children.Tex.Texture = createSvg.Result;
+        // LastFramesSvg = SvgString.CurrentString.ToString();
+        // LastFramesTexture = children.Tex.Texture;
 
         QueueRedraw();
-    }
-
-    public void UpdatePreviews()
-    {
-        if (Shapes.S.Count <= 1)
-            return;
-        PreviewTask ??= fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
-        if (!PreviewTask.IsCompleted)
-            return;
-        LatestGlyphPreviewTtf.Data = PreviewTask.Result;
-        S0.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        S1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        S2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        S3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        PreviewTask = fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
-    }
-
-    public async Task<Texture2D> CreateSvgImage()
-    {
-        if (Ed.Throttling)
-            return LastFramesTexture;
-        if (LastFramesSvg == "") return new();
-        ui.CanvasImage.LoadSvgFromString(LastFramesSvg);
-        return ImageTexture.CreateFromImage(ui.CanvasImage);
-    }
-    // M workbenchUI
-    public void UpdateUI(float delta)
-    {
-        UpdateFpsLabel(delta);
-        ProcessCursor(delta);
-        if (Ed.Throttling)
-            return;
-        RenderThumbnails(delta);
-        DrawLayers(delta);
-        UpdateShapeIndicators();
-
-        // V2 newScale = V2.Lerp(Fun.Vtv(children.FocusIdentifier.Scale), new(1.0f, 1.0f), delta * 30);
-        // children.FocusIdentifier.Scale = Fun.Vtv(newScale);
-    }
-    // M workbenchUI
-    public void UpdateShapeIndicators()
-    {
-        if (input.CurrentMode != Mode.Editing)
-        {
-            foreach (ShapeIndicator indicator in Indicators)
-                indicator.Visible = false;
-            return;
-        }
-
-        int c = -1;
-        foreach (ShapeIndicator indicator in Indicators)
-        {
-            c += 1;
-            if (c > Shapes.S.Count - 1 || Shapes.S[c].Anchors.Count < 3)
-            {
-                indicator.Visible = false;
-                continue;
-            }
-            Shape s = Shapes.S[c];
-            V2 p0 = s.SegList()[0].InPoint;
-            V2 p1 = s.SegList()[0].OutPoint;
-            V2 p2 = s.SegList()[^1].InPoint;
-            V2 p3 = p0 - p1;
-            V2 p4 = p0 - p2;
-            V2 d = (V2.Normalize(p3) + V2.Normalize(p4)) / 2f;
-            d = d.Length() > 0 ? d : V2.Transform(p3, Matrix3x2.CreateRotation(MathF.PI / 2));
-            p0 += V2.Normalize(d) * 30;
-            indicator.Visible = true;
-            indicator.Position = Fun.Vtv(p0);
-            indicator.SetAngle(Fun.Vtv(d).Angle());
-        }
-    }
-    // M workbenchUI
-    public void UpdateFpsLabel(float delta)
-    {
-        if (DeltaTimeList.Count() > 30)
-            DeltaTimeList.RemoveAt(0);
-        DeltaTimeList.Add(delta);
-        if (FpsTimer.TimeLeft <= 0)
-        {
-            FpsTimer.Start();
-            float totalDelta = 0f;
-            float totalPoints = 0f;
-            foreach (float t in DeltaTimeList)
-                totalDelta += t;
-            FpsLabel.Text = Mathf.Round(1.0 / (totalDelta / DeltaTimeList.Count())).ToString() + " : " + totalPoints.ToString();
-            foreach (Shape s in Shapes.S)
-                totalPoints += s.Anchors.Count;
-        }
-    }
-
-    public void DrawLayers(float delta)
-    {
-        Image tempImage = new();
-        int shapeCounter = 0;
-        V2 size = new(90, 90);
-        float f = size.Y / config.WindowSize.Y;
-        // float margin = .02f;
-        // f -= margin;
-
-        foreach (TextureRect nde in children.VBox.GetChildren())
-        {
-            string currentString = (
-                $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{size.X}\" height=\"{size.Y}\" >" +
-                $"<g transform=\"scale({f}) translate(0,0) rotate(0)\">" +
-                $"<g transform=\"scale(1) translate(0,0) rotate(0)\">");
-
-            // currentString += (
-            //     $"<circle cx=\"{config.Origin.X}\" cy=\"{config.Origin.Y}\" r=\"{400}\" " + 
-            //     $"fill=\"{"black"}\" stroke=\"{"black"}\" fill-opacity=\"{0.5f}\" stroke-opacity=\"{0.5f}\" stroke-width=\"{0}\"/>"
-            // );
-
-            if (shapeCounter < Shapes.S.Count)
-            {
-                Shape currentShape = Shapes.S[shapeCounter];
-                if (currentShape.Anchors.Count < 3)
-                {
-                    continue;
-                }
-                if (currentShape == CurrentShape)
-                {
-                    float l = 0;
-                    currentString += (
-                        $"<path d=\"M {l} {0} L {config.WindowSize.X - l} {0}\"" +
-                        $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
-                    );
-                    currentString += (
-                        $"<path d=\"M {l} {config.WindowSize.Y} L {config.WindowSize.X - l} {config.WindowSize.Y}\"" +
-                        $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
-                    );
-
-                }
-                Segment[] s = currentShape.SegList();
-                float[] startSeg = s[0].Flat();
-                currentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
-                int innerCounter = 0;
-                foreach (Segment seg in s)
-                {
-                    float[] flatSeg = seg.Flat();
-                    currentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
-                    if (innerCounter != s.Length - 1)
-                    {
-                        currentString += ",";
-                    }
-                    currentString += " ";
-                    innerCounter += 1;
-                }
-                currentString += $"Z\" ";
-                if (currentShape.Negative)
-                    currentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"0.2\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
-                else
-                    currentString += " fill =\"gray\" stroke =\"black\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
-                currentString += Shapes.S[shapeCounter];
-            }
-            currentString += (
-                "</g></g></svg>"
-            );
-            tempImage.LoadSvgFromString(currentString);
-            nde.Texture = ImageTexture.CreateFromImage(tempImage);
-            nde.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-
-            shapeCounter += 1;
-        }
-    }
-    // M svgstring
-    public void RenderThumbnails(float delta)
-    {
-        V2 size = new(260, 260);
-        Image thumbnail = DrawThumbnail(size);
-        Image prevthumb = new();
-        prevthumb.CopyFrom(thumbnail);
-
-        children.BigPreview.Texture = ImageTexture.CreateFromImage(thumbnail);
-        children.BigPreview.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-
-        prevthumb.Resize((int)size.X / 3, (int)size.Y / 3);
-        prevthumb.AdjustBcs(0.2f, 1, 1);
-        PreviewTex = ImageTexture.CreateFromImage(prevthumb);
-    }
-
-    public Texture2D CreatePreviewTex(List<Shape> contours)
-    {
-        V2 size = new(100, 100);
-
-        float f = size.Y / config.WindowSize.Y;
-        float margin = .02f;
-        f -= margin;
-
-        SvgString.ClearString(f, (size * (margin / f)) / 2, size, input.MarkerPos, ui.CursorOff);
-        SvgString.SetStyle(Style.ShapePreviewWhite);
-        Shapes.S = contours;
-        Shapes.ShapesCached = false;
-        SvgString.AddSegmentsGroup(Shapes.GetMergedShapes());
-        Shapes.S = [];
-        SvgString.Finish();
-
-        Image thumbnail = new();
-        thumbnail.LoadSvgFromString(SvgString.CurrentString.ToString());
-        thumbnail.AdjustBcs(0.2f, 1, 1);
-
-        return ImageTexture.CreateFromImage(thumbnail);
-    }
-
-    public void ProcessCursor(float delta)
-    {
-        if (ui.Zoom <= 1)
-        {
-            children.Cursor.Position = Fun.Vtv(V2.Lerp(
-                Fun.Vtv(children.Cursor.Position),
-                ((input.MarkerPos + ui.CursorOff) * ui.Zoom) + (config.Origin * (1f - ui.Zoom)),
-                MathF.Min(delta, 0.1f) * 20f));
-        }
-        else
-        {
-            children.Cursor.Position = Fun.Vtv(config.Origin + ui.CursorOff);
-        }
-        children.Cursor.Scale = Fun.Vtv(V2.Lerp(
-            Fun.Vtv(children.Cursor.Scale),
-            new V2(.9f, .9f),
-            MathF.Min(delta, 0.1f) * 10));
-        if (children.Cursor.Scale.Length() < new V2(.85f, .85f).Length())
-        {
-            children.Cursor.Rotation = children.Cursor.Position.AngleToPoint(Fun.Vtv((input.MarkerPos * ui.Zoom) + (config.Origin * (1 - ui.Zoom))));
-        }
-
-        children.CursorLabel.Position = children.Cursor.Position + new GV2(30, 30);
-        children.CursorLabel.Text = input.MarkerPos.X.ToString() + ", " + input.MarkerPos.Y.ToString();
-        children.CursorLabel.Size = new(0, 10);
-    }
-    // M workbenchUI
-    private void _DrawAngledMoveGuide()
-    {
-        V2 a = CurrentShape.Segments[^2].TangentAt(0.99f);
-        V2 l = CurrentShape.Anchors.Last().Position;
-        float tanAng = Fun.Vtv(a).Angle();
-        float mAng = Fun.Vtv(input.MarkerPos - l).Angle();
-        if (tanAng < mAng)
-        {
-            mAng -= MathF.Tau;
-        }
-        float diff = Mathf.Abs(tanAng - mAng);
-        GD.Print("tan: " + tanAng + "  mang: " + mAng + "  dif:" + diff);
-        float d = MathF.Min(V2.Distance(input.MarkerPos, l), 100);
-        DrawLine(Fun.Vtv(input.MarkerPos), Fun.Vtv(l), Colors.Red, 1);
-        DrawLine(Fun.Vtv(l), Fun.Vtv(l + a * d), Colors.Red, 1);
-        DrawArc(Fun.Vtv(l), d, tanAng, mAng, (int)(2 + 8 * MathF.Abs(diff / MathF.Tau)), Colors.Red, 2);
-        DrawString(config.MediumFont, Fun.Vtv(l + a * (d + 30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
-    }
-    // M workbenchUI
-    private void _DrawGrid()
-    {
-        V2 drawnGridSize = new(ui.Zoom * ui.GridModifier * config.GridSize);
-        GV2 gridAdjustment = -new GV2(20, 64);
-        if (ui.Zoom > 1)
-        {
-            gridAdjustment -= new GV2(0, 128);
-        }
-        if (ui.Zoom < 1)
-        {
-            gridAdjustment = new(32, 32);
-        }
-        for (int i = 0; i < (config.WindowSize.X / drawnGridSize.X) + 30; i++)
-        {
-            DrawLine(
-                new GV2(0, i * drawnGridSize.X - gridAdjustment.Y),
-                new GV2(5000, i * drawnGridSize.X - gridAdjustment.Y), config.GridColor, 1.5f, true);
-        }
-        for (int i = 0; i < (config.WindowSize.Y / drawnGridSize.Y) + 30; i++)
-        {
-            DrawLine(
-                new GV2(i * drawnGridSize.Y - gridAdjustment.X, 0),
-                new GV2(i * drawnGridSize.Y - gridAdjustment.X, 5000), config.GridColor, 1.5f, true);
-        }
-    }
-    // M workbenchUI
-    private void _DrawMeasurements()
-    {
-        Color bcol = config.BackgroundColor;
-        foreach ((V2 pos, string text) t in ui.MeasurementText)
-        {
-            DrawRect(new(t.pos.X - 24, t.pos.Y - 22, 10 + 13 * t.text.Length, 30), bcol);
-            DrawString(config.MediumFont, Fun.Vtv(t.pos) - new GV2(20, 0), t.text, fontSize: 24, modulate: Colors.Black);
-        }
-    }
-    // M workbenchUI
-    private void _DrawLettersAtAnchors()
-    {
-        char c = 'a';
-        string tallLetters = "htldfiklb";
-        string deepLetters = "qypg";
-        foreach (Vectordrawing.Anker a in CurrentShape.Anchors)
-        {
-            Color charColor = Colors.Black;
-            Color shadowColor = Colors.Black;
-            Color bcol = config.BackgroundColor;
-            if (SelectedAnchors.Contains(a))
-            {
-                // charColor = Colors.;
-                bcol = Colors.Orange;
-                shadowColor = Colors.Red;
-            }
-            bcol.A = ui.SinceLastSelected / ui.SelectionFadeOutTime;
-            charColor.A = ui.SinceLastSelected / ui.SelectionFadeOutTime;
-            V2 p = a.Position;
-            if (ui.Zoom <= 1)
-            {
-                p = (p * ui.Zoom) + config.Origin * (1f - ui.Zoom);
-            }
-            else
-            {
-                p -= config.Origin - 1.3333f * (config.Origin - input.MarkerPos);
-                p *= ui.Zoom;
-                p += config.Origin - 1.3333f * (config.Origin - input.MarkerPos);
-                p -= new V2(4, -5);
-            }
-            V2 letterOffset = new(-9, 7);
-            V2 totalOffset = new(0, 0);
-            var pp = a.OutHandle.Position();
-            var ppp = a.InHandle.Position();
-            Color bc = new(bcol.R - .2f, bcol.G - .1f, bcol.B - .1f, 0.9f);
-            if (tallLetters.Contains(c)) letterOffset += new V2(0, 3);
-            if (deepLetters.Contains(c)) letterOffset -= new V2(0, 3);
-            DrawRect(new(Fun.Vtv(p - new V2(12, 16) + totalOffset), new GV2(24, 30)), bcol);
-            DrawChar(config.MediumFont, Fun.Vtv(p + letterOffset + totalOffset), c.ToString(), 30, charColor);
-            c = (char)((int)c + 1);
-        }
-    }
-    // M workbenchUI
-    public override void _Draw()
-    {
-        if (input.CurrentMode == Mode.Editing)
-        {
-            if (!(ui.Zoom < 1 && ui.GridModifier < 2f)) _DrawGrid();
-            if (input.AngledMoveMode) _DrawAngledMoveGuide();
-            _DrawMeasurements();
-        }
-
-        else if (input.CurrentMode != Mode.Previewing)
-        {
-            _DrawLettersAtAnchors();
-        }
     }
 
     void HandleLayerSwitching()
@@ -1264,323 +899,6 @@ public partial class Base : Control
     public void DoUndoRedo()
     {
         input.CanUndoAgain = true;
-    }
-    // M svgstring
-    public void DrawPreviewing(bool white = false)
-    {
-        if (white)
-        {
-            SvgString.SetStyle(Style.ShapePreviewWhite);
-        }
-        else
-        {
-            SvgString.SetStyle(Style.ShapePreview);
-        }
-        if (config.Debug)
-        {
-            var mgs = Shapes.GetMergedShapes();
-            if (mgs.Length > 0)
-                SvgString.AddSegmentsDebug(Shapes.GetMergedShapes()[0]);
-        }
-        else
-            SvgString.AddSegmentsGroup(Shapes.GetMergedShapes());
-    }
-    // M svgstring
-    public void DrawGuides(float opac = 0.5f, float lesserOpac = 0.12f, float fwi = 2.0f)
-    {
-        // draw guides
-        V2 orig = config.Origin;
-        if (ui.Zoom > 1)
-        {
-            fwi /= 2;
-        }
-        else if (ui.Zoom < 1)
-        {
-            fwi *= 1.5f;
-        }
-        float zero = -5000;
-        SvgString.AddLine(new V2(zero, orig.Y + config.AscenderLineHeight), new V2(5000, orig.Y + config.AscenderLineHeight), sWidth: fwi, sOpacity: lesserOpac);
-        SvgString.AddLine(new V2(zero, orig.Y + config.DescenderLineHeight), new V2(5000, orig.Y + config.DescenderLineHeight), sWidth: fwi, sOpacity: lesserOpac);
-
-        SvgString.AddLine(new V2(orig.X + config.LeftWidthLine, zero), new V2(orig.X + config.LeftWidthLine, 5000), stroke: "rgb(204,204,204)", sWidth: 20, sOpacity: 1.0f);
-        SvgString.AddLine(new V2(orig.X + config.LeftWidthLine, zero), new V2(orig.X + config.LeftWidthLine, 5000), sWidth: fwi, sOpacity: opac);
-        SvgString.AddLine(new V2(orig.X + config.RightWidthLine, zero), new V2(orig.X + config.RightWidthLine, 5000), stroke: "rgb(204,204,204)", sWidth: 20, sOpacity: 1.0f);
-        SvgString.AddLine(new V2(orig.X + config.RightWidthLine, zero), new V2(orig.X + config.RightWidthLine, 5000), sWidth: fwi, sOpacity: opac);
-
-        SvgString.AddLine(new V2(zero, orig.Y + config.XLineHeight), new V2(5000, orig.Y + config.XLineHeight), stroke: "rgb(204,204,204)", sWidth: 20, sOpacity: 1);
-        SvgString.AddLine(new V2(zero, orig.Y + config.XLineHeight), new V2(5000, orig.Y + config.XLineHeight), sWidth: fwi, sOpacity: opac);
-
-        SvgString.AddLine(new V2(zero, orig.Y + config.BaseLineHeight), new V2(5000, orig.Y + config.BaseLineHeight), stroke: "rgb(204,204,204)", sWidth: 20, sOpacity: 1);
-        SvgString.AddLine(new V2(zero, orig.Y + config.BaseLineHeight), new V2(5000, orig.Y + config.BaseLineHeight), sWidth: fwi, sOpacity: opac);
-    }
-    // M svgstring
-    public void DrawEditing()
-    {
-        DrawGuides(opac: 0.3f, fwi: 3f);
-        float[] radiusSizes = [6, 12];
-        float[] widths = [1, 3];
-        if (ui.Zoom > 1)
-        {
-            radiusSizes = [3, 4];
-            widths = [0.5f, 1.0f];
-        }
-        else if (ui.Zoom < 1)
-        {
-            radiusSizes = [12, 32];
-            widths = [2f, 6f];
-        }
-        // draw unmerged shape underlays
-        if (CurrentShape.Anchors.Count == 0)
-        {
-            return;
-        }
-
-        Segment[][] sss = Shapes.GetMergedShapes();
-        // SvgString.SetStyle(Style.ShapeUnderlay);
-        // SvgString.AddSegmentsGroup(sss);
-
-        foreach (Shape s in Shapes.S)
-        {
-            if (s.Anchors.Count < 3) continue;
-
-            if (s.Negative)
-            {
-                // SvgString.SetStyle(Style.ShapeShadow);
-                // SvgString.AddSegments(s.SegList());
-                SvgString.SetStyle(Style.ShapeNegative);
-            }
-            else
-            {
-                // SvgString.SetStyle(Style.ShapeShadow);
-                // SvgString.AddSegments(s.SegList());
-                SvgString.SetStyle(Style.ShapeUnchanged);
-            }
-
-            if (config.Debug)
-                SvgString.AddSegmentsDebug(s.SegList());
-            else
-                SvgString.AddSegments(s.SegList());
-        }
-
-        foreach (Shape s in Shapes.S)
-        {
-            if (s.Anchors.Count < 3) continue;
-
-            if (s.Negative)
-            {
-                SvgString.SetStyle(Style.ShapeShadow);
-                SvgString.AddSegments(s.SegList(true));
-                SvgString.SetStyle(Style.ShapeNegative);
-            }
-            else
-            {
-                SvgString.SetStyle(Style.ShapeShadow);
-                SvgString.AddSegments(s.SegList(true));
-                SvgString.SetStyle(Style.ShapeUnchanged);
-            }
-
-            if (config.Debug)
-                SvgString.AddSegmentsDebug(s.SegList());
-            else
-                SvgString.AddSegments(s.SegList(true));
-        }
-        SvgString.SetStyle(Style.ShapeOverShadow);
-        SvgString.AddSegmentsGroup(sss);
-        if (CurrentShape.Anchors.Count >= 3)
-        {
-            SvgString.SetStyle(Style.ShapeUnchangedSelected);
-            SvgString.AddSegments(CurrentShape.SegList(true));
-        }
-
-        if (CurrentShape.Finished && false)
-        {
-            V2 tan = Fun.Vtv(Player.ProjectOnShapeTangent(sss[0], input.MarkerPos));
-            tan = V2.Transform(tan, Matrix3x2.CreateRotation(MathF.PI * .5f));
-            V2 lineStart = input.MarkerPos - tan * 2000;
-            V2 lineEnd = input.MarkerPos + tan * 2000;
-            ui.MeasurementText = [];
-            int pointcount = 0;
-            foreach (Segment[] s in sss)
-            {
-                pointcount += s.Length;
-                Segment measure = new(lineStart, lineStart, lineEnd, lineEnd);
-                GV2[] inters = Player.SegmentShapeIntersections(s, measure);
-                List<V2> il = [];
-                foreach (GV2 gv in inters)
-                    il.Add(Fun.Vtv(gv));
-                il.Sort(CompareVectors);
-                for (int i = 0; i < il.Count; i++)
-                {
-                    V2 current = il[i];
-                    if (i < il.Count - 1)
-                    {
-                        V2 next = il[i + 1];
-                        int d = (int)V2.Distance(current, next);
-                        V2 halfway = (current + next) / 2.0f;
-                        ui.MeasurementText = [.. ui.MeasurementText, new(halfway, d.ToString())];
-                    }
-                    SvgString.AddCircle(current, 7, fill: "red", fOpacity: 0.5f, sWidth: 0);
-                }
-            }
-            SvgString.AddLine(lineStart, lineEnd);
-            // GD.Print($"point count: {pointcount}");
-        }
-        var lot = Shapes.ListOfTangents(sss);
-
-
-        // draw ui overlays (anchors and handles)
-        foreach (Shape s in Shapes.S)
-        {
-
-            if (false && s == CurrentShape)
-            {
-                SvgString.SetStyle(Style.ShapeSelected);
-                if (s.Anchors.Count > 2)
-                {
-                    SvgString.AddSegments(s.SegList(), false);
-                }
-            }
-            foreach (Anker a in s.Anchors)
-            {
-
-                // draw anchors
-                // visualize anchor selection
-                // visualize anchor type
-                if (SelectedAnchors.Contains(a))
-                {
-                    SvgString.AddCircle(a.Position, radiusSizes[1] + 8, fill: "red", fOpacity: 0.2f, sOpacity: 1.0f, sWidth: widths[0]);
-                }
-                else if (SelectedHandles.Contains(a.InHandle.Pointer()) || SelectedHandles.Contains(a.OutHandle.Pointer()))
-                {
-                    SvgString.AddCircle(a.Position, radiusSizes[1], fill: "white", fOpacity: 0.3f, sOpacity: 1.0f, sWidth: widths[0]);
-                }
-                else
-                {
-                    SvgString.AddCircle(a.Position, radiusSizes[0], fOpacity: 0, sOpacity: 1.0f, sWidth: widths[0]);
-                }
-
-                // draw handles
-                // visualize handle selection
-                // visualize handle type
-                if (s == CurrentShape)
-                {
-                    float strobing = (MathF.Sin(Counter * 2) + 1) / 2;
-                    strobing = .5f;
-
-                    if (SelectedHandles.Contains(a.InHandle.Pointer()))
-                    {
-                        SvgString.AddLine((2 * a.Position + a.InHandle.Position()) / 3, a.InHandle.Position(), stroke: "black", sOpacity: .5f);
-                        SvgString.AddCircle(a.InHandle.Position(), radiusSizes[1] - 2, fill: "white", stroke: "black", fOpacity: 1.0f, sOpacity: 1.0f, sWidth: widths[1]);
-                    }
-                    else
-                    {
-                        if (input.CurrentFocus == Focus.Handle)
-                        {
-                            SvgString.AddLine((2 * a.Position + a.InHandle.Position()) / 3, a.InHandle.Position(), stroke: "black", sOpacity: .5f);
-                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f, sOpacity: 1f, sWidth: widths[0]);
-                        }
-                        else
-                            SvgString.AddCircle(a.InHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f * strobing, sOpacity: 1f * strobing, sWidth: widths[0]);
-                    }
-
-                    if (SelectedHandles.Contains(a.OutHandle.Pointer()))
-                    {
-                        SvgString.AddLine((2 * a.Position + a.OutHandle.Position()) / 3, a.OutHandle.Position(), stroke: "black", sOpacity: .5f);
-                        SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[1] - 2, fill: "white", stroke: "black", fOpacity: 1.0f, sOpacity: 1.0f, sWidth: widths[1]);
-                    }
-                    else
-                    {
-                        if (input.CurrentFocus == Focus.Handle)
-                        {
-                            SvgString.AddLine((2 * a.Position + a.OutHandle.Position()) / 3, a.OutHandle.Position(), stroke: "black", sOpacity: .5f);
-                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f, sOpacity: 1f, sWidth: widths[0]);
-                        }
-                        else
-                            SvgString.AddCircle(a.OutHandle.Position(), radiusSizes[0] + 1, fill: "black", stroke: "white", fOpacity: .4f * strobing, sOpacity: 1f * strobing, sWidth: widths[0]);
-                    }
-
-                }
-            }
-        }
-    }
-    // M util
-    int CompareVectors(V2 one, V2 two)
-    {
-        if (one.X > two.X)
-            return 1;
-        else if (one.X < two.X)
-            return -1;
-        else
-        {
-            return (int)(one.Y - two.Y);
-        }
-    }
-    // M svgstring
-    public Image DrawThumbnail(V2 size)
-    {
-        float f = size.Y / config.WindowSize.Y;
-        float margin = .02f;
-        f -= margin;
-
-        SvgString.ClearString(f, (size * (margin / f)) / 2, size, input.MarkerPos, ui.CursorOff);
-
-        DrawPreviewing(true);
-        SvgString.Finish();
-        Image thumbnail = new();
-        thumbnail.LoadSvgFromString(SvgString.CurrentString.ToString());
-        return thumbnail;
-    }
-    // M svgstring
-    public void DrawSelecting()
-    {
-        DrawGuides(0.04f, 0.04f, 8);
-        float[] radiusSizes = [6, 16];
-        float[] widths = [1, 3];
-        if (ui.Zoom > 1)
-        {
-            radiusSizes = [3, 4];
-            widths = [0.5f, 1.0f];
-        }
-        else if (ui.Zoom < 1)
-        {
-            radiusSizes = [12, 32];
-            widths = [2f, 6f];
-        }
-        foreach (Shape s in Shapes.S)
-        {
-            if (s.Anchors.Count <= 1) continue;
-
-            if (s.Negative)
-            {
-                SvgString.SetStyle(Style.ShapeNegative);
-            }
-            else
-            {
-                SvgString.SetStyle(Style.ShapeUnchanged);
-            }
-
-            SvgString.AddSegments(s.SegList(), false);
-        }
-
-        foreach (Shape s in Shapes.S)
-        {
-            if (s != CurrentShape) continue;
-            SvgString.SetStyle(Style.ShapeSelected);
-            SvgString.AddSegments(s.SegList(), false);
-
-            foreach (Anker a in s.Anchors)
-            {
-
-                // draw anchors
-                // visualize anchor selection
-                // visualize anchor type
-                SvgString.AddCircle(a.Position, radiusSizes[0], fOpacity: 0, sOpacity: 1.0f, sWidth: 1);
-
-                // draw handles
-                // visualize handle selection
-                // visualize handle type
-            }
-        }
     }
 
 }

@@ -15,6 +15,17 @@ static class C
 
 static class Fun
 {
+    public static int CompareVectors(V2 one, V2 two)
+    {
+        if (one.X > two.X)
+            return 1;
+        else if (one.X < two.X)
+            return -1;
+        else
+        {
+            return (int)(one.Y - two.Y);
+        }
+    }
     public static async void Delayed(this Node nde, float seconds, Action fun)
     {
         await nde.ToSignal(nde.CreateTween().TweenInterval(seconds), Tween.SignalName.Finished);
