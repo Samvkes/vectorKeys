@@ -18,7 +18,7 @@ config/name="vectordrawing"
 run/main_scene="uid://c5ar5y8ypxffx"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 run/low_processor_mode_sleep_usec=8000
-config/icon="res://icon.svg"
+config/icon="res://assets/images/icon.svg"
 
 [audio]
 
@@ -26,7 +26,7 @@ driver/output_latency=5
 
 [autoload]
 
-Globl="*res://globl.gd"
+Globl="*res://scripts/gdscript/globl.gd"
 Glob="*uid://cbx05eprgwjjr"
 
 [display]

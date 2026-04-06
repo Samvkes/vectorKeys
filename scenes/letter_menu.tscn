@@ -1,0 +1,213 @@
+[gd_scene format=3 uid="uid://cdcixq0vahlub"]
+
+[ext_resource type="Script" uid="uid://xepgylwt0u8t" path="res://scripts/csharp/LetterMenu.cs" id="1_yqmqq"]
+[ext_resource type="FontFile" uid="uid://cp6ap3relqd7k" path="res://assets/fonts/DraftingMono/DraftingMono-Regular.otf" id="2_yqmqq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8te5t"]
+content_margin_left = 15.0
+content_margin_top = 5.0
+content_margin_right = 15.0
+content_margin_bottom = 5.0
+bg_color = Color(0.8, 0.8, 0.8, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0.48, 0, 0.08800003, 0.79607844)
+shadow_offset = Vector2(0, 10)
+
+[sub_resource type="LabelSettings" id="LabelSettings_ov2ge"]
+font = ExtResource("2_yqmqq")
+font_size = 30
+font_color = Color(0.0430391, 0.043039143, 0.04303936, 0.78431374)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yqmqq"]
+bg_color = Color(0.8, 0.8, 0.8, 1)
+
+[sub_resource type="Gradient" id="Gradient_grb7b"]
+offsets = PackedFloat32Array(0, 0.07289294, 0.9407745, 1)
+colors = PackedColorArray(0.8001508, 0.8001509, 0.8001508, 1, 0.8001508, 0.8001509, 0.8001508, 0.021596253, 0.8001508, 0.8001509, 0.8001508, 0, 0.8001508, 0.8001509, 0.8001508, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_yqmqq"]
+gradient = SubResource("Gradient_grb7b")
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ov2ge"]
+bg_color = Color(0.42, 0.42, 0.42, 0.34901962)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grb7b"]
+bg_color = Color(0.5411783, 0.4961679, 0.58665544, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="Gradient" id="Gradient_d55ov"]
+offsets = PackedFloat32Array(0.16059226, 0.39749432, 0.9977221)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.019607844, 1, 1, 1, 0.12156863)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ov2ge"]
+gradient = SubResource("Gradient_d55ov")
+fill_from = Vector2(0.55982906, 1)
+fill_to = Vector2(0.59615386, 0)
+
+[node name="LetterMenu" type="Control" unique_id=487394795]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_yqmqq")
+
+[node name="CurrentTitle" type="HBoxContainer" parent="." unique_id=2036734254]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -383.0
+offset_top = -100.0
+offset_right = 383.0
+offset_bottom = -52.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Name" type="Label" parent="CurrentTitle" unique_id=1726319239]
+z_index = 1000
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24296618, 0.24296564, 0.24296573, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_8te5t")
+text = "vouwfiets mono"
+label_settings = SubResource("LabelSettings_ov2ge")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Weight" type="Label" parent="CurrentTitle" unique_id=502564652]
+z_index = 1000
+layout_mode = 2
+theme_override_colors/font_color = Color(0.87545645, 0.8754565, 0.87545645, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_8te5t")
+text = "Medium"
+label_settings = SubResource("LabelSettings_ov2ge")
+vertical_alignment = 1
+
+[node name="Axes" type="Label" parent="CurrentTitle" unique_id=1944087078]
+z_index = 1000
+layout_mode = 2
+theme_override_colors/font_color = Color(0.87545645, 0.8754565, 0.87545645, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_8te5t")
+text = "italic, wide, beautfiful, strange, scary"
+label_settings = SubResource("LabelSettings_ov2ge")
+vertical_alignment = 1
+
+[node name="Panel" type="Panel" parent="." unique_id=542962232]
+z_index = -2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqmqq")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=1580574079]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+vertical_scroll_mode = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer" unique_id=236758210]
+custom_minimum_size = Vector2(1000, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 70
+theme_override_constants/margin_top = 100
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer" unique_id=550137127]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=942084907]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_yqmqq")
+
+[node name="MarginContainer2" type="MarginContainer" parent="." unique_id=312275531]
+custom_minimum_size = Vector2(600, 800)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -250.0
+offset_bottom = 250.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 100
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+
+[node name="PreviewContainer" type="PanelContainer" parent="MarginContainer2" unique_id=606828721]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ov2ge")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer2/PreviewContainer" unique_id=633064253]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="GlyphPreview" type="TextureRect" parent="MarginContainer2/PreviewContainer/MarginContainer" unique_id=878504632]
+layout_mode = 2
+
+[node name="Selector" type="Panel" parent="." unique_id=1431353534]
+z_index = -2
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 100.0
+rotation = -0.00173422
+theme_override_styles/panel = SubResource("StyleBoxFlat_grb7b")
+
+[node name="MarginContainer2" type="MarginContainer" parent="Selector" unique_id=2116815989]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
+
+[node name="TextureRect" type="TextureRect" parent="Selector/MarginContainer2" unique_id=1231425518]
+z_index = 1
+layout_mode = 2
+texture = SubResource("GradientTexture2D_ov2ge")

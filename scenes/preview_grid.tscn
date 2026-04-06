@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://dwrk5ks82jtd6"]
+
+[ext_resource type="Script" uid="uid://s27c17ft8a8m" path="res://scripts/csharp/PreviewGrid.cs" id="1_7qyjp"]
+[ext_resource type="FontFile" uid="uid://cxbup0l5ngyia" path="res://assets/fonts/DraftingMono/DraftingMono-LightItalic.otf" id="1_oprf2"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_7qyjp"]
+color = Color(0, 0, 0, 0.11764706)
+grow_end = 3.0
+thickness = 2
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_oprf2"]
+color = Color(0, 0, 0, 0.11764706)
+grow_end = -10.0
+thickness = 2
+
+[node name="PreviewGrid" type="VBoxContainer" unique_id=1464712901]
+offset_left = 381.0
+offset_right = 381.0
+offset_bottom = 100.0
+size_flags_horizontal = 0
+theme_override_constants/separation = 12
+script = ExtResource("1_7qyjp")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=97286120]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 20
+
+[node name="FrontSep" type="HSeparator" parent="HBoxContainer" unique_id=1016835104]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+theme_override_styles/separator = SubResource("StyleBoxLine_7qyjp")
+
+[node name="Title" type="RichTextLabel" parent="HBoxContainer" unique_id=796862374]
+layout_mode = 2
+theme_override_colors/default_color = Color(0.4, 0.4, 0.4, 1)
+theme_override_fonts/normal_font = ExtResource("1_oprf2")
+theme_override_font_sizes/normal_font_size = 30
+text = "numbers"
+fit_content = true
+autowrap_mode = 0
+
+[node name="BackSep" type="HSeparator" parent="HBoxContainer" unique_id=1310598234]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/separator = SubResource("StyleBoxLine_oprf2")
+
+[node name="Grid" type="GridContainer" parent="." unique_id=1906922546]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 10

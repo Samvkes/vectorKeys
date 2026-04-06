@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://bdsiqvbeasc35"]
+
+[ext_resource type="Script" uid="uid://cu6xit74syh5c" path="res://scripts/csharp/WeightTemplate.cs" id="1_8ac5m"]
+[ext_resource type="FontFile" uid="uid://cp6ap3relqd7k" path="res://assets/fonts/DraftingMono/DraftingMono-Regular.otf" id="2_c3ad7"]
+[ext_resource type="FontFile" uid="uid://bvggvdr238tay" path="res://assets/fonts/DraftingMono/DraftingMono-Light.otf" id="3_s2kt4"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8ac5m"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.1, 0.1, 0.1, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8, 0.8, 0.8, 0)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+corner_detail = 5
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_7xswi"]
+color = Color(0.5019608, 0.5019608, 0.5019608, 1)
+thickness = 2
+vertical = true
+
+[node name="WeightTemplate" type="PanelContainer" unique_id=919066520]
+offset_left = 835.0
+offset_right = 835.0
+offset_bottom = 75.0
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_8ac5m")
+script = ExtResource("1_8ac5m")
+
+[node name="HboxContainer" type="HBoxContainer" parent="." unique_id=630894846]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/separation = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HboxContainer" unique_id=946116203]
+layout_mode = 2
+alignment = 1
+
+[node name="LastEditDate" type="Label" parent="HboxContainer/VBoxContainer" unique_id=1409185581]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.13137859, 0.13137859, 0.13137859, 1)
+theme_override_fonts/font = ExtResource("3_s2kt4")
+theme_override_font_sizes/font_size = 26
+text = "13 / 2 / 26"
+horizontal_alignment = 2
+
+[node name="GlyphsCount" type="Label" parent="HboxContainer/VBoxContainer" unique_id=1593470947]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.13, 0.13, 0.13, 0.7058824)
+theme_override_fonts/font = ExtResource("3_s2kt4")
+theme_override_font_sizes/font_size = 26
+text = "208 glyphs"
+horizontal_alignment = 2
+
+[node name="VSeparator" type="VSeparator" parent="HboxContainer" unique_id=1101766793]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+theme_override_styles/separator = SubResource("StyleBoxLine_7xswi")
+
+[node name="Name" type="Label" parent="HboxContainer" unique_id=1039287310]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_c3ad7")
+theme_override_font_sizes/font_size = 30
+text = "300, mono"
+vertical_alignment = 1
