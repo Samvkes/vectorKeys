@@ -46,7 +46,7 @@ public partial class Editor : CanvasLayer
     public Workbench Workbench = null!; 
     LetterMenu LetterMenu = null!; 
     ProjectPicker ProjectPicker = null!;
-    public Manager Manager = GD.Load<PackedScene>("res://manager.tscn").Instantiate<Manager>();
+    public Manager Manager = GD.Load<PackedScene>("res://scenes/manager.tscn").Instantiate<Manager>();
     public FileDialog UfoFilePicker = null!;
     public FamilyConfig CurrentFamily = new();
     public static bool DebugSwitch = false;
@@ -116,7 +116,6 @@ public partial class Editor : CanvasLayer
         UfoFilePicker = (FileDialog)FindChild("UfoFilePicker");
         FpsLabel = new();
         AddChild(FpsLabel);
-        FpsLabel = GetNode<RichTextLabel>("FpsLabel");
         Workbench.Visible = false;
         // LetterMenu.Visible = true;
         Workbench.ProcessMode = ProcessModeEnum.Pausable;

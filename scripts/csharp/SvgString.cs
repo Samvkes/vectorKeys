@@ -424,7 +424,7 @@ public class SvgString
         }
     }
 
-    public void DrawEditing(Shapes shapes, Shape currentShape, float zoom, V2 markerPos, EditingFocus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
+    public void DrawEditing(Shape currentShape, Shapes shapes, float zoom, V2 markerPos, EditingFocus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
     {
         DrawGuides(zoom, opac: 0.3f, fwi: 3f);
 
@@ -477,7 +477,7 @@ public class SvgString
         DrawAnchorsHandles(shapes, currentShape, zoom, focus, selectedAnchors, selectedHandles);
     }
 
-    public void DrawSelecting(Shapes shapes, Shape currentShape, float zoom)
+    public void DrawSelecting(Shape currentShape, Shapes shapes, float zoom)
     {
         DrawGuides(0.04f, 0.04f, 8);
         float[] radiusSizes = [6, 16];
@@ -521,25 +521,25 @@ public class SvgString
         }
     }
 
-    // public void DrawPreviewing(Shapes shapes, bool white = false, bool debug = false)
-    // {
-    //     if (white)
-    //     {
-    //         SvgString.SetStyle(Style.ShapePreviewWhite);
-    //     }
-    //     else
-    //     {
-    //         SvgString.SetStyle(Style.ShapePreview);
-    //     }
-    //     if (debug)
-    //     {
-    //         var mgs = shapes.GetMergedShapes();
-    //         if (mgs.Length > 0)
-    //             SvgString.AddSegmentsDebug(shapes.GetMergedShapes()[0]);
-    //     }
-    //     else
-    //         SvgString.AddSegmentsGroup(shapes.GetMergedShapes());
-    // }
+    public void DrawPreviewing(Shapes shapes, bool white = false, bool debug = false)
+    {
+        if (white)
+        {
+            SetStyle(Style.ShapePreviewWhite);
+        }
+        else
+        {
+            SetStyle(Style.ShapePreview);
+        }
+        if (debug)
+        {
+            var mgs = shapes.GetMergedShapes();
+            if (mgs.Length > 0)
+                AddSegmentsDebug(shapes.GetMergedShapes()[0]);
+        }
+        else
+            AddSegmentsGroup(shapes.GetMergedShapes());
+    }
 
     // public Image DrawThumbnail(V2 size)
     // {

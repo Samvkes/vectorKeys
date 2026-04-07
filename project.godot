@@ -24,11 +24,6 @@ config/icon="res://assets/images/icon.svg"
 
 driver/output_latency=5
 
-[autoload]
-
-Globl="*res://scripts/gdscript/globl.gd"
-Glob="*uid://cbx05eprgwjjr"
-
 [display]
 
 window/size/viewport_width=3200

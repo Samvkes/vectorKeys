@@ -47,7 +47,7 @@ public partial class LetterMenu : Control
     GV2 SelectorGoalPos = GV2.Zero;
     List<PreviewGrid> PreviewGrids = [];
     public static Dictionary<char, Glyph> ShapeDict = [];
-    PackedScene PreviewGridScene = GD.Load<PackedScene>("res://preview_grid.tscn");
+    PackedScene PreviewGridScene = GD.Load<PackedScene>("res://scenes/preview_grid.tscn");
     public int CurrentWeight = 500;
     public List<Axis> CurrentAxes = [];
     Control CurrentTitle = null!;
@@ -59,7 +59,7 @@ public partial class LetterMenu : Control
         Selector = (Panel)FindChild("Selector");
         Selector.PivotOffsetRatio = new GV2(.5f,.5f);
         VBoxContainer glyphContainer = (VBoxContainer)FindChild("VBoxContainer");
-        PackedScene glyphScene = GD.Load<PackedScene>("res://glyph_preview.tscn");
+        PackedScene glyphScene = GD.Load<PackedScene>("res://scenes/glyph_preview.tscn");
         CurrentTitle = (Control)FindChild("CurrentTitle");
         weightPickerSwitchTimer = new();
         weightPickerSwitchTimer.WaitTime = .5f;

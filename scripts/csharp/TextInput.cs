@@ -27,7 +27,7 @@ public partial class TextInput : MarginContainer
 
     public static TextInput AddToScene(Node nde, Godot.Vector2 pos)
     {
-        PackedScene tiScene = GD.Load<PackedScene>("text_input.tscn");
+        PackedScene tiScene = GD.Load<PackedScene>("res://scenes/text_input.tscn");
         TextInput ti = tiScene.Instantiate<TextInput>();
         nde.AddChild(ti);
         ti.Edit();

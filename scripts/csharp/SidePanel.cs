@@ -1,15 +1,28 @@
 using Godot;
 using System;
+using Vectordrawing;
 using GV2 = Godot.Vector2;
 using V2 = System.Numerics.Vector2;
+
+record Children(
+    VBoxContainer VBox
+);
 
 public partial class SidePanel : Control
 {
     Label layerSelector = null!;
+    WorkbenchUi workbenchUi = null!;
+    UIConfig config = null!;
+    Children c = null!;
 
     public override void _Ready()
     {
         layerSelector = (Label)FindChild("LayerSelector");
+        workbenchUi = GetParent<WorkbenchUi>();
+        config = workbenchUi.Config;
+        c = new(
+            (VBoxContainer)FindChild("VBoxContainer_Layers")
+        );
     }
 
     public override void _Process(double delta)
@@ -26,7 +39,7 @@ public partial class SidePanel : Control
         layerSelector.Text = currentShapeAnchorsCount.ToString("D2") + "\n24";
     }
 
-    public void DrawLayers(float delta)
+    public void DrawLayers(float delta, Shape currentShape, Shapes shapes)
     {
         Image tempImage = new();
         int shapeCounter = 0;
@@ -40,14 +53,14 @@ public partial class SidePanel : Control
                 $"<g transform=\"scale({f}) translate(0,0) rotate(0)\">" +
                 $"<g transform=\"scale(1) translate(0,0) rotate(0)\">");
 
-            if (shapeCounter < workbench.Shapes.S.Count)
+            if (shapeCounter < shapes.S.Count)
             {
-                Shape currentShape = workbench.Shapes.S[shapeCounter];
-                if (currentShape.Anchors.Count < 3)
+                Shape shape = shapes.S[shapeCounter];
+                if (shape.Anchors.Count < 3)
                 {
                     continue;
                 }
-                if (currentShape == workbench.CurrentShape)
+                if (shape == currentShape)
                 {
                     float l = 0;
                     currentString += (
@@ -59,7 +72,7 @@ public partial class SidePanel : Control
                         $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
                     );
                 }
-                Segment[] s = currentShape.SegList();
+                Segment[] s = shape.SegList();
                 float[] startSeg = s[0].Flat();
                 currentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
                 int innerCounter = 0;
@@ -75,11 +88,11 @@ public partial class SidePanel : Control
                     innerCounter += 1;
                 }
                 currentString += $"Z\" ";
-                if (currentShape.Negative)
+                if (shape.Negative)
                     currentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"0.2\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
                 else
                     currentString += " fill =\"gray\" stroke =\"black\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
-                currentString += workbench.Shapes.S[shapeCounter];
+                currentString += shapes.S[shapeCounter];
             }
             currentString += (
                 "</g></g></svg>"

@@ -68,17 +68,18 @@ public record UIConfig(
         BackgroundColor: Color.FromHtml("cccccc"),
         SelectingColor: Color.FromHtml("cccccc"),
         PreviewColor: Color.FromOkHsl(10 / 359f, 75 / 100f, 90 / 100f),
-        LightFont: GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Light.otf"),
-        MediumFont: GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Medium.otf"),
-        BoldFont: GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Bold.otf")
+        LightFont: GD.Load<Font>("res://assets/fonts/DraftingMono/DraftingMono-Light.otf"),
+        MediumFont: GD.Load<Font>("res://assets/fonts/DraftingMono/DraftingMono-Medium.otf"),
+        BoldFont: GD.Load<Font>("res://assets/fonts/DraftingMono/DraftingMono-Bold.otf")
     );
 }
 
-public record Children(
+record Children(
     Sprite2D Cursor,
     Label CursorLabel,
     ColorRect Background,
-    SidePanel SidePanel
+    SidePanel SidePanel,
+    TextureRect Tex
 );
 
 // pass along a ui state object?
@@ -88,9 +89,10 @@ public partial class WorkbenchUi : Control
 {
     public Image CanvasImage = new();
     public Editor Ed = null!;
-    public SvgString svgString = null!;
+    public SvgString svgString = new();
     public Workbench workbench = null!;
     public float Zoom = 1f;
+    public readonly UIConfig Config = UIConfig.Default;
 
     V2 CursorOff = V2.Zero;
     (V2, string)[] MeasurementText = [];
@@ -101,10 +103,9 @@ public partial class WorkbenchUi : Control
 
     Func<Shape, bool> currentShapeChanged = null!;
     Func<InputMode, bool> inputModeChanged = null!;
-    UIConfig config = UIConfig.Default;
     InputState currentInput = new();
     Children c = null!;
-    PackedScene IndicatorScene = GD.Load<PackedScene>("res://shape_indicator.tscn");
+    PackedScene IndicatorScene = GD.Load<PackedScene>("res://scenes/shape_indicator.tscn");
     ShapeIndicator[] Indicators = new ShapeIndicator[10];
     FontFile LatestGlyphPreviewTtf = new();
 
@@ -127,6 +128,8 @@ public partial class WorkbenchUi : Control
 
     public override void _Ready()
     {
+        workbench = GetParent<Workbench>();
+        Ed = workbench.GetParent<Editor>();
         currentShapeChanged = CreateChangeChecker<Shape>();
         inputModeChanged = CreateChangeChecker<InputMode>();
         Sprite2D _cursor = GetNode<Sprite2D>("Cursor");
@@ -135,7 +138,8 @@ public partial class WorkbenchUi : Control
             _cursor,
             (Label)_cursor.GetChild(0),
             GetNode<ColorRect>("Background"),
-            _sidePanel
+            _sidePanel,
+            (TextureRect)FindChild("Tex")
         );
         for (int i = 0; i < 10; i++)
         {
@@ -148,14 +152,10 @@ public partial class WorkbenchUi : Control
             Indicators[i] = indicator;
             indicator.Visible = false;
         }
-        c.Background.Color = config.BackgroundColor;
+        c.Background.Color = Config.BackgroundColor;
     }
 
     public override void _Process(double delta)
-    {
-    }
-
-    public override void _Draw()
     {
     }
 
@@ -170,17 +170,33 @@ public partial class WorkbenchUi : Control
         LastFramesTexture = new();
     }
 
-    public void UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, InputState currentInput)
+    public void UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles, InputState i)
     {
-        if (currentShapeChanged(currentShape)) UpdateShapeLayersIndicator(currentShape);
+        // if (Ed.Throttling)
+        //     return;
+        currentInput = i;
 
+        UpdateSvg(currentShape, shapes, selectedAnchors, selectedHandles);
+        if (currentShapeChanged(currentShape)) UpdateShapeLayersIndicator(currentShape);
+        c.SidePanel.DrawLayers(delta, currentShape, shapes);
         ProcessInputMode(delta, currentInput.CurrentMode);
         ProcessCursor(delta);
-        if (Ed.Throttling)
-            return;
         UpdateShapeIndicators(shapes);
-        DrawCommands(currentShape, shapes, selectedAnchors);
+        _DrawCommands(currentShape, shapes, selectedAnchors);
         QueueRedraw();
+    }
+
+    public void UpdateSvg(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
+    {
+        svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
+        if (currentInput.CurrentMode == InputMode.Editing) svgString.DrawEditing(
+            currentShape, shapes, Zoom, currentInput.MarkerPos, currentInput.CurrentFocus, selectedAnchors, selectedHandles);
+        else if (currentInput.CurrentMode == InputMode.Previewing) svgString.DrawPreviewing(shapes);
+        else if (currentInput.CurrentMode == InputMode.Selecting) svgString.DrawSelecting(currentShape, shapes, Zoom);
+
+        svgString.Finish();
+        CanvasImage.LoadSvgFromString(svgString.String());
+        c.Tex.Texture = ImageTexture.CreateFromImage(CanvasImage);
     }
 
     public void ProcessInputMode(float delta, InputMode currentMode)
@@ -193,18 +209,18 @@ public partial class WorkbenchUi : Control
         InputMode m = currentMode;
         if (m == InputMode.Previewing)
         {
-            c.Background.Color = config.PreviewColor;
+            c.Background.Color = Config.PreviewColor;
             c.SidePanel.Visible = false;
             c.Cursor.Visible = false;
         }
         else if (m == InputMode.Selecting)
         {
-            c.Background.Color = config.SelectingColor;
+            c.Background.Color = Config.SelectingColor;
             c.Cursor.Visible = false;
         }
         else
         {
-            c.Background.Color = config.BackgroundColor;
+            c.Background.Color = Config.BackgroundColor;
             c.SidePanel.Visible = true;
             c.Cursor.Visible = true;
         }
@@ -252,9 +268,9 @@ public partial class WorkbenchUi : Control
     {
         c.Cursor.Position = Zoom <= 1
             ? c.Cursor.Position.Lerp(
-                Fun.Vtv((currentInput.MarkerPos + CursorOff) * Zoom + config.Origin * (1f - Zoom)),
+                Fun.Vtv((currentInput.MarkerPos + CursorOff) * Zoom + Config.Origin * (1f - Zoom)),
                 MathF.Min(delta, 0.1f) * 20f)
-            : Fun.Vtv(config.Origin + CursorOff);
+            : Fun.Vtv(Config.Origin + CursorOff);
 
         c.CursorLabel.Position = c.Cursor.Position + new GV2(30, 30);
         c.CursorLabel.Text = currentInput.MarkerPos.X.ToString() + ", " + currentInput.MarkerPos.Y.ToString();
@@ -277,12 +293,12 @@ public partial class WorkbenchUi : Control
         workbench.DrawLine(Fun.Vtv(currentInput.MarkerPos), Fun.Vtv(l), Colors.Red, 1);
         workbench.DrawLine(Fun.Vtv(l), Fun.Vtv(l + a * d), Colors.Red, 1);
         workbench.DrawArc(Fun.Vtv(l), d, tanAng, mAng, (int)(2 + 8 * MathF.Abs(diff / MathF.Tau)), Colors.Red, 2);
-        workbench.DrawString(config.MediumFont, Fun.Vtv(l + a * (d + 30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
+        workbench.DrawString(Config.MediumFont, Fun.Vtv(l + a * (d + 30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
     }
 
     private void _DrawGrid()
     {
-        V2 drawnGridSize = new(Zoom * currentInput.GridModifier * config.GridSize);
+        V2 drawnGridSize = new(Zoom * currentInput.GridModifier * Config.GridSize);
         GV2 gridAdjustment = -new GV2(20, 64);
         if (Zoom > 1)
         {
@@ -292,17 +308,17 @@ public partial class WorkbenchUi : Control
         {
             gridAdjustment = new(32, 32);
         }
-        for (int i = 0; i < (config.WindowSize.X / drawnGridSize.X) + 30; i++)
+        for (int i = 0; i < (Config.WindowSize.X / drawnGridSize.X) + 30; i++)
         {
             DrawLine(
                 new GV2(0, i * drawnGridSize.X - gridAdjustment.Y),
-                new GV2(5000, i * drawnGridSize.X - gridAdjustment.Y), config.GridColor, 1.5f, true);
+                new GV2(5000, i * drawnGridSize.X - gridAdjustment.Y), Config.GridColor, 1.5f, true);
         }
-        for (int i = 0; i < (config.WindowSize.Y / drawnGridSize.Y) + 30; i++)
+        for (int i = 0; i < (Config.WindowSize.Y / drawnGridSize.Y) + 30; i++)
         {
             DrawLine(
                 new GV2(i * drawnGridSize.Y - gridAdjustment.X, 0),
-                new GV2(i * drawnGridSize.Y - gridAdjustment.X, 5000), config.GridColor, 1.5f, true);
+                new GV2(i * drawnGridSize.Y - gridAdjustment.X, 5000), Config.GridColor, 1.5f, true);
         }
     }
 
@@ -338,11 +354,11 @@ public partial class WorkbenchUi : Control
         }
         svgString.AddLine(lineStart, lineEnd);
 
-        Color bcol = config.BackgroundColor;
+        Color bcol = Config.BackgroundColor;
         foreach ((V2 pos, string text) t in MeasurementText)
         {
             DrawRect(new(t.pos.X - 24, t.pos.Y - 22, 10 + 13 * t.text.Length, 30), bcol);
-            DrawString(config.MediumFont, Fun.Vtv(t.pos) - new GV2(20, 0), t.text, fontSize: 24, modulate: Colors.Black);
+            DrawString(Config.MediumFont, Fun.Vtv(t.pos) - new GV2(20, 0), t.text, fontSize: 24, modulate: Colors.Black);
         }
     }
 
@@ -355,7 +371,7 @@ public partial class WorkbenchUi : Control
         {
             Color charColor = Colors.Black;
             Color shadowColor = Colors.Black;
-            Color bcol = config.BackgroundColor;
+            Color bcol = Config.BackgroundColor;
             if (selectedAnchors.Contains(a))
             {
                 bcol = Colors.Orange;
@@ -366,13 +382,13 @@ public partial class WorkbenchUi : Control
             V2 p = a.Position;
             if (Zoom <= 1)
             {
-                p = (p * Zoom) + config.Origin * (1f - Zoom);
+                p = (p * Zoom) + Config.Origin * (1f - Zoom);
             }
             else
             {
-                p -= config.Origin - 1.3333f * (config.Origin - currentInput.MarkerPos);
+                p -= Config.Origin - 1.3333f * (Config.Origin - currentInput.MarkerPos);
                 p *= Zoom;
-                p += config.Origin - 1.3333f * (config.Origin - currentInput.MarkerPos);
+                p += Config.Origin - 1.3333f * (Config.Origin - currentInput.MarkerPos);
                 p -= new V2(4, -5);
             }
             V2 letterOffset = new(-9, 7);
@@ -383,12 +399,12 @@ public partial class WorkbenchUi : Control
             if (tallLetters.Contains(c)) letterOffset += new V2(0, 3);
             if (deepLetters.Contains(c)) letterOffset -= new V2(0, 3);
             DrawRect(new(Fun.Vtv(p - new V2(12, 16) + totalOffset), new GV2(24, 30)), bcol);
-            DrawChar(config.MediumFont, Fun.Vtv(p + letterOffset + totalOffset), c.ToString(), 30, charColor);
+            DrawChar(Config.MediumFont, Fun.Vtv(p + letterOffset + totalOffset), c.ToString(), 30, charColor);
             c = (char)((int)c + 1);
         }
     }
 
-    public async Task DrawCommands(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors)
+    public async Task _DrawCommands(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors)
     {
         await ToSignal(this, SignalName.Draw);
         if (currentInput.CurrentMode == InputMode.Editing)

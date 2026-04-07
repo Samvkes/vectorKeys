@@ -54,9 +54,9 @@ public partial class WeightPicker : Node
     bool justActive = false;
     public List<Axis> Axes = [];
     List<Label> LabelList = [];
-    StyleBoxFlat labelUndefined = GD.Load<StyleBoxFlat>("res://axisLabelStyleBox.tres");
-    StyleBoxFlat labelOff = (StyleBoxFlat)GD.Load<StyleBoxFlat>("res://axisLabelStyleBox.tres").Duplicate();
-    StyleBoxFlat labelOn = (StyleBoxFlat)GD.Load<StyleBoxFlat>("res://axisLabelStyleBox.tres").Duplicate();
+    StyleBoxFlat labelUndefined = GD.Load<StyleBoxFlat>("res://assets/styleboxes/axisLabelStyleBox.tres");
+    StyleBoxFlat labelOff = (StyleBoxFlat)GD.Load<StyleBoxFlat>("res://assets/styleboxes/axisLabelStyleBox.tres").Duplicate();
+    StyleBoxFlat labelOn = (StyleBoxFlat)GD.Load<StyleBoxFlat>("res://assets/styleboxes/axisLabelStyleBox.tres").Duplicate();
     public string[] WeightNames = [
         "Hairline",
         "Hairline",
@@ -82,8 +82,8 @@ public partial class WeightPicker : Node
     public override void _Ready()
     {
         TextServer t = TextServerManager.GetPrimaryInterface();
-        rec = GD.Load<FontVariation>("res://recursive_var.tres");
-        Font mediumF =  GD.Load<Font>("res://assets/DraftingMono/DraftingMono-Medium.otf");
+        rec = GD.Load<FontVariation>("res://assets/fonts/recursive_var.tres");
+        Font mediumF =  GD.Load<Font>("res://assets/fonts/DraftingMono/DraftingMono-Medium.otf");
         FontVariation a = new();
 
         blur1 = (ShaderMaterial)((ColorRect)FindChild("firstBlurShader")).Material;
@@ -109,7 +109,7 @@ public partial class WeightPicker : Node
         letterMenu = (LetterMenu)Ed.FindChild("LetterMenu");
         Vbox = (VBoxContainer)FindChild("vbox1");
         Vbox.GlobalPosition = new(Vbox.GlobalPosition.X, - step * 6);
-        StyleBoxFlat weightFlat = GD.Load<StyleBoxFlat>("res://weightLineFlat.tres");
+        StyleBoxFlat weightFlat = GD.Load<StyleBoxFlat>("res://assets/styleboxes/weightLineFlat.tres");
         GridContainer LabelContainer = (GridContainer)FindChild("LabelContainer");
         labelOff.BorderColor = Colors.White; 
         labelOn.BorderColor = Colors.White;
@@ -149,7 +149,7 @@ public partial class WeightPicker : Node
 
     public async void Define(int i)
     {
-        PackedScene tiScene = GD.Load<PackedScene>("text_input.tscn");
+        PackedScene tiScene = GD.Load<PackedScene>("res://scenes/text_input.tscn");
         TextInput ti = tiScene.Instantiate<TextInput>();
         pickerLayer.AddChild(ti);
         // GD.Print($"AxisLabel{Ed.R.NumberJustPressed.ToInt() -1}");

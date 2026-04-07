@@ -8,8 +8,8 @@ public partial class ProjectTemplate : PanelContainer
     Label LastEditDate = null!;
     Label WeightsAxesCount = null!;
     Label GlyphsCount = null!;
-    StyleBoxFlat Selected = GD.Load<StyleBoxFlat>("res://assets/selectedProject.tres");
-    StyleBoxFlat Regular = GD.Load<StyleBoxFlat>("res://assets/regularProject.tres");
+    StyleBoxFlat Selected = GD.Load<StyleBoxFlat>("res://assets/styleboxes/selectedProject.tres");
+    StyleBoxFlat Regular = GD.Load<StyleBoxFlat>("res://assets/styleboxes/regularProject.tres");
     Project project = null!;
     public bool SelectedProject = false;
 

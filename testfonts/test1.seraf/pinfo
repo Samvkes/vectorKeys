@@ -1,0 +1,75 @@
+{
+  "Path": "/Users/sam/Documents/vectorkeys/vectorKeys/testfonts/test1.seraf",
+  "Name": "test1",
+  "GlyphCount": 0,
+  "LastEdit": "2026-04-07T18:45:57.782666+02:00",
+  "AvailableAxes": [
+    {
+      "Name": "italic",
+      "TurnedOn": false,
+      "Defined": true,
+      "Index": 0
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 1
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 2
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 3
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 4
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 5
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 6
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 7
+    },
+    {
+      "Name": "",
+      "TurnedOn": false,
+      "Defined": false,
+      "Index": 8
+    }
+  ],
+  "Weights": [
+    {
+      "GlyphCount": 0,
+      "Weight": 500,
+      "Axes": [],
+      "LastEdit": "2026-04-07T00:00:00+02:00",
+      "StemAngle": {
+        "X": 0,
+        "Y": 1.5707964
+      }
+    }
+  ],
+  "ReferenceFonts": []
+}

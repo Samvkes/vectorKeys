@@ -94,10 +94,10 @@ public partial class ProjectPicker : Control
     VBoxContainer ProjectContainer = null!;
     VBoxContainer WeightContainer = null!;
     FileDialog ProjectFilePicker = null!;
-    PackedScene ProjectTemplateScene = GD.Load<PackedScene>("project_template.tscn");
-    PackedScene WeightTemplateScene = GD.Load<PackedScene>("weight_template.tscn");
-    StyleBoxFlat SelectorRegular = GD.Load<StyleBoxFlat>("res://assets/selectorRegular.tres");
-    StyleBoxFlat SelectorAdding = GD.Load<StyleBoxFlat>("res://assets/selectorAdding.tres");
+    PackedScene ProjectTemplateScene = GD.Load<PackedScene>("res://scenes/project_template.tscn");
+    PackedScene WeightTemplateScene = GD.Load<PackedScene>("res://scenes/weight_template.tscn");
+    StyleBoxFlat SelectorRegular = GD.Load<StyleBoxFlat>("res://assets/styleboxes/selectorRegular.tres");
+    StyleBoxFlat SelectorAdding = GD.Load<StyleBoxFlat>("res://assets/styleboxes/selectorAdding.tres");
     public List<ProjectTemplate> RecentProjects = [];
     ProjectTemplate? SelectedTemplate = null;
     Godot.FileAccess ProjectPaths = null!;

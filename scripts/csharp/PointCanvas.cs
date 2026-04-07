@@ -6,7 +6,7 @@ using GV2 = Godot.Vector2;
 public partial class PointCanvas : ColorRect
 {
     bool drawn = false;
-    Texture2D t = GD.Load<Texture2D>("res://test.png");
+    Texture2D t = GD.Load<Texture2D>("res://assets/images/test.png");
     public override void _Ready()
     {
         // QueueRedraw();

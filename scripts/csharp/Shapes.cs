@@ -768,7 +768,7 @@ public class Shapes
     {
         Shape s;
         s = new();
-        s.IsHyperBoolean = true;
+        s.IsHyperBoolean = false;
         s.MyShapes = this;
         S.Add(s);
         return s;

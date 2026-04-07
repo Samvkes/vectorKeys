@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://d20302hrpuwr7" path="res://scripts/csharp/WorkbenchUi.cs" id="5_8j27g"]
 [ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://scripts/csharp/Workbench.cs" id="5_nopgj"]
 [ext_resource type="Texture2D" uid="uid://cvnp47h0jkfrx" path="res://assets/fonts/DraftingMono/Star 1.png" id="5_swcnr"]
+[ext_resource type="Script" uid="uid://mlikt7xk4omk" path="res://scripts/csharp/Player.cs" id="8_iaqss"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4phwr"]
 content_margin_left = 6.0
@@ -72,5 +73,17 @@ theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_4phwr")
 text = "adsf"
 vertical_alignment = 1
+
+[node name="Tex" type="TextureRect" parent="WorkbenchUi" unique_id=1147840497]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Player" type="Player" parent="." unique_id=355866632]
+position = Vector2(477, 214)
+script = ExtResource("8_iaqss")
 
 [connection signal="visibility_changed" from="." to="." method="_OnVisibilityChanged"]

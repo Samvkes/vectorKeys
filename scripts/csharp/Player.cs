@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualBasic;
+using System.Diagnostics;
 
 namespace Vectordrawing;
 

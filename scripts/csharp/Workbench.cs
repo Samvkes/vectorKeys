@@ -37,7 +37,6 @@ public enum EditingFocus
 
 public partial class Workbench : Control
 {
-    public static readonly UIConfig config = UIConfig.Default;
     public InputState input = new();
 
     Shapes Shapes = new();
@@ -46,6 +45,7 @@ public partial class Workbench : Control
     HashSet<HandlePointer> SelectedHandles = new();
     WorkbenchUndoRedo UndoRedo = null!;
     WorkbenchUi Ui = null!;
+    UIConfig config = null!;
     Manager Manager = null!;
     Editor Ed = null!;
 
@@ -59,9 +59,11 @@ public partial class Workbench : Control
         CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
         Ed = (Editor)GetParent();
         R = Ed.R;
+
         Manager = ((Editor)GetParent()).Manager;
         UndoRedo = GetNode<WorkbenchUndoRedo>("WorkbenchUndoRedo");
         Ui = GetNode<WorkbenchUi>("WorkbenchUi"); 
+        config = Ui.Config;
     }
 
     public void Initialize(Shapes shapes)
@@ -104,7 +106,7 @@ public partial class Workbench : Control
         HandleInput((float)doubleDelta);
         float delta = (float)doubleDelta;
 
-        Ui.UpdateUI(delta, CurrentShape, Shapes, SelectedAnchors, input);
+        Ui.UpdateUI(delta, CurrentShape, Shapes, SelectedAnchors, SelectedHandles, input);
         if (Ed.Throttling)
             return;
 
@@ -122,8 +124,6 @@ public partial class Workbench : Control
         // children.Tex.Texture = createSvg.Result;
         // LastFramesSvg = SvgString.CurrentString.ToString();
         // LastFramesTexture = children.Tex.Texture;
-
-        QueueRedraw();
     }
 
     void HandleShapeSwitching()
