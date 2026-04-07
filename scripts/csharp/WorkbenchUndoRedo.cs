@@ -12,18 +12,26 @@ using System.Diagnostics;
 
 namespace Vectordrawing;
 
-// TODO track more state (selection, currentshape)
-public class UndoRedo
+// TODO rewrite stack adding
+public partial class WorkbenchUndoRedo : Node
 {
-    Shapes Shapes = null!;
+    Shapes shapes = null!;
     const int MAX_STACK_SIZE = 100;
     readonly List<string> UndoStack = [];
     readonly List<string> RedoStack = [];
     static private string CurrentState = "";
+    Timer UndoTimer = new();
+    bool CanUndoAgain = true;
 
-    public UndoRedo(Shapes shapes)
+    public override void _Ready()
     {
-        Shapes = shapes;
+        AddChild(UndoTimer);
+        UndoTimer.Timeout += ()=>{CanUndoAgain = true;};
+    }
+
+    public void Initialize(Shapes s)
+    {
+        shapes = s;
     }
 
     public void Undo()
@@ -33,9 +41,9 @@ public class UndoRedo
             GD.Print("UndoStack is empty");
             return;
         }
-        RedoStack.Add(Shapes.SaveState());
+        RedoStack.Add(shapes.SaveState());
         if (RedoStack.Count > MAX_STACK_SIZE) RedoStack.RemoveAt(0);
-        Shapes.LoadState(UndoStack.Last());
+        shapes.LoadState(UndoStack.Last());
         UndoStack.RemoveAt(UndoStack.Count - 1);
     }
 
@@ -47,7 +55,7 @@ public class UndoRedo
             return;
         }
         CurrentShapesToUndoStack();
-        Shapes.LoadState(RedoStack.Last());
+        shapes.LoadState(RedoStack.Last());
         RedoStack.RemoveAt(RedoStack.Count - 1);
     }
 
@@ -58,7 +66,7 @@ public class UndoRedo
 
     public void CurrentShapesToUndoStack()
     {
-        AddToUndoStack(Shapes.SaveState());
+        AddToUndoStack(shapes.SaveState());
     }
 
     public void AddToUndoStack(string serialized)
@@ -67,6 +75,20 @@ public class UndoRedo
         if (UndoStack.Count > MAX_STACK_SIZE)
         {
             UndoStack.RemoveAt(0);
+        }
+    }
+
+    public void UndoCheckpoint()
+    {
+        if (CanUndoAgain)
+        {
+            CurrentShapesToUndoStack();
+            ClearRedoStack();
+            CanUndoAgain = false;
+        }
+        if (UndoTimer.IsStopped())
+        {
+            UndoTimer.Start();
         }
     }
 }

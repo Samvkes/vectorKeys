@@ -74,55 +74,150 @@ public record UIConfig(
     );
 }
 
+public record Children(
+    Sprite2D Cursor,
+    Label CursorLabel,
+    ColorRect Background,
+    SidePanel SidePanel
+);
+
 // pass along a ui state object?
 // try simplifying first -> all changes to an object / child should happen at the end / in the same place
 // simplify and group, make order clear. 
-public partial class WorkbenchUi : Node2D
+public partial class WorkbenchUi : Control
 {
-    string LastFramesSvg = "";
-    Texture2D LastFramesTexture = new();
-    public V2 CursorOff = V2.Zero;
     public Image CanvasImage = new();
-    public (V2, string)[] MeasurementText = [];
-    public float GridModifier = 4;
-    public float Zoom = 1f;
-    public float SelectionFadeOutTime = 1;
-    public float SinceLastSelected = 0;
-    public float CanvasScale = 1;
-    public float CanvasScaleGoal = 1;
     public Editor Ed = null!;
     public SvgString svgString = null!;
-    public UIConfig config = UIConfig.Default;
-    public InputState input = null!;
-    public Children children = null!;
     public Workbench workbench = null!;
-    ShapeIndicator[] Indicators = null!;
-    public Shapes Shapes;
-    public Shape CurrentShape = null!;
-    public HashSet<Anker> SelectedAnchors = new();
+    public float Zoom = 1f;
 
-    public WorkbenchUi(Children c, Shapes s, Workbench b, ShapeIndicator[] indicators)
+    V2 CursorOff = V2.Zero;
+    (V2, string)[] MeasurementText = [];
+    float SelectionFadeOutTime = 1;
+    float SinceLastSelected = 0;
+    string LastFramesSvg = "";
+    Texture2D LastFramesTexture = new();
+
+    Func<Shape, bool> currentShapeChanged = null!;
+    Func<InputMode, bool> inputModeChanged = null!;
+    UIConfig config = UIConfig.Default;
+    InputState currentInput = new();
+    Children c = null!;
+    PackedScene IndicatorScene = GD.Load<PackedScene>("res://shape_indicator.tscn");
+    ShapeIndicator[] Indicators = new ShapeIndicator[10];
+    FontFile LatestGlyphPreviewTtf = new();
+
+    // scary
+    Func<T, bool> CreateChangeChecker<T>()
     {
-        children = c;
-        Shapes = s;
-        workbench = b; 
-        Indicators = indicators;
+        T previous = default!;
+        int frameCount = -1;
+        bool thisFramesOutput = false;
+        return current =>
+        {
+            if (frameCount == Ed.FrameCounter) return thisFramesOutput;
+            bool changed = !EqualityComparer<T>.Default.Equals(previous,current);
+            previous = current;
+            frameCount = Ed.FrameCounter;
+            thisFramesOutput = changed;
+            return thisFramesOutput;
+        };
     }
 
-    public void UpdateUI(float delta, Shape currentShape, HashSet<Anker> sa)
+    public override void _Ready()
     {
-        CurrentShape = currentShape;
-        SelectedAnchors = sa;
+        currentShapeChanged = CreateChangeChecker<Shape>();
+        inputModeChanged = CreateChangeChecker<InputMode>();
+        Sprite2D _cursor = GetNode<Sprite2D>("Cursor");
+        SidePanel _sidePanel = GetNode<SidePanel>("SidePanel");
+        c = new(
+            _cursor,
+            (Label)_cursor.GetChild(0),
+            GetNode<ColorRect>("Background"),
+            _sidePanel
+        );
+        for (int i = 0; i < 10; i++)
+        {
+            ShapeIndicator indicator = IndicatorScene.Instantiate<ShapeIndicator>();
+            AddChild(indicator);
+
+            indicator.SetNumber(
+                i < 9 ? i + 1 : 0
+                );
+            Indicators[i] = indicator;
+            indicator.Visible = false;
+        }
+        c.Background.Color = config.BackgroundColor;
+    }
+
+    public override void _Process(double delta)
+    {
+    }
+
+    public override void _Draw()
+    {
+    }
+
+    public void ResetUiState()
+    {
+        Zoom = 1f;
+        CursorOff = V2.Zero;
+        MeasurementText = [];
+        SelectionFadeOutTime = 1;
+        SinceLastSelected = 0;
+        LastFramesSvg = "";
+        LastFramesTexture = new();
+    }
+
+    public void UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, InputState currentInput)
+    {
+        if (currentShapeChanged(currentShape)) UpdateShapeLayersIndicator(currentShape);
+
+        ProcessInputMode(delta, currentInput.CurrentMode);
         ProcessCursor(delta);
         if (Ed.Throttling)
             return;
-        DrawLayers(delta);
-        UpdateShapeIndicators();
+        UpdateShapeIndicators(shapes);
+        DrawCommands(currentShape, shapes, selectedAnchors);
+        QueueRedraw();
     }
 
-    public void UpdateShapeIndicators()
+    public void ProcessInputMode(float delta, InputMode currentMode)
     {
-        if (input.CurrentMode != Mode.Editing)
+        if (currentMode == InputMode.Selecting) SinceLastSelected = SelectionFadeOutTime;
+        else if (SinceLastSelected > 0) SinceLastSelected -= delta;
+            
+        if (!inputModeChanged(currentMode)) return;
+
+        InputMode m = currentMode;
+        if (m == InputMode.Previewing)
+        {
+            c.Background.Color = config.PreviewColor;
+            c.SidePanel.Visible = false;
+            c.Cursor.Visible = false;
+        }
+        else if (m == InputMode.Selecting)
+        {
+            c.Background.Color = config.SelectingColor;
+            c.Cursor.Visible = false;
+        }
+        else
+        {
+            c.Background.Color = config.BackgroundColor;
+            c.SidePanel.Visible = true;
+            c.Cursor.Visible = true;
+        }
+    }
+
+    public void UpdateShapeLayersIndicator(Shape currentShape)
+    {
+        c.SidePanel.SwitchLayersIndicator(currentShape.MyIndex(), currentShape.Anchors.Count);
+    }
+
+    public void UpdateShapeIndicators(Shapes shapes)
+    {
+        if (currentInput.CurrentMode != InputMode.Editing)
         {
             foreach (ShapeIndicator indicator in Indicators)
                 indicator.Visible = false;
@@ -133,12 +228,12 @@ public partial class WorkbenchUi : Node2D
         foreach (ShapeIndicator indicator in Indicators)
         {
             c += 1;
-            if (c > Shapes.S.Count - 1 || Shapes.S[c].Anchors.Count < 3)
+            if (c > shapes.S.Count - 1 || shapes.S[c].Anchors.Count < 3)
             {
                 indicator.Visible = false;
                 continue;
             }
-            Shape s = Shapes.S[c];
+            Shape s = shapes.S[c];
             V2 p0 = s.SegList()[0].InPoint;
             V2 p1 = s.SegList()[0].OutPoint;
             V2 p2 = s.SegList()[^1].InPoint;
@@ -155,31 +250,31 @@ public partial class WorkbenchUi : Node2D
 
     public void ProcessCursor(float delta)
     {
-        children.Cursor.Position = Zoom <= 1 
-            ? children.Cursor.Position.Lerp(
-                Fun.Vtv((input.MarkerPos + CursorOff) * Zoom + config.Origin * (1f - Zoom)),
+        c.Cursor.Position = Zoom <= 1
+            ? c.Cursor.Position.Lerp(
+                Fun.Vtv((currentInput.MarkerPos + CursorOff) * Zoom + config.Origin * (1f - Zoom)),
                 MathF.Min(delta, 0.1f) * 20f)
             : Fun.Vtv(config.Origin + CursorOff);
 
-        children.CursorLabel.Position = children.Cursor.Position + new GV2(30, 30);
-        children.CursorLabel.Text = input.MarkerPos.X.ToString() + ", " + input.MarkerPos.Y.ToString();
-        children.CursorLabel.Size = new(0, 10);
+        c.CursorLabel.Position = c.Cursor.Position + new GV2(30, 30);
+        c.CursorLabel.Text = currentInput.MarkerPos.X.ToString() + ", " + currentInput.MarkerPos.Y.ToString();
+        c.CursorLabel.Size = new(0, 10);
     }
 
-    private void _DrawAngledMoveGuide()
+    private void _DrawAngledMoveGuide(Shape currentShape)
     {
-        V2 a = CurrentShape.Segments[^2].TangentAt(0.99f);
-        V2 l = CurrentShape.Anchors.Last().Position;
+        V2 a = currentShape.Segments[^2].TangentAt(0.99f);
+        V2 l = currentShape.Anchors.Last().Position;
         float tanAng = Fun.Vtv(a).Angle();
-        float mAng = Fun.Vtv(input.MarkerPos - l).Angle();
+        float mAng = Fun.Vtv(currentInput.MarkerPos - l).Angle();
         if (tanAng < mAng)
         {
             mAng -= MathF.Tau;
         }
         float diff = Mathf.Abs(tanAng - mAng);
         GD.Print("tan: " + tanAng + "  mang: " + mAng + "  dif:" + diff);
-        float d = MathF.Min(V2.Distance(input.MarkerPos, l), 100);
-        workbench.DrawLine(Fun.Vtv(input.MarkerPos), Fun.Vtv(l), Colors.Red, 1);
+        float d = MathF.Min(V2.Distance(currentInput.MarkerPos, l), 100);
+        workbench.DrawLine(Fun.Vtv(currentInput.MarkerPos), Fun.Vtv(l), Colors.Red, 1);
         workbench.DrawLine(Fun.Vtv(l), Fun.Vtv(l + a * d), Colors.Red, 1);
         workbench.DrawArc(Fun.Vtv(l), d, tanAng, mAng, (int)(2 + 8 * MathF.Abs(diff / MathF.Tau)), Colors.Red, 2);
         workbench.DrawString(config.MediumFont, Fun.Vtv(l + a * (d + 30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
@@ -187,7 +282,7 @@ public partial class WorkbenchUi : Node2D
 
     private void _DrawGrid()
     {
-        V2 drawnGridSize = new(Zoom * GridModifier * config.GridSize);
+        V2 drawnGridSize = new(Zoom * currentInput.GridModifier * config.GridSize);
         GV2 gridAdjustment = -new GV2(20, 64);
         if (Zoom > 1)
         {
@@ -251,17 +346,17 @@ public partial class WorkbenchUi : Node2D
         }
     }
 
-    private void _DrawLettersAtAnchors()
+    private void _DrawLettersAtAnchors(Shape currentShape, HashSet<Anker> selectedAnchors)
     {
         char c = 'a';
         string tallLetters = "htldfiklb";
         string deepLetters = "qypg";
-        foreach (Vectordrawing.Anker a in CurrentShape.Anchors)
+        foreach (Vectordrawing.Anker a in currentShape.Anchors)
         {
             Color charColor = Colors.Black;
             Color shadowColor = Colors.Black;
             Color bcol = config.BackgroundColor;
-            if (SelectedAnchors.Contains(a))
+            if (selectedAnchors.Contains(a))
             {
                 bcol = Colors.Orange;
                 shadowColor = Colors.Red;
@@ -275,9 +370,9 @@ public partial class WorkbenchUi : Node2D
             }
             else
             {
-                p -= config.Origin - 1.3333f * (config.Origin - input.MarkerPos);
+                p -= config.Origin - 1.3333f * (config.Origin - currentInput.MarkerPos);
                 p *= Zoom;
-                p += config.Origin - 1.3333f * (config.Origin - input.MarkerPos);
+                p += config.Origin - 1.3333f * (config.Origin - currentInput.MarkerPos);
                 p -= new V2(4, -5);
             }
             V2 letterOffset = new(-9, 7);
@@ -293,84 +388,19 @@ public partial class WorkbenchUi : Node2D
         }
     }
 
-    public void _DrawCommands()
+    public async Task DrawCommands(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors)
     {
-        if (input.CurrentMode == Mode.Editing)
+        await ToSignal(this, SignalName.Draw);
+        if (currentInput.CurrentMode == InputMode.Editing)
         {
-            if (!(Zoom < 1 && GridModifier < 2f)) _DrawGrid();
-            if (input.AngledMoveMode) _DrawAngledMoveGuide();
-            _DrawMeasurements(Shapes.GetMergedShapes(), input.MarkerPos);
+            if (!(Zoom < 1 && currentInput.GridModifier < 2f)) _DrawGrid();
+            if (currentInput.AngledMoveMode) _DrawAngledMoveGuide(currentShape);
+            _DrawMeasurements(shapes.GetMergedShapes(), currentInput.MarkerPos);
         }
 
-        else if (input.CurrentMode != Mode.Previewing)
+        else if (currentInput.CurrentMode != InputMode.Previewing)
         {
-            _DrawLettersAtAnchors();
-        }
-    }
-
-    public void DrawLayers(float delta)
-    {
-        Image tempImage = new();
-        int shapeCounter = 0;
-        V2 size = new(90, 90);
-        float f = size.Y / config.WindowSize.Y;
-
-        foreach (TextureRect nde in children.VBox.GetChildren())
-        {
-            string currentString = (
-                $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{size.X}\" height=\"{size.Y}\" >" +
-                $"<g transform=\"scale({f}) translate(0,0) rotate(0)\">" +
-                $"<g transform=\"scale(1) translate(0,0) rotate(0)\">");
-
-            if (shapeCounter < Shapes.S.Count)
-            {
-                Shape currentShape = Shapes.S[shapeCounter];
-                if (currentShape.Anchors.Count < 3)
-                {
-                    continue;
-                }
-                if (currentShape == CurrentShape)
-                {
-                    float l = 0;
-                    currentString += (
-                        $"<path d=\"M {l} {0} L {config.WindowSize.X - l} {0}\"" +
-                        $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
-                    );
-                    currentString += (
-                        $"<path d=\"M {l} {config.WindowSize.Y} L {config.WindowSize.X - l} {config.WindowSize.Y}\"" +
-                        $"stroke =\"{"black"}\" stroke-opacity=\"{0.4f}\" stroke-width=\"{30}\"/>"
-                    );
-                }
-                Segment[] s = currentShape.SegList();
-                float[] startSeg = s[0].Flat();
-                currentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
-                int innerCounter = 0;
-                foreach (Segment seg in s)
-                {
-                    float[] flatSeg = seg.Flat();
-                    currentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
-                    if (innerCounter != s.Length - 1)
-                    {
-                        currentString += ",";
-                    }
-                    currentString += " ";
-                    innerCounter += 1;
-                }
-                currentString += $"Z\" ";
-                if (currentShape.Negative)
-                    currentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"0.2\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
-                else
-                    currentString += " fill =\"gray\" stroke =\"black\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
-                currentString += Shapes.S[shapeCounter];
-            }
-            currentString += (
-                "</g></g></svg>"
-            );
-            tempImage.LoadSvgFromString(currentString);
-            nde.Texture = ImageTexture.CreateFromImage(tempImage);
-            nde.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-
-            shapeCounter += 1;
+            _DrawLettersAtAnchors(currentShape, selectedAnchors);
         }
     }
 
@@ -386,17 +416,17 @@ public partial class WorkbenchUi : Node2D
     // TODO
     // public void UpdatePreviews()
     // {
-        // if (Shapes.S.Count <= 1)
-        //     return;
-        // PreviewTask ??= fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
-        // if (!PreviewTask.IsCompleted)
-        //     return;
-        // LatestGlyphPreviewTtf.Data = PreviewTask.Result;
-        // S0.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        // S1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        // S2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        // S3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        // PreviewTask = fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
+    // if (Shapes.S.Count <= 1)
+    //     return;
+    // PreviewTask ??= fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
+    // if (!PreviewTask.IsCompleted)
+    //     return;
+    // LatestGlyphPreviewTtf.Data = PreviewTask.Result;
+    // S0.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+    // S1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+    // S2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+    // S3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+    // PreviewTask = fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
     // }
 
     // public Texture2D CreatePreviewTex(List<Shape> contours)

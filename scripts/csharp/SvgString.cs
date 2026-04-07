@@ -394,7 +394,7 @@ public class SvgString
         }
     }
 
-    public void DrawAnchorsHandles(Shapes shapes, Shape currentShape, float zoom, Focus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
+    public void DrawAnchorsHandles(Shapes shapes, Shape currentShape, float zoom, EditingFocus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
     {
         float[] radiusSizes = [6, 12];
         float[] widths = [1, 3];
@@ -418,13 +418,13 @@ public class SvgString
                 DrawAnchor(a, selectedAnchors.Contains(a), selectedHandles, radiusSizes, widths);
                 if (s == currentShape)
                 {
-                    DrawHandle(a, focus == Focus.Handle, selectedHandles, radiusSizes, widths);
+                    DrawHandle(a, focus == EditingFocus.Handle, selectedHandles, radiusSizes, widths);
                 }
             }
         }
     }
 
-    public void DrawEditing(Shapes shapes, Shape currentShape, float zoom, V2 markerPos, Focus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
+    public void DrawEditing(Shapes shapes, Shape currentShape, float zoom, V2 markerPos, EditingFocus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
     {
         DrawGuides(zoom, opac: 0.3f, fwi: 3f);
 

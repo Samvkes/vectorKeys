@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bipx46f180kxs"]
+
+[ext_resource type="Script" uid="uid://x2y557iftcm1" path="res://scripts/csharp/WorkbenchUndoRedo.cs" id="1_tlm3i"]
+
+[node name="WorkbenchUndoRedo" type="Node" unique_id=1059376587]
+script = ExtResource("1_tlm3i")

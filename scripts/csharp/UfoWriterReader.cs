@@ -71,10 +71,10 @@ static class UfoWriterReader
     static XDocument? CurrentDocument;
     public static float HeightFraction = 1.29f; 
 
-    public static void ExportUfo(string path, FamilyConfig family, Editor ed)
+    public static void ExportUfo(string path, FamilyConfig family)
     {
         GD.Print($"Exporting to {path}.ufo. Isn't that nice");
-        UfoGlyph[] glyphs = GetGlyphs(ed);
+        UfoGlyph[] glyphs = GetGlyphs();
         SetUpFiles(path, glyphs, family);
         foreach (UfoGlyph glyph in glyphs)
         {
@@ -96,17 +96,16 @@ static class UfoWriterReader
             CurrentDocument.Add(new XElement("plist", new XAttribute("version", version)));
     }
 
-    static UfoGlyph[] GetGlyphs(Editor ed)
+    static UfoGlyph[] GetGlyphs()
     {
-        Shapes shapes = ed.Workbench.Shapes;
         UfoGlyph[] glyphs = [];
         foreach ((char name, Glyph g) in LetterMenu.ShapeDict)
         {
             GD.Print(name);
-            if (shapes.S.Count > 0)
+            if (g.Shapes.S.Count > 0)
             {
                 GD.Print("yeah");
-                UfoGlyph glyph = new(name.ToString(), name, shapes.GetMergedShapes());
+                UfoGlyph glyph = new(name.ToString(), name, g.Shapes.GetMergedShapes());
                 glyphs = [.. glyphs, glyph];
             }
         }

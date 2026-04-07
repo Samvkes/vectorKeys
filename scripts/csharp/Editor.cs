@@ -228,7 +228,7 @@ public partial class Editor : CanvasLayer
         UfoFilePicker.FileMode = FileDialog.FileModeEnum.SaveFile;
         UfoFilePicker.Visible = true;
         string file = (string)(await ToSignal(UfoFilePicker, FileDialog.SignalName.FileSelected))[0];
-        UfoWriterReader.ExportUfo(file, CurrentFamily, this);
+        UfoWriterReader.ExportUfo(file, CurrentFamily);
     }
 
     public void _OnButtonDown()
@@ -342,9 +342,9 @@ public partial class Editor : CanvasLayer
     {
         if (CurrentFocus == EditorFocus.Workbench)
         {
-            CurrentGlyph.Shapes = Workbench.Shapes;
-            Texture2D t = Workbench.PreviewTex;
-            LetterMenu.CurrentlySelected.SetPreviewTexture(t);
+            CurrentGlyph.Shapes = Workbench.Close();
+            // Texture2D t = Workbench.PreviewTex;
+            // LetterMenu.CurrentlySelected.SetPreviewTexture(t);
             SaveGlyph(CurrentGlyph);
         }
         foreach (string glyphs in LetterMenu.allGlyphs)
@@ -358,8 +358,8 @@ public partial class Editor : CanvasLayer
                 {
                     Glyph g = LoadGlyph(filePath);
                     LetterMenu.ShapeDict[glyph] = g;
-                    Texture2D t = Workbench.ui.CreatePreviewTex(g.Shapes.S);
-                    LetterMenu.PreviewDict[glyph].SetPreviewTexture(t);
+                    // Texture2D t = Workbench.ui.CreatePreviewTex(g.Shapes.S);
+                    // LetterMenu.PreviewDict[glyph].SetPreviewTexture(t);
                 }
             }
         }

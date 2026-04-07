@@ -537,6 +537,11 @@ public class Shape
         Anchors.Reverse();
     }
 
+    public int MyIndex()
+    {
+        return MyShapes.S.IndexOf(this);
+    }
+
     public SKPath ToSKPath()
     {
         SKPath retPath = new();

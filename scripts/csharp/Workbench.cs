@@ -11,40 +11,24 @@ using System.Threading.Tasks;
 
 namespace Vectordrawing;
 
-public record Children(
-    Sprite2D Tex,
-    Sprite2D Cursor,
-    Label CursorLabel,
-    ColorRect Background,
-    Control ControlRoot,
-    Label LayerSelector,
-    HBoxContainer PreviewContainer,
-    TextureRect BigPreview,
-    TextureRect TinyPreviewUp,
-    TextureRect TinyPreviewDown,
-    FileDialog SerafFilePicker,
-    VBoxContainer VBox
-);
-
-public record InputState
+public record struct InputState()
 {
     public V2 MarkerPos = UIConfig.Default.Origin;
-    public Timer UndoTimer = new();
-    public Mode CurrentMode = Mode.Editing;
-    public Focus CurrentFocus = Focus.Anchor;
-    public Anker? FocussedAnchor = null;
-    public bool CanUndoAgain = true;
+    public InputMode CurrentMode = InputMode.Editing;
+    public EditingFocus CurrentFocus = EditingFocus.Anchor;
     public bool AngledMoveMode = false;
+    public bool JustUnpaused = false;
+    public float GridModifier = 4;
 };
 
-public enum Mode
+public enum InputMode
 {
     Editing,
     Selecting,
     Previewing,
 }
 
-public enum Focus
+public enum EditingFocus
 {
     Anchor,
     Handle,
@@ -55,32 +39,17 @@ public partial class Workbench : Control
 {
     public static readonly UIConfig config = UIConfig.Default;
     public InputState input = new();
-    public Children children = null!;
-    public WorkbenchUi ui = null!;
+
+    Shapes Shapes = new();
+    Shape CurrentShape = null!;
+    HashSet<Anker> SelectedAnchors = new();
+    HashSet<HandlePointer> SelectedHandles = new();
+    WorkbenchUndoRedo UndoRedo = null!;
+    WorkbenchUi Ui = null!;
     Manager Manager = null!;
     Editor Ed = null!;
 
-    PackedScene IndicatorScene = GD.Load<PackedScene>("res://shape_indicator.tscn");
-    ShapeIndicator[] Indicators = new ShapeIndicator[10];
-
-    public Shapes Shapes = new();
-    public UndoRedo UndoRedo = null!;
-    public Shape CurrentShape = null!;
-    HashSet<Anker> SelectedAnchors = new();
-    HashSet<HandlePointer> SelectedHandles = new();
-    public Texture2D PreviewTex = null!;
-    public bool JustUnpaused = false;
-
-    Task<byte[]>? PreviewTask = null;
-    RichTextLabel S0 = null!;
-    RichTextLabel S1 = null!;
-    RichTextLabel S2 = null!;
-    RichTextLabel S3 = null!;
-    bool appliedOnce = false;
-    string a = "asdf";
     RawInput R = null!;
-
-    FontFile LatestGlyphPreviewTtf = new();
     // TODO
     // PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3",
     //                                   "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
@@ -91,78 +60,36 @@ public partial class Workbench : Control
         Ed = (Editor)GetParent();
         R = Ed.R;
         Manager = ((Editor)GetParent()).Manager;
-        AddChild(input.UndoTimer);
-        input.UndoTimer.Timeout += DoUndoRedo;
-        // AddChild(input.MovementTimer);
-
-        S0 = (RichTextLabel)FindChild("Size0");
-        S1 = (RichTextLabel)FindChild("Size1");
-        S2 = (RichTextLabel)FindChild("Size2");
-        S3 = (RichTextLabel)FindChild("Size3");
-
-        for (int i = 0; i < 10; i++)
-        {
-            ShapeIndicator indicator = IndicatorScene.Instantiate<ShapeIndicator>();
-            AddChild(indicator);
-
-            indicator.SetNumber(
-                i < 9 ? i + 1 : 0
-                );
-            Indicators[i] = indicator;
-            indicator.Visible = false;
-        }
-
-        Sprite2D _cursor = GetNode<Sprite2D>("Cursor");
-        Control _controlroot = GetNode<Control>("ControlRoot");
-        HBoxContainer _previewcontainer = (HBoxContainer)_controlroot.FindChild("PreviewContainer");
-        children = new(
-            GetNode<Sprite2D>("Tex"),
-            _cursor,
-            (Label)_cursor.GetChild(0),
-            GetNode<ColorRect>("Background"),
-            _controlroot,
-            (Label)FindChild("Selector"),
-            _previewcontainer,
-            _previewcontainer.GetChild<TextureRect>(0),
-            (TextureRect)_previewcontainer.FindChild("TinyPreview"),
-            (TextureRect)_previewcontainer.FindChild("TinyPreview2"),
-            GetNode<FileDialog>("SerafFileDialog"),
-            (VBoxContainer)FindChild("VBoxContainer_Layers")
-        );
-
-        GetWindow().Size = new Vector2I((int)config.WindowSize.X, (int)config.WindowSize.Y);
-        children.Background.Color = config.BackgroundColor;
-        // Fun.Repeatedly(this, 0.5f, () => {UpdatePreviews();});
-    }
-
-    public WorkbenchUi NewUI()
-    {
-        return new WorkbenchUi(children, Shapes, this, Indicators);
+        UndoRedo = GetNode<WorkbenchUndoRedo>("WorkbenchUndoRedo");
+        Ui = GetNode<WorkbenchUi>("WorkbenchUi"); 
     }
 
     public void Initialize(Shapes shapes)
     {
-        PreviewTask?.Dispose();
-        ui = NewUI();
+        // PreviewTask?.Dispose();
+        Ui.ResetUiState();
         input.MarkerPos = UIConfig.Default.Origin;
-        input.CurrentMode = Mode.Editing;
-        input.CurrentFocus = Focus.Anchor;
-        input.FocussedAnchor = null;
-        input.CanUndoAgain = true;
+        input.CurrentMode = InputMode.Editing;
+        input.CurrentFocus = EditingFocus.Anchor;
         input.AngledMoveMode = false;
 
         SelectedAnchors.Clear();
         SelectedHandles.Clear();
 
-        PreviewTex = new();
+        // PreviewTex = new();
         Shapes = shapes;
         Shapes.ShapesCached = false;
-        UndoRedo = new(Shapes);
+        UndoRedo.Initialize(Shapes);
         if (Shapes.S.Count == 0)
             CurrentShape = Shapes.NewShape();
         else
             CurrentShape = Shapes.S[0];
-        JustUnpaused = true;
+        input.JustUnpaused = true;
+    }
+
+    public Shapes Close()
+    {
+        return Shapes;
     }
 
     // public void _OnVisibilityChanged()
@@ -177,7 +104,7 @@ public partial class Workbench : Control
         HandleInput((float)doubleDelta);
         float delta = (float)doubleDelta;
 
-        ui.UpdateUI(delta, CurrentShape, SelectedAnchors);
+        Ui.UpdateUI(delta, CurrentShape, Shapes, SelectedAnchors, input);
         if (Ed.Throttling)
             return;
 
@@ -199,26 +126,17 @@ public partial class Workbench : Control
         QueueRedraw();
     }
 
-    void HandleLayerSwitching()
+    void HandleShapeSwitching()
     {
-        if (R.NumberJustPressed is not null)
+        Manager.PlaySound("click.wav", 0.15f, 0.7f, 0.8f);
+        int shapeToPick = R.NumberJustPressed == "0" ? 9 : Int32.Parse(R.NumberJustPressed) - 1;
+        if (CurrentShape == Shapes.S[shapeToPick])
         {
-            Manager.PlaySound("click.wav", 0.15f, 0.7f, 0.8f);
-            int shapeToPick = 0;
-            if (R.NumberPressed == "0") shapeToPick = 9;
-            else shapeToPick = Int32.Parse(R.NumberJustPressed) - 1;
-            if (CurrentShape == Shapes.S[shapeToPick])
-            {
-                SelectedAnchors = [.. SelectedAnchors, .. CurrentShape.Anchors];
-            }
-            else
-            {
-                CurrentShape = Shapes.S[shapeToPick];
-                Label sel = children.LayerSelector;
-                CreateTween().SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint).TweenProperty(sel, "position", new GV2(-100, -3 + Shapes.S.IndexOf(CurrentShape) * 98), .2f);
-                CreateTween().TweenProperty(sel, "scale", new GV2(1, 1), .2).From(new GV2(.7f, 1.3f));
-                children.LayerSelector.Text = CurrentShape.Anchors.Count.ToString("D2") + "\n24";
-            }
+            SelectedAnchors = [.. SelectedAnchors, .. CurrentShape.Anchors];
+        }
+        else
+        {
+            CurrentShape = Shapes.S[shapeToPick];
         }
     }
 
@@ -227,9 +145,9 @@ public partial class Workbench : Control
         Anker a = CurrentShape.GetAnchorFromLabel(s.ToLower());
         if (!SelectedAnchors.Remove(a))
         {
-            if (input.CurrentFocus == Focus.Handle)
+            if (input.CurrentFocus == EditingFocus.Handle)
                 SelectedHandles = [new(a, true)];
-            else if (input.CurrentFocus == Focus.Outline)
+            else if (input.CurrentFocus == EditingFocus.Outline)
                 SelectedAnchors = [a];
             else
                 SelectedAnchors.Add(a);
@@ -288,7 +206,7 @@ public partial class Workbench : Control
 
     public void HiMovement(float delta)
     {
-        int movementAmount = (int)(config.GridSize * ui.GridModifier);
+        int movementAmount = (int)(config.GridSize * input.GridModifier);
         if (Input.IsKeyPressed(Key.A))
         {
             movementAmount = 1;
@@ -304,7 +222,7 @@ public partial class Workbench : Control
             //     input.StickyGuide = true;
             // }
             // move anchors
-            if ((input.CurrentFocus == Focus.Anchor || input.CurrentFocus == Focus.Outline) && SelectedAnchors.Count > 0)
+            if ((input.CurrentFocus == EditingFocus.Anchor || input.CurrentFocus == EditingFocus.Outline) && SelectedAnchors.Count > 0)
             {
                 Uts();
                 if (Input.IsKeyPressed(Key.Apostrophe))
@@ -415,7 +333,6 @@ public partial class Workbench : Control
                 }
                 // TODO abstract cursor?
                 // input.MarkerPos += movingSelected;
-                children.Cursor.Scale = new(.7f, .3f);
             }
         }
 
@@ -439,7 +356,7 @@ public partial class Workbench : Control
     public void HiPointAdding(float delta)
     {
         // TODO split up
-        if (input.CurrentFocus == Focus.Anchor)
+        if (input.CurrentFocus == EditingFocus.Anchor)
         {
             if (Input.IsActionJustPressed(Snl.switch_segment_style) || Input.IsActionJustPressed(Snl.finish_shape))
             {
@@ -452,7 +369,7 @@ public partial class Workbench : Control
                     fanchor = CurrentShape.Anchors.Last();
                 HandlePointer hp = new(fanchor, true);
                 SelectedHandles = [hp];
-                input.CurrentFocus = Focus.Handle;
+                input.CurrentFocus = EditingFocus.Handle;
             }
 
 
@@ -480,7 +397,6 @@ public partial class Workbench : Control
                 }
                 SelectedAnchors = [];
                 CurrentShape.AnchorsChanged();
-                children.Cursor.Scale = new(.8f, .8f);
             }
 
             if (Input.IsActionJustPressed(Snl.insert_point))
@@ -492,7 +408,6 @@ public partial class Workbench : Control
                         Uts();
                         CurrentShape.AddAnchor(input.MarkerPos, insertAfter: a);
                         CurrentShape.AnchorsChanged();
-                        children.Cursor.Scale = new(.8f, .8f);
                         Manager.PlaySound("Laptop_Keystroke_82.wav", 0.2f, 1.3f, 1.8f);
                     }
                 }
@@ -512,13 +427,13 @@ public partial class Workbench : Control
                 SnapSelectedPos();
             }
 
-            if (input.CurrentFocus == Focus.Anchor && (Input.IsActionJustReleased(Snl.switch_segment_style) || Input.IsActionJustReleased(Snl.finish_shape)))
+            if (input.CurrentFocus == EditingFocus.Anchor && (Input.IsActionJustReleased(Snl.switch_segment_style) || Input.IsActionJustReleased(Snl.finish_shape)))
             {
                 SelectedHandles = [];
             }
 
         }
-        else if (input.CurrentFocus == Focus.Handle)
+        else if (input.CurrentFocus == EditingFocus.Handle)
         {
             if (Input.IsActionJustPressed(Snl.switch_segment_style))
             {
@@ -537,7 +452,7 @@ public partial class Workbench : Control
 
             if (Input.IsActionJustPressed(Snl.add_new_point))
             {
-                input.CurrentFocus = Focus.Outline;
+                input.CurrentFocus = EditingFocus.Outline;
                 SelectedAnchors = [SelectedHandles.Last().A];
                 SelectedHandles = [];
             }
@@ -547,7 +462,7 @@ public partial class Workbench : Control
                 SelectedHandles.Last().A.Broken = !SelectedHandles.Last().A.Broken;
             }
         }
-        else if (input.CurrentFocus == Focus.Outline)
+        else if (input.CurrentFocus == EditingFocus.Outline)
         {
             if (Input.IsActionJustPressed(Snl.switch_segment_style))
             {
@@ -566,7 +481,7 @@ public partial class Workbench : Control
 
             if (Input.IsActionJustPressed(Snl.add_new_point))
             {
-                input.CurrentFocus = Focus.Handle;
+                input.CurrentFocus = EditingFocus.Handle;
                 HandlePointer hp = new(SelectedAnchors.Last(), true);
                 SelectedHandles = [hp];
                 SelectedAnchors = [];
@@ -584,43 +499,35 @@ public partial class Workbench : Control
 
         if (Input.IsActionJustPressed(Snl.increase_zoom))
         {
-            ui.CanvasScaleGoal = 1.5f;
             Fun.Delayed(this, 0.05f,
             () =>
             {
-                if (ui.Zoom >= 1 && ui.Zoom < 4) ui.Zoom *= 4;
-                else if (ui.Zoom < 1) ui.Zoom *= 2;
-                ui.CanvasScale = 1;
-                ui.CanvasScaleGoal = 1;
-                children.Tex.Scale = GV2.One;
+                if (Ui.Zoom >= 1 && Ui.Zoom < 4) Ui.Zoom *= 4;
+                else if (Ui.Zoom < 1) Ui.Zoom *= 2;
             });
         }
         if (Input.IsActionJustPressed(Snl.decrease_zoom))
         {
-            ui.CanvasScaleGoal = 0.75f;
             Fun.Delayed(this, 0.05f,
             () =>
             {
-                if (ui.Zoom <= 1 && ui.Zoom > .5f) ui.Zoom /= 2;
-                else if (ui.Zoom > 1) ui.Zoom /= 4;
-                ui.CanvasScale = 1;
-                ui.CanvasScaleGoal = 1;
-                children.Tex.Scale = GV2.One;
+                if (Ui.Zoom <= 1 && Ui.Zoom > .5f) Ui.Zoom /= 2;
+                else if (Ui.Zoom > 1) Ui.Zoom /= 4;
             });
         }
         if (Input.IsActionJustPressed(Snl.increase_grid_modifier))
         {
-            if (ui.GridModifier < 6)
+            if (input.GridModifier < 6)
             {
-                ui.GridModifier *= 2;
+                input.GridModifier *= 2;
                 SnapMarkerPos();
             }
         }
         if (Input.IsActionJustPressed(Snl.decrease_grid_modifier))
         {
-            if (ui.GridModifier > 1)
+            if (input.GridModifier > 1)
             {
-                ui.GridModifier /= 2;
+                input.GridModifier /= 2;
                 SnapMarkerPos();
             }
         }
@@ -629,9 +536,9 @@ public partial class Workbench : Control
     public async void HandleInput(float delta)
     {
         if (TextInput.BeingEdited) return;
-        if (JustUnpaused)
+        if (input.JustUnpaused)
         {
-            Fun.DelayOneFrame(this, () => { JustUnpaused = false; });
+            Fun.DelayOneFrame(this, () => { input.JustUnpaused = false; });
             return;
         }
 
@@ -688,44 +595,31 @@ public partial class Workbench : Control
 
         if (Input.IsActionJustPressed(Snl.toggle_preview))
         {
-            if (input.CurrentMode == Mode.Editing)
+            if (input.CurrentMode == InputMode.Editing)
             {
-                input.CurrentMode = Mode.Previewing;
-                children.Background.Color = config.PreviewColor;
-                children.ControlRoot.Visible = false;
-                children.Cursor.Visible = false;
+                input.CurrentMode = InputMode.Previewing;
             }
-            else if (input.CurrentMode == Mode.Previewing)
+            else if (input.CurrentMode == InputMode.Previewing)
             {
-                input.CurrentMode = Mode.Editing;
-                children.Background.Color = config.BackgroundColor;
-                children.ControlRoot.Visible = true;
-                children.Cursor.Visible = true;
+                input.CurrentMode = InputMode.Editing;
             }
         }
 
-        if (Input.IsActionPressed(Snl.select_mode))
+        if (Input.IsActionJustPressed(Snl.select_mode))
         {
-            ui.SinceLastSelected = ui.SelectionFadeOutTime;
-            input.CurrentMode = Mode.Selecting;
-            children.Background.Color = config.SelectingColor;
-            children.Cursor.Visible = false;
+            input.CurrentMode = InputMode.Selecting;
         }
-        else
+        if (Input.IsActionJustReleased(Snl.select_mode))
         {
-            if (ui.SinceLastSelected > 0) ui.SinceLastSelected -= delta;
-            if (input.CurrentMode == Mode.Selecting)
-            {
-                input.CurrentMode = Mode.Editing;
-                children.Background.Color = config.BackgroundColor;
-                children.Cursor.Visible = true;
-            }
-
+            input.CurrentMode = InputMode.Editing;
         }
 
-        HandleLayerSwitching();
+        if (R.NumberJustPressed is not null)
+        {
+            HandleShapeSwitching();
+        }
 
-        if (input.CurrentMode == Mode.Editing || input.CurrentMode == Mode.Previewing)
+        if (input.CurrentMode == InputMode.Editing || input.CurrentMode == InputMode.Previewing)
         {
             HiMovement(delta);
             HiPointAdding(delta);
@@ -748,7 +642,7 @@ public partial class Workbench : Control
                 // s.AlignAllHandles();
             }
         }
-        else if (input.CurrentMode == Mode.Selecting)
+        else if (input.CurrentMode == InputMode.Selecting)
         {
             if (R.LetterJustPressed is not null)
                 HandleSelectionText(R.LetterJustPressed);
@@ -756,11 +650,11 @@ public partial class Workbench : Control
 
         if (Input.IsActionJustPressed(Snl.semicolon))
         {
-            if (input.CurrentFocus == Focus.Outline || input.CurrentFocus == Focus.Handle)
+            if (input.CurrentFocus == EditingFocus.Outline || input.CurrentFocus == EditingFocus.Handle)
             {
                 SelectedHandles = [];
                 SelectedAnchors = [];
-                input.CurrentFocus = Focus.Anchor;
+                input.CurrentFocus = EditingFocus.Anchor;
             }
             else
                 SelectedAnchors.Clear();
@@ -787,7 +681,7 @@ public partial class Workbench : Control
     public void SnapMarkerPos()
     {
         V2 gridAdjustment = new V2(-20, -64);
-        int totalSize = (int)ui.GridModifier * config.GridSize;
+        int totalSize = (int)input.GridModifier * config.GridSize;
         input.MarkerPos.X = (int)(input.MarkerPos.X / totalSize) * totalSize;
         input.MarkerPos.Y = (int)(input.MarkerPos.Y / totalSize) * totalSize;
         input.MarkerPos -= gridAdjustment;
@@ -795,25 +689,11 @@ public partial class Workbench : Control
     //TODO implement
     public void SnapSelectedPos()
     {
-        int totalSize = (int)ui.GridModifier * config.GridSize;
+        int totalSize = (int)input.GridModifier * config.GridSize;
     }
-    // M undoredo
-    public void Uts()
+
+    public void Uts() 
     {
-        if (input.CanUndoAgain)
-        {
-            UndoRedo.CurrentShapesToUndoStack();
-            UndoRedo.ClearRedoStack();
-            input.CanUndoAgain = false;
-        }
-        if (input.UndoTimer.IsStopped())
-        {
-            input.UndoTimer.Start();
-        }
-    }
-    // M undoredo
-    public void DoUndoRedo()
-    {
-        input.CanUndoAgain = true;
+        UndoRedo.UndoCheckpoint();
     }
 }

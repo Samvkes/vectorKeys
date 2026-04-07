@@ -39,6 +39,14 @@ window/vsync/vsync_mode=0
 
 project/assembly_name="vectordrawing"
 
+[file_customization]
+
+folder_colors={
+"res://assets/": "gray",
+"res://scenes/": "red",
+"res://scripts/": "orange"
+}
+
 [input]
 
 ui_accept={
