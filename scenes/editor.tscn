@@ -115,4 +115,19 @@ offset_top = 88.0
 offset_right = 1678.0
 offset_bottom = 321.0
 
+[node name="FpsLabel" type="RichTextLabel" parent="." unique_id=1727623965]
+z_index = 1000
+clip_contents = false
+custom_minimum_size = Vector2(600, 0)
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 620.0
+offset_bottom = 54.0
+size_flags_horizontal = 3
+theme_override_colors/default_color = Color(0, 0, 0, 0.49803922)
+theme_override_font_sizes/normal_font_size = 32
+text = "ss"
+fit_content = true
+scroll_active = false
+
 [connection signal="button_down" from="Button" to="." method="_OnButtonDown"]

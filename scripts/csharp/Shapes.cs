@@ -507,7 +507,7 @@ public class Anker
 
 public class Shape
 {
-    public bool IsHyperBoolean = false;
+    public bool IsHyperBezier = false;
     public Shapes MyShapes = null!;
     public bool AnchorsCached = true;
     public Segment[] Segments = [];
@@ -690,7 +690,7 @@ public class Shape
 
     public override string ToString()
     {
-        if (IsHyperBoolean)
+        if (IsHyperBezier)
         {
             string ts = "hyperbez: [";
             int counter = 0;
@@ -720,12 +720,12 @@ public class Shape
     {
         if (AnchorsCached) return rounded ? RoundedSegments : Segments;
 
-        if (IsHyperBoolean)
+        if (IsHyperBezier)
         {
             (Segments, BeziersPerAnchorPair) = Player.AnchorsToHyperBeziers(Anchors);
             RoundedSegments = Editor.DebugSwitch
-                ? Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair)
-                : Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair);
+                ? Shapes.RoundCornersSegmentsOld(Segments, CornerRoundings(), BeziersPerAnchorPair)
+                : Shapes.RoundCornersSegments(Segments, CornerRoundings(), BeziersPerAnchorPair);
 
             AnchorsCached = true;
             return rounded ? RoundedSegments : Segments;
@@ -768,7 +768,7 @@ public class Shapes
     {
         Shape s;
         s = new();
-        s.IsHyperBoolean = false;
+        s.IsHyperBezier = true;
         s.MyShapes = this;
         S.Add(s);
         return s;
@@ -908,7 +908,7 @@ public class Shapes
         foreach ((int bezIndex, V2 intersectCoord) in intersections)
         {
             Anker anchorThatIntersectingBezierBelongsTo = shape.Anchors[0];
-            if (shape.IsHyperBoolean)
+            if (shape.IsHyperBezier)
             {
                 int[] bpa = shape.BeziersPerAnchorPair;
                 int c = 0;

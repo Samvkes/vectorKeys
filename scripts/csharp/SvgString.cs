@@ -435,7 +435,7 @@ public class SvgString
         // underlay shapes
         foreach (Shape s in shapes.S)
         {
-            if (s.Anchors.Count < 3) continue;
+            if (s.Anchors.Count < 2) continue;
 
             if (s.Negative) SetStyle(Style.ShapeNegative);
             else            SetStyle(Style.ShapeUnchanged);
@@ -447,7 +447,7 @@ public class SvgString
         // overlay shapes
         foreach (Shape s in shapes.S)
         {
-            if (s.Anchors.Count < 3) continue;
+            if (s.Anchors.Count < 2) continue;
 
             if (s.Negative)
             {
@@ -479,7 +479,7 @@ public class SvgString
 
     public void DrawSelecting(Shape currentShape, Shapes shapes, float zoom)
     {
-        DrawGuides(0.04f, 0.04f, 8);
+        DrawGuides(zoom, 8, 0.04f);
         float[] radiusSizes = [6, 16];
         float[] widths = [1, 3];
         if (zoom > 1)

@@ -38,6 +38,7 @@ public enum EditingFocus
 public partial class Workbench : Control
 {
     public InputState input = new();
+    public UIConfig config = null!;
 
     Shapes Shapes = new();
     Shape CurrentShape = null!;
@@ -45,7 +46,6 @@ public partial class Workbench : Control
     HashSet<HandlePointer> SelectedHandles = new();
     WorkbenchUndoRedo UndoRedo = null!;
     WorkbenchUi Ui = null!;
-    UIConfig config = null!;
     Manager Manager = null!;
     Editor Ed = null!;
 
@@ -304,8 +304,12 @@ public partial class Workbench : Control
                 if (input.AngledMoveMode)
                 {
                     var lap = CurrentShape.Anchors.Last().Position;
-                    float tan = Fun.Vtv(CurrentShape.Segments[^2].TangentAt(0.99f)).Angle();
-                    if (!Input.IsKeyPressed(Key.A))
+                    float tan = CurrentShape.Anchors.Count == 1 ? 0 : Fun.Vtv(CurrentShape.SegList()[^2].TangentAt(0.99f)).Angle();
+                    if (Input.IsKeyPressed(Key.A))
+                    {
+                        input.MarkerPos = (lap + V2.Transform(input.MarkerPos - lap, Matrix3x2.CreateRotation(MathF.Sign(movingSelected.X) * .01f)));
+                    }
+                    else
                     {
                         var fr = MathF.PI * .125f;
                         input.MarkerPos = (lap + V2.Transform(input.MarkerPos - lap, Matrix3x2.CreateRotation(MathF.Sign(movingSelected.X) * .20f)));
@@ -320,8 +324,6 @@ public partial class Workbench : Control
                         }
                         input.MarkerPos = lap + Fun.Vtv(GV2.FromAngle(ang)) * MathF.Max(dis, 30);
                     }
-                    else
-                        input.MarkerPos = (lap + V2.Transform(input.MarkerPos - lap, Matrix3x2.CreateRotation(MathF.Sign(movingSelected.X) * .01f)));
                     V2 t = V2.One;
 
                     t = -Fun.Vtv(Fun.Vtv(lap).DirectionTo(Fun.Vtv(input.MarkerPos)));

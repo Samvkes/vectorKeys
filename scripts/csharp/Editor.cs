@@ -51,7 +51,7 @@ public partial class Editor : CanvasLayer
     public FamilyConfig CurrentFamily = new();
     public static bool DebugSwitch = false;
     Timer FpsTimer = null!;
-    float ThrottleWaitTime = 1f;
+    float ThrottleWaitTime = 0.5f;
     public bool Throttling = false;
     public Timer MovementTimer = new();
     bool CanMoveAgain = true;
@@ -114,21 +114,25 @@ public partial class Editor : CanvasLayer
         LetterMenu = (LetterMenu)FindChild("LetterMenu");
         ProjectPicker = (ProjectPicker)FindChild("ProjectPicker");
         UfoFilePicker = (FileDialog)FindChild("UfoFilePicker");
-        FpsLabel = new();
-        AddChild(FpsLabel);
+        FpsLabel = (RichTextLabel)FindChild("FpsLabel");
         Workbench.Visible = false;
         // LetterMenu.Visible = true;
         Workbench.ProcessMode = ProcessModeEnum.Pausable;
         LetterMenu.ProcessMode = ProcessModeEnum.WhenPaused;
+        GetWindow().Size = new Vector2I((int)Workbench.config.WindowSize.X, (int)Workbench.config.WindowSize.Y);
     }
     
     public override void _Process(double delta)
     {
         Counter += (float)delta;
         FrameCounter += 1;
+        UpdateFpsLabel((float)delta);
         if (TextInput.BeingEdited) return;
         if (Input.IsActionJustPressed(Snl.debug))
+        {
             DebugSwitch = !DebugSwitch;
+            GD.Print(DebugSwitch);
+        }
 
         if (Input.IsKeyPressed(Key.Backspace))
         {

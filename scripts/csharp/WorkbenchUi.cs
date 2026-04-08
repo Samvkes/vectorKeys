@@ -170,33 +170,38 @@ public partial class WorkbenchUi : Control
         LastFramesTexture = new();
     }
 
-    public void UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles, InputState i)
+    public async Task UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles, InputState i)
     {
-        // if (Ed.Throttling)
-        //     return;
         currentInput = i;
+        svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
 
-        UpdateSvg(currentShape, shapes, selectedAnchors, selectedHandles);
         if (currentShapeChanged(currentShape)) UpdateShapeLayersIndicator(currentShape);
         c.SidePanel.DrawLayers(delta, currentShape, shapes);
         ProcessInputMode(delta, currentInput.CurrentMode);
         ProcessCursor(delta);
         UpdateShapeIndicators(shapes);
-        _DrawCommands(currentShape, shapes, selectedAnchors);
+        UpdateSvg(currentShape, shapes, selectedAnchors, selectedHandles);
+
         QueueRedraw();
+        await _DrawCommands(currentShape, shapes, selectedAnchors);
+
+        FinishSvg();
+    }
+
+    public void FinishSvg()
+    {
+        svgString.Finish();
+        CanvasImage.LoadSvgFromString(svgString.String());
+        c.Tex.Texture = ImageTexture.CreateFromImage(CanvasImage);
     }
 
     public void UpdateSvg(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
     {
-        svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
         if (currentInput.CurrentMode == InputMode.Editing) svgString.DrawEditing(
             currentShape, shapes, Zoom, currentInput.MarkerPos, currentInput.CurrentFocus, selectedAnchors, selectedHandles);
         else if (currentInput.CurrentMode == InputMode.Previewing) svgString.DrawPreviewing(shapes);
         else if (currentInput.CurrentMode == InputMode.Selecting) svgString.DrawSelecting(currentShape, shapes, Zoom);
 
-        svgString.Finish();
-        CanvasImage.LoadSvgFromString(svgString.String());
-        c.Tex.Texture = ImageTexture.CreateFromImage(CanvasImage);
     }
 
     public void ProcessInputMode(float delta, InputMode currentMode)
@@ -279,7 +284,7 @@ public partial class WorkbenchUi : Control
 
     private void _DrawAngledMoveGuide(Shape currentShape)
     {
-        V2 a = currentShape.Segments[^2].TangentAt(0.99f);
+        V2 a = currentShape.Anchors.Count == 1 ? V2.Zero : currentShape.SegList()[^2].TangentAt(0.99f);
         V2 l = currentShape.Anchors.Last().Position;
         float tanAng = Fun.Vtv(a).Angle();
         float mAng = Fun.Vtv(currentInput.MarkerPos - l).Angle();
@@ -288,12 +293,11 @@ public partial class WorkbenchUi : Control
             mAng -= MathF.Tau;
         }
         float diff = Mathf.Abs(tanAng - mAng);
-        GD.Print("tan: " + tanAng + "  mang: " + mAng + "  dif:" + diff);
         float d = MathF.Min(V2.Distance(currentInput.MarkerPos, l), 100);
-        workbench.DrawLine(Fun.Vtv(currentInput.MarkerPos), Fun.Vtv(l), Colors.Red, 1);
-        workbench.DrawLine(Fun.Vtv(l), Fun.Vtv(l + a * d), Colors.Red, 1);
-        workbench.DrawArc(Fun.Vtv(l), d, tanAng, mAng, (int)(2 + 8 * MathF.Abs(diff / MathF.Tau)), Colors.Red, 2);
-        workbench.DrawString(Config.MediumFont, Fun.Vtv(l + a * (d + 30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
+        DrawLine(Fun.Vtv(currentInput.MarkerPos), Fun.Vtv(l), Colors.Red, 1);
+        DrawLine(Fun.Vtv(l), Fun.Vtv(l + a * d), Colors.Red, 1);
+        DrawArc(Fun.Vtv(l), d, tanAng, mAng, (int)(2 + 8 * MathF.Abs(diff / MathF.Tau)), Colors.Red, 2);
+        DrawString(Config.MediumFont, Fun.Vtv(l + a * (d + 30)), MathF.Round((diff / MathF.Tau) * 360).ToString(), HorizontalAlignment.Center, fontSize: 32, modulate: Colors.Black);
     }
 
     private void _DrawGrid()
@@ -352,7 +356,7 @@ public partial class WorkbenchUi : Control
                 svgString.AddCircle(current, 7, fill: "red", fOpacity: 0.5f, sWidth: 0);
             }
         }
-        svgString.AddLine(lineStart, lineEnd);
+        svgString.AddLine(lineStart, lineEnd, "red", 1);
 
         Color bcol = Config.BackgroundColor;
         foreach ((V2 pos, string text) t in MeasurementText)
@@ -411,7 +415,7 @@ public partial class WorkbenchUi : Control
         {
             if (!(Zoom < 1 && currentInput.GridModifier < 2f)) _DrawGrid();
             if (currentInput.AngledMoveMode) _DrawAngledMoveGuide(currentShape);
-            _DrawMeasurements(shapes.GetMergedShapes(), currentInput.MarkerPos);
+            if (currentShape.Anchors.Count >= 3) _DrawMeasurements(shapes.GetMergedShapes(), currentInput.MarkerPos);
         }
 
         else if (currentInput.CurrentMode != InputMode.Previewing)

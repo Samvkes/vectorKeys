@@ -245,15 +245,15 @@ ui fixing
 
 ----- 
 
--- direc opschonen
--- svgstring doorlopen
--- workbenchui doorlopen
--- workbench doorlopen
--- alles weer aan de praat krijgen
+x direc opschonen
+x svgstring doorlopen
+x workbenchui doorlopen
+x workbench doorlopen
+- alles weer aan de praat krijgen
+- previews lettermenu
 
 - scrolling in menus / responsiveness in menus
 - show shortcuts
-- previews lettermenu
 - theming
 
 (

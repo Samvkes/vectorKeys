@@ -31,6 +31,7 @@ script = ExtResource("5_nopgj")
 [node name="WorkbenchUndoRedo" parent="." unique_id=1059376587 instance=ExtResource("2_8j27g")]
 
 [node name="WorkbenchUi" type="Control" parent="." unique_id=1972210531]
+z_index = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -56,7 +57,6 @@ metadata/_edit_lock_ = true
 modulate = Color(0.20152658, 0.20152658, 0.20152658, 1)
 top_level = true
 position = Vector2(100, 100)
-scale = Vector2(2, 2)
 texture = ExtResource("5_swcnr")
 
 [node name="Label" type="Label" parent="WorkbenchUi/Cursor" unique_id=1623646812]
@@ -75,12 +75,14 @@ text = "adsf"
 vertical_alignment = 1
 
 [node name="Tex" type="TextureRect" parent="WorkbenchUi" unique_id=1147840497]
+z_index = -1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+stretch_mode = 2
 
 [node name="Player" type="Player" parent="." unique_id=355866632]
 position = Vector2(477, 214)
