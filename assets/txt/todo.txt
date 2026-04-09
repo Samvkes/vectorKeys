@@ -249,12 +249,25 @@ x direc opschonen
 x svgstring doorlopen
 x workbenchui doorlopen
 x workbench doorlopen
-- alles weer aan de praat krijgen
+
+- thumbnails sidepanel
 - previews lettermenu
+- multiple shapes
+? fix rounding
+
+- italic angle grid
+- copy paste
+- scaling / rotating
+
+- show shortcuts
+- broad preview
+--- testing handglove ---
+
+- prepare for ui / basic theming
+- ui pass
+- reference
 
 - scrolling in menus / responsiveness in menus
-- show shortcuts
-- theming
 
 (
 -- workbench

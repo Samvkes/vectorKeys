@@ -173,19 +173,19 @@ public partial class WorkbenchUi : Control
     public async Task UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles, InputState i)
     {
         currentInput = i;
-        svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
 
         if (currentShapeChanged(currentShape)) UpdateShapeLayersIndicator(currentShape);
         c.SidePanel.DrawLayers(delta, currentShape, shapes);
         ProcessInputMode(delta, currentInput.CurrentMode);
         ProcessCursor(delta);
         UpdateShapeIndicators(shapes);
+        svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
         UpdateSvg(currentShape, shapes, selectedAnchors, selectedHandles);
+        FinishSvg();
 
         QueueRedraw();
         await _DrawCommands(currentShape, shapes, selectedAnchors);
 
-        FinishSvg();
     }
 
     public void FinishSvg()
@@ -353,10 +353,10 @@ public partial class WorkbenchUi : Control
                     V2 halfway = (current + next) / 2.0f;
                     MeasurementText = [.. MeasurementText, new(halfway, d.ToString())];
                 }
-                svgString.AddCircle(current, 7, fill: "red", fOpacity: 0.5f, sWidth: 0);
+                DrawCircle(Fun.Vtv(current), 7, new Color(1,0,0,0.5f), filled: false, width: 0);
             }
         }
-        svgString.AddLine(lineStart, lineEnd, "red", 1);
+        DrawLine(Fun.Vtv(lineStart), Fun.Vtv(lineEnd), Colors.Red,1);
 
         Color bcol = Config.BackgroundColor;
         foreach ((V2 pos, string text) t in MeasurementText)

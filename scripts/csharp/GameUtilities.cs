@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using V2 = System.Numerics.Vector2;
 using GV2 = Godot.Vector2;
 using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace Vectordrawing;
 
@@ -14,7 +15,27 @@ static class C
 }
 
 static class Fun
-{
+{    
+    public delegate void _BreakAction(bool breakIf = true);
+    static _BreakAction CreateBreak()
+    {
+        bool done = false;
+        _BreakAction a =  
+        [DebuggerHidden]
+        (bool breakIf = true) => 
+        {
+            if (!done && breakIf)
+            {
+                done = true;
+                if(System.Diagnostics.Debugger.IsAttached)
+                System.Diagnostics.Debugger.Break();
+            }
+        };
+        return a;
+    } 
+    public static _BreakAction Break = CreateBreak();
+
+    // sorts vectors from upleft to downright
     public static int CompareVectors(V2 one, V2 two)
     {
         if (one.X > two.X)

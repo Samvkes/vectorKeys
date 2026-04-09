@@ -570,7 +570,7 @@ public partial class Workbench : Control
         {
             Uts();
             CurrentShape.Negative = !CurrentShape.Negative;
-            Shapes.ShapesCached = false;
+            CurrentShape.AnchorsChanged();
         }
 
         if (Input.IsActionJustPressed(Snl.undo))

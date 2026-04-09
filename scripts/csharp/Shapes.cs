@@ -971,32 +971,57 @@ public class Shapes
                 currentSegLists[i] = RoundIntersections(currentSegLists[i], intersectionDict);
             }
             currentSKPath = SegmentListsToSKPath(currentSegLists);
+            List<SKPath> splitPaths = SplitSKPathToContours(currentSKPath);
+            Segment[][] segLists = [];
+            foreach (SKPath p in splitPaths)
+            {
+                int containsCounter = 0;
+                SKPoint testPoint = p.GetPoint(0);
+                foreach (SKPath p2 in splitPaths)
+                {
+                    if (p2 != p && p2.Contains(testPoint.X, testPoint.Y))
+                    {
+                        containsCounter += 1;
+                    }
+                }
+                Segment[] segs = SKPathToSegmentLists(p)[0];
+                if ((containsCounter % 2 == 0 && !IsSegmentListClockwise(segs)) || (containsCounter % 2 != 0 && IsSegmentListClockwise(segs)))
+                {
+                    segs = ReverseSegmentList(segs);
+                }
+                segLists = [.. segLists, segs];
+            }
+            currentSKPath = SegmentListsToSKPath(segLists);
         }
+
         CachedShapes = SKPathToSegmentLists(currentSKPath);
         ShapesCached = true;
         return CachedShapes;
 
-        Segment[][] segLists = [];
-        List<SKPath> splitPaths = SplitSKPathToContours(currentSKPath);
-        foreach (SKPath p in splitPaths)
-        {
-            int containsCounter = 0;
-            SKPoint testPoint = p.GetPoint(0);
-            foreach (SKPath p2 in splitPaths)
-            {
-                if (p2 != p && p2.Contains(testPoint.X, testPoint.Y))
-                {
-                    containsCounter += 1;
-                }
-            }
-            Segment[] segs = SKPathToSegmentLists(p)[0];
-            if ((containsCounter % 2 == 0 && !IsSegmentListClockwise(segs)) || (containsCounter % 2 != 0 && IsSegmentListClockwise(segs)))
-            {
-                segs = ReverseSegmentList(segs);
-            }
-            segLists = [.. segLists, segs];
-        }
-        return segLists;
+        // Segment[][] segLists = [];
+        // List<SKPath> splitPaths = SplitSKPathToContours(currentSKPath);
+        // GD.Print(splitPaths.Count);
+        // foreach (SKPath p in splitPaths)
+        // {
+        //     int containsCounter = 0;
+        //     SKPoint testPoint = p.GetPoint(0);
+        //     foreach (SKPath p2 in splitPaths)
+        //     {
+        //         if (p2 != p && p2.Contains(testPoint.X, testPoint.Y))
+        //         {
+        //             containsCounter += 1;
+        //         }
+        //     }
+        //     Segment[] segs = SKPathToSegmentLists(p)[0];
+        //     if ((containsCounter % 2 == 0 && !IsSegmentListClockwise(segs)) || (containsCounter % 2 != 0 && IsSegmentListClockwise(segs)))
+        //     {
+        //         segs = ReverseSegmentList(segs);
+        //     }
+        //     segLists = [.. segLists, segs];
+        // }
+        // CachedShapes = segLists;
+        // ShapesCached = true;
+        // return CachedShapes;
     }
 
 
@@ -1140,8 +1165,18 @@ public class Shapes
             return RoundCornersSegments(originalShape, cornerSizes, beziersToSkip);
     }
 
+    static readonly float MIN_REMAINDER= 1f;
+
     public static (Segment[], V2, V2) TrimmedSegmentGroup(Segment[] segmentGroup, float inLength, float outLength)
     {
+        float total = LengthOfSegmentGroup(segmentGroup);
+        if (inLength + outLength > total - MIN_REMAINDER)
+        {
+            float scale = Math.Clamp((total - MIN_REMAINDER) /  MathF.Max(inLength + outLength, 0.01f), 0f, 1f);
+            inLength  *= scale;
+            outLength *= scale;
+        }
+
         V2 inTan = V2.Zero;
         V2 outTan = V2.Zero;
         List<Segment> trimmedFromFront = [];
@@ -1154,7 +1189,7 @@ public class Shapes
             if (trimmedSoFar + segLength > inLength)
             {
                 float remaining = inLength - trimmedSoFar;
-                (Segment trimmed, inTan, V2 _) = currentSeg.TrimmedTangentAndPos(remaining / segLength, 1.0f);
+                (Segment trimmed, inTan, V2 _) = currentSeg.TrimmedTangentAndPos(MathF.Min(remaining / segLength, 0.98f), 1.0f);
                 trimmedFromFront.Add(trimmed);
                 trimmedFromFront.AddRange(segmentGroup[(index + 1)..]);
                 break;
@@ -1170,7 +1205,7 @@ public class Shapes
             if (trimmedSoFar + segLength > outLength)
             {
                 float remaining = outLength - trimmedSoFar;
-                (Segment trimmed, V2 _, outTan) = currentSeg.TrimmedTangentAndPos(0.0f, 1.0f - (remaining / segLength));
+                (Segment trimmed, V2 _, outTan) = currentSeg.TrimmedTangentAndPos(0.0f, MathF.Max(1.0f - (remaining / segLength), 0.02f));
                 trimmedFromBack.Add(trimmed);
                 trimmedFromBack.AddRange(trimmedFromFront[(index + 1)..]);
                 break;
@@ -1237,8 +1272,9 @@ public class Shapes
 
             float lengthBetween = LengthOfSegmentGroup(segsBetween);
             (float inCorner, float outCorner) = GetCornerSizes(lengthBetween, startSize, endSize);
-            trimmedAndTangentList.Add(TrimmedSegmentGroup(segsBetween, inCorner, outCorner));
+            (Segment[] segments, V2 inTan, V2 outTan) candidate = TrimmedSegmentGroup(segsBetween, inCorner, outCorner);
 
+            trimmedAndTangentList.Add(candidate);
             cornerSizeList.Add((inCorner, outCorner));
             currentSegIndex += SBCount;
         }
@@ -1254,6 +1290,7 @@ public class Shapes
             V2 startTan = trimmedAndTangentList[currentIndex].inTan;
             V2 endTan = trimmedAndTangentList[currentIndex].outTan;
             V2 prevEndTan = trimmedAndTangentList[previousIndex].outTan;
+            V2 prevStartTan = trimmedAndTangentList[previousIndex].inTan;
 
             if (currentCorners.inCorner == 0 && previousCorners.outCorner == 0)
             {
@@ -1265,7 +1302,6 @@ public class Shapes
             float angle = Mathf.Acos(Math.Clamp(V2.Dot(prevEndTan, -startTan), -1f, 1f));
             if (
                 rounded
-                // && cornerSizeList[currentIndex].inCorner >= minCornerSize
                 && angle >= MIN_ANGLE
                 && angle <= MAX_ANGLE
                 && endTan != V2.Zero

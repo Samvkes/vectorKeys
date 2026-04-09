@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using SkiaSharp;
 using System.Text;
+using Godot;
 
 namespace Vectordrawing;
 
@@ -276,6 +277,66 @@ public class SvgString
         CurrentString.Append("/>");
     }
 
+    public void AddSegmentsGroupDebug(Segment[][] sGroup, bool currentShape = false, string fill = "black", string stroke = "black", float fOpacity = 1f, float sOpacity = 1f, float sWidth = 1f)
+    {
+        CurrentString.Append("<path d=\"");
+        Span<float> f = stackalloc float[8]; 
+        int counter = 0;
+        foreach (Segment[] s in sGroup)
+        {
+            s[0].Flat(f);
+            CurrentString.Append(" M ")
+                         .Append(f[0]).Append(' ')
+                         .Append(f[1]).Append(" C ");
+            counter = 0;
+            foreach (Segment seg in s)
+            {
+                seg.Flat(f);
+                CurrentString.Append(f[2]).Append(' ')
+                            .Append(f[3]).Append(' ')
+                            .Append(f[4]).Append(' ')
+                            .Append(f[5]).Append(' ')
+                            .Append(f[6]).Append(' ')
+                            .Append(f[7]);
+                if (counter != s.Length - 1)
+                {
+                    CurrentString.Append(",");
+                }
+                CurrentString.Append(' ');
+                counter += 1;
+            }
+            CurrentString.Append("Z ");
+        }
+        CurrentString.Append("\" stroke=\"red\" stroke-opacity=\"0.3\" fill-opacity=\"0.0\" stroke-width=\"2\"/>");
+        foreach (Segment[] s in sGroup)
+        {
+            string color1 = "red";
+            string color2 = "white";
+            if (Shapes.IsSegmentListClockwise(s))
+            {
+                color1 = "blue";
+                color2 = "yellow";
+            }
+            counter = 0;
+            s[0].Flat(f);
+            foreach (Segment seg in s)
+            {
+                string color = color1;
+                if (counter % 2 == 0)
+                {
+                    color = color2;
+                }
+                seg.Flat(f);
+                AddCircle(new(f[0]+3, f[1]+3), 2, "black", "black", fOpacity = 0.3f, sOpacity: 0.3f, sWidth = 1.0f);
+                AddCircle(new(f[6], f[7]), 2, "green", "green", fOpacity = 0.3f, sOpacity: 0.3f, sWidth = 1.0f);
+                AddCircle(new(f[2], f[3]), 3, color, color, fOpacity = 0.2f, sOpacity: 0.3f, sWidth = 0.5f);
+                AddCircle(new(f[4], f[5]), 3, color, color, fOpacity = 0.2f, sOpacity: 0.3f, sWidth = 0.5f);
+                counter += 1;
+            }
+        }
+        // StyleCurrentString();
+    }
+
     public void AddCircle(V2 position, float radius, string fill = "black", string stroke = "black", float fOpacity = 1.0f, float sOpacity = 1.0f, float sWidth = 10f)
     { 
         CurrentString.Append($"<circle cx=\"{position.X}\" cy=\"{position.Y}\" r=\"{radius}\" ")
@@ -440,8 +501,7 @@ public class SvgString
             if (s.Negative) SetStyle(Style.ShapeNegative);
             else            SetStyle(Style.ShapeUnchanged);
 
-            if (Config.Debug) AddSegmentsDebug(s.SegList());
-            else              AddSegments(s.SegList());
+            if (!Config.Debug) AddSegments(s.SegList());
         }
 
         // overlay shapes
@@ -455,23 +515,27 @@ public class SvgString
                 AddSegments(s.SegList(true));
                 SetStyle(Style.ShapeNegative);
             }
-            else
+            else if (!Config.Debug)
             {
                 SetStyle(Style.ShapeShadow);
                 AddSegments(s.SegList(true));
                 SetStyle(Style.ShapeUnchanged);
             }
-
-            if (Config.Debug) AddSegmentsDebug(s.SegList());
-            else              AddSegments(s.SegList(true));
+            if (!Config.Debug) AddSegments(s.SegList(true));
         }
-
         SetStyle(Style.ShapeOverShadow);
-        AddSegmentsGroup(mergedShapes);
-        if (currentShape.Anchors.Count >= 3)
+        if (Config.Debug)
         {
-            SetStyle(Style.ShapeUnchangedSelected);
-            AddSegments(currentShape.SegList(true));
+            AddSegmentsGroupDebug(mergedShapes);
+        }
+        else
+        {
+            AddSegmentsGroup(mergedShapes);
+            if (currentShape.Anchors.Count >= 3)
+            {
+                SetStyle(Style.ShapeUnchangedSelected);
+                AddSegments(currentShape.SegList(true));
+            }
         }
 
         DrawAnchorsHandles(shapes, currentShape, zoom, focus, selectedAnchors, selectedHandles);
@@ -521,7 +585,7 @@ public class SvgString
         }
     }
 
-    public void DrawPreviewing(Shapes shapes, bool white = false, bool debug = false)
+    public void DrawPreviewing(Shapes shapes, bool white = false)
     {
         if (white)
         {
@@ -531,7 +595,7 @@ public class SvgString
         {
             SetStyle(Style.ShapePreview);
         }
-        if (debug)
+        if (Config.Debug)
         {
             var mgs = shapes.GetMergedShapes();
             if (mgs.Length > 0)
