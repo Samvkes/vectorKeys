@@ -212,7 +212,19 @@ public partial class Workbench : Control
             movementAmount = 1;
         }
 
-        V2 movingSelected = Ed.GetMovementInput(delta, OnGuide: OnGuide()) * movementAmount;
+        V2 movInput = Ed.GetMovementInput(delta, OnGuide: OnGuide());
+        float radGA = config.GridAngle / 360f * MathF.Tau;
+        if (movInput.Y > 0)
+        {
+            movInput = V2.Transform(new(0,1), Matrix3x2.CreateRotation(radGA));
+            movInput*= 1/movInput.Y;
+        }
+        if (movInput.Y < 0)
+        {
+            movInput = V2.Transform(new(0,-1), Matrix3x2.CreateRotation(radGA));
+            movInput*= -1/movInput.Y;
+        }
+        V2 movingSelected = movInput * movementAmount;
 
         if (movingSelected != V2.Zero)
         {
@@ -332,6 +344,8 @@ public partial class Workbench : Control
                 else
                 {
                     input.MarkerPos += movingSelected;
+                    input.MarkerPos.X = MathF.Abs(float.Round(input.MarkerPos.X) - input.MarkerPos.X) < 0.1 ? float.Round(input.MarkerPos.X) : float.Round(input.MarkerPos.X, 2);
+                    input.MarkerPos.Y = MathF.Abs(float.Round(input.MarkerPos.Y) - input.MarkerPos.Y) < 0.1 ? float.Round(input.MarkerPos.Y) : float.Round(input.MarkerPos.Y, 2);
                 }
                 // TODO abstract cursor?
                 // input.MarkerPos += movingSelected;

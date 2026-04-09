@@ -12,6 +12,7 @@ namespace Vectordrawing;
 public record UIConfig(
     bool Debug,
     int GridSize,
+    int GridAngle,
     int FarMoveBorder,
     float ValidHoldTime,
     int DefaultFontSize,
@@ -46,6 +47,7 @@ public record UIConfig(
     (
         Debug: false,
         GridSize: _gridsize,
+        GridAngle: 15,
         FarMoveBorder: 2 * _gridsize,
         ValidHoldTime: .2f,
         DefaultFontSize: 14,
@@ -303,7 +305,8 @@ public partial class WorkbenchUi : Control
     private void _DrawGrid()
     {
         V2 drawnGridSize = new(Zoom * currentInput.GridModifier * Config.GridSize);
-        GV2 gridAdjustment = -new GV2(20, 64);
+        GV2 gridAdjustment = -new GV2(0, 64);
+        float radGA = Config.GridAngle / 360f * MathF.Tau;
         if (Zoom > 1)
         {
             gridAdjustment -= new GV2(0, 128);
@@ -321,8 +324,8 @@ public partial class WorkbenchUi : Control
         for (int i = 0; i < (Config.WindowSize.Y / drawnGridSize.Y) + 30; i++)
         {
             DrawLine(
-                new GV2(i * drawnGridSize.Y - gridAdjustment.X, 0),
-                new GV2(i * drawnGridSize.Y - gridAdjustment.X, 5000), Config.GridColor, 1.5f, true);
+                Fun.Vtv(V2.Transform(new V2(i * drawnGridSize.Y - gridAdjustment.X, -5000), Matrix3x2.CreateRotation(radGA))),
+                Fun.Vtv(V2.Transform( new V2(i * drawnGridSize.Y - gridAdjustment.X , 5000), Matrix3x2.CreateRotation(radGA))), Config.GridColor, 1.5f, true);
         }
     }
 
@@ -353,10 +356,10 @@ public partial class WorkbenchUi : Control
                     V2 halfway = (current + next) / 2.0f;
                     MeasurementText = [.. MeasurementText, new(halfway, d.ToString())];
                 }
-                DrawCircle(Fun.Vtv(current), 7, new Color(1,0,0,0.5f), filled: false, width: 0);
+                DrawCircle(Fun.Vtv(current), 7, new Color(1,0,0,1.0f), filled: false, width: 1);
             }
         }
-        DrawLine(Fun.Vtv(lineStart), Fun.Vtv(lineEnd), Colors.Red,1);
+        DrawLine(Fun.Vtv(lineStart), Fun.Vtv(lineEnd), new Color(1,0,0,0.3f), 1, true);
 
         Color bcol = Config.BackgroundColor;
         foreach ((V2 pos, string text) t in MeasurementText)

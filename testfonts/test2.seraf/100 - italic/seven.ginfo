@@ -15,16 +15,79 @@
             "$ref": "2"
           },
           "AnchorsCached": true,
-          "Segments": [],
+          "Segments": [
+            {
+              "InPoint": {
+                "X": 596,
+                "Y": 768
+              },
+              "OutPoint": {
+                "X": 596,
+                "Y": 768
+              },
+              "InHandle": {
+                "X": 596,
+                "Y": 768
+              },
+              "OutHandle": {
+                "X": 596,
+                "Y": 768
+              }
+            }
+          ],
           "RoundedSegments": [],
           "Ssselected": false,
           "Anchors": {
             "$id": "5",
-            "$values": []
+            "$values": [
+              {
+                "$id": "6",
+                "Position": {
+                  "X": 596,
+                  "Y": 768
+                },
+                "SelectionIndex": 0,
+                "MyShape": {
+                  "$ref": "4"
+                },
+                "SubdivType": 0,
+                "InHandle": {
+                  "$id": "7",
+                  "Type": 0,
+                  "Locked": false,
+                  "Selected": false,
+                  "IsInHandle": true,
+                  "AdjacentAnchor": {
+                    "$ref": "6"
+                  },
+                  "DistanceFromAnchor": 0,
+                  "Angle": 3.1415927
+                },
+                "OutHandle": {
+                  "$id": "8",
+                  "Type": 0,
+                  "Locked": false,
+                  "Selected": false,
+                  "IsInHandle": false,
+                  "AdjacentAnchor": {
+                    "$ref": "6"
+                  },
+                  "DistanceFromAnchor": 0,
+                  "Angle": 0
+                },
+                "Sselected": false,
+                "Broken": true,
+                "anchorRounding": 1,
+                "intersectionRounding": 1,
+                "Auto": true
+              }
+            ]
           },
           "Finished": false,
           "Negative": false,
-          "BeziersPerAnchorPair": []
+          "BeziersPerAnchorPair": [
+            1
+          ]
         }
       ]
     }

@@ -250,13 +250,15 @@ x svgstring doorlopen
 x workbenchui doorlopen
 x workbench doorlopen
 
-- thumbnails sidepanel
-- previews lettermenu
-- multiple shapes
+x multiple shapes
 ? fix rounding
 
-- italic angle grid
+? italic angle grid
 - copy paste
+
+- thumbnails sidepanel
+- previews lettermenu
+
 - scaling / rotating
 
 - show shortcuts
