@@ -51,8 +51,6 @@ public partial class Workbench : Control
 
     RawInput R = null!;
     // TODO
-    // PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3",
-    //                                   "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
 
     public override void _Ready()
     {
@@ -557,28 +555,6 @@ public partial class Workbench : Control
             Fun.DelayOneFrame(this, () => { input.JustUnpaused = false; });
             return;
         }
-
-        // if (Input.IsActionJustPressed(Snl.save_project))
-        // {
-        //     children.SerafFilePicker.FileMode = FileDialog.FileModeEnum.SaveFile;
-        //     children.SerafFilePicker.Visible = true;
-        //     string file = (string)(await ToSignal(children.SerafFilePicker, FileDialog.SignalName.FileSelected))[0];
-        //     var fileAc = Godot.FileAccess.Open(file, Godot.FileAccess.ModeFlags.Write);
-        //     fileAc.StoreString(Shapes.SaveState());
-        //     fileAc.Close();
-        //     fileAc.Dispose();
-        // }
-
-        // if (Input.IsActionJustPressed(Snl.load_project))
-        // {
-        //     children.SerafFilePicker.FileMode = FileDialog.FileModeEnum.OpenFile;
-        //     children.SerafFilePicker.Visible = true;
-        //     string file = (string)(await ToSignal(children.SerafFilePicker, FileDialog.SignalName.FileSelected))[0];
-        //     var fileAc = Godot.FileAccess.Open(file, Godot.FileAccess.ModeFlags.Read);
-        //     Shapes.LoadState(fileAc.GetAsText());
-        //     CurrentShape = Shapes.S[0]; 
-        // }
-
 
         if (Input.IsActionJustPressed(Snl.shape_negative))
         {

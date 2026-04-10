@@ -47,7 +47,7 @@ public record UIConfig(
     (
         Debug: false,
         GridSize: _gridsize,
-        GridAngle: 15,
+        GridAngle: 0,
         FarMoveBorder: 2 * _gridsize,
         ValidHoldTime: .2f,
         DefaultFontSize: 14,
@@ -109,7 +109,6 @@ public partial class WorkbenchUi : Control
     Children c = null!;
     PackedScene IndicatorScene = GD.Load<PackedScene>("res://scenes/shape_indicator.tscn");
     ShapeIndicator[] Indicators = new ShapeIndicator[10];
-    FontFile LatestGlyphPreviewTtf = new();
 
     // scary
     Func<T, bool> CreateChangeChecker<T>()
@@ -170,20 +169,27 @@ public partial class WorkbenchUi : Control
         SinceLastSelected = 0;
         LastFramesSvg = "";
         LastFramesTexture = new();
+        c.SidePanel.PreviewTask?.Dispose();
     }
 
     public async Task UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles, InputState i)
     {
         currentInput = i;
+        bool shapesChanged = !shapes.ShapesCached;
 
         if (currentShapeChanged(currentShape)) UpdateShapeLayersIndicator(currentShape);
         c.SidePanel.DrawLayers(delta, currentShape, shapes);
         ProcessInputMode(delta, currentInput.CurrentMode);
         ProcessCursor(delta);
-        UpdateShapeIndicators(shapes);
-        svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
-        UpdateSvg(currentShape, shapes, selectedAnchors, selectedHandles);
-        FinishSvg();
+        RenderSvg(currentShape, shapes, selectedAnchors, selectedHandles);
+        if (shapesChanged)
+        {
+            UpdateShapeIndicators(shapes);
+            c.SidePanel.UpdateThumbnails(delta, shapes, currentInput.MarkerPos, CursorOff);
+            Fun.DelayOneFrame(this, () =>{
+                c.SidePanel.UpdateThumbnails(delta, shapes, currentInput.MarkerPos, CursorOff);
+            });
+        }
 
         QueueRedraw();
         await _DrawCommands(currentShape, shapes, selectedAnchors);
@@ -197,13 +203,14 @@ public partial class WorkbenchUi : Control
         c.Tex.Texture = ImageTexture.CreateFromImage(CanvasImage);
     }
 
-    public void UpdateSvg(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
+    public void RenderSvg(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
     {
+        svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
         if (currentInput.CurrentMode == InputMode.Editing) svgString.DrawEditing(
             currentShape, shapes, Zoom, currentInput.MarkerPos, currentInput.CurrentFocus, selectedAnchors, selectedHandles);
         else if (currentInput.CurrentMode == InputMode.Previewing) svgString.DrawPreviewing(shapes);
         else if (currentInput.CurrentMode == InputMode.Selecting) svgString.DrawSelecting(currentShape, shapes, Zoom);
-
+        FinishSvg();
     }
 
     public void ProcessInputMode(float delta, InputMode currentMode)
@@ -437,11 +444,11 @@ public partial class WorkbenchUi : Control
     }
 
     // TODO
-    // public void UpdatePreviews()
+    // public void UpdatePreviews(Shape currentShape, Shapes shapes)
     // {
-    // if (Shapes.S.Count <= 1)
+    // if (shapes.S.Count <= 1)
     //     return;
-    // PreviewTask ??= fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
+    // PreviewTask ??= fontWorker.SendRequest('A', shapes.GetMergedShapes()[0]);
     // if (!PreviewTask.IsCompleted)
     //     return;
     // LatestGlyphPreviewTtf.Data = PreviewTask.Result;
@@ -449,17 +456,17 @@ public partial class WorkbenchUi : Control
     // S1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
     // S2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
     // S3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-    // PreviewTask = fontWorker.SendRequest('A', Shapes.GetMergedShapes()[0]);
+    // PreviewTask = fontWorker.SendRequest('A', shapes.GetMergedShapes()[0]);
     // }
 
     // public Texture2D CreatePreviewTex(List<Shape> contours)
     // {
     //     V2 size = new(100, 100);
-    //     float f = size.Y / config.WindowSize.Y;
+    //     float f = size.Y / Config.WindowSize.Y;
     //     float margin = .02f;
     //     f -= margin;
 
-    //     svgString.ClearString(f, (size * (margin / f)) / 2, size, input.MarkerPos, CursorOff);
+    //     svgString.ClearString(f, (size * (margin / f)) / 2, size, currentInput.MarkerPos, CursorOff);
     //     svgString.SetStyle(Style.ShapePreviewWhite);
     //     Shapes.S = contours;
     //     Shapes.ShapesCached = false;
@@ -471,5 +478,20 @@ public partial class WorkbenchUi : Control
     //     thumbnail.LoadSvgFromString(svgString.String());
     //     thumbnail.AdjustBcs(0.2f, 1, 1);
     //     return ImageTexture.CreateFromImage(thumbnail);
+    // }
+
+    // public void RenderThumbnails(float delta, Shapes shapes)
+    // {
+    //     V2 size = new(260, 260);
+    //     Image thumbnail = svgString.DrawThumbnail(size, shapes, currentInput.MarkerPos, CursorOff);
+    //     Image prevthumb = new();
+    //     prevthumb.CopyFrom(thumbnail);
+
+    //     c.BigPreview.Texture = ImageTexture.CreateFromImage(thumbnail);
+    //     c.BigPreview.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
+
+    //     // prevthumb.Resize((int)size.X / 3, (int)size.Y / 3);
+    //     // prevthumb.AdjustBcs(0.2f, 1, 1);
+    //     // PreviewTex = ImageTexture.CreateFromImage(prevthumb);
     // }
 }

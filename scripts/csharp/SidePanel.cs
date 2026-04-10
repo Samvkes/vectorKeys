@@ -1,11 +1,18 @@
 using Godot;
 using System;
+using System.Net;
 using Vectordrawing;
 using GV2 = Godot.Vector2;
 using V2 = System.Numerics.Vector2;
+using System.Threading.Tasks;
 
 record Children(
-    VBoxContainer VBox
+    VBoxContainer VBox,
+    TextureRect BigThumbnail,
+    RichTextLabel SmallThumbnail0,
+    RichTextLabel SmallThumbnail1,
+    RichTextLabel SmallThumbnail2,
+    RichTextLabel SmallThumbnail3
 );
 
 public partial class SidePanel : Control
@@ -14,6 +21,10 @@ public partial class SidePanel : Control
     WorkbenchUi workbenchUi = null!;
     UIConfig config = null!;
     Children c = null!;
+    public Task<byte[]>? PreviewTask = null;
+    PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3",
+                                      "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
+    FontFile LatestGlyphPreviewTtf = new();
 
     public override void _Ready()
     {
@@ -21,7 +32,12 @@ public partial class SidePanel : Control
         workbenchUi = GetParent<WorkbenchUi>();
         config = workbenchUi.Config;
         c = new(
-            (VBoxContainer)FindChild("VBoxContainer_Layers")
+            (VBoxContainer)FindChild("VBoxContainer_Layers"),
+            (TextureRect)FindChild("BigThumbnail"),
+            (RichTextLabel)FindChild("Size0"),
+            (RichTextLabel)FindChild("Size1"),
+            (RichTextLabel)FindChild("Size2"),
+            (RichTextLabel)FindChild("Size3")
         );
     }
 
@@ -103,5 +119,37 @@ public partial class SidePanel : Control
 
             shapeCounter += 1;
         }
+    }
+
+    public void UpdateThumbnails(float delta, Shapes shapes, V2 markerPos, V2 cursorOff)
+    {
+        UpdateBigThumbnail(delta, shapes, markerPos, cursorOff);
+        UpdateSmallThumbnails(delta, shapes, markerPos, cursorOff);
+    }
+
+    public void UpdateBigThumbnail(float delta, Shapes shapes, V2 markerPos, V2 cursorOff)
+    {
+        V2 size = new(260, 260);
+        Image thumbnail = workbenchUi.svgString.RenderThumbnail(size, shapes, markerPos, cursorOff);
+        Image prevthumb = new();
+        prevthumb.CopyFrom(thumbnail);
+
+        c.BigThumbnail.Texture = ImageTexture.CreateFromImage(thumbnail);
+        c.BigThumbnail.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
+    }
+
+    public void UpdateSmallThumbnails(float delta, Shapes shapes, V2 markerPos, V2 cursorOff)
+    {
+        if (shapes.S.Count <= 1)
+            return;
+        PreviewTask ??= fontWorker.SendRequest('A', shapes.GetMergedShapes());
+        if (!PreviewTask.IsCompleted)
+            return;
+        LatestGlyphPreviewTtf.Data = PreviewTask.Result;
+        c.SmallThumbnail0.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        c.SmallThumbnail1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        c.SmallThumbnail2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        c.SmallThumbnail3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
+        PreviewTask = fontWorker.SendRequest('A', shapes.GetMergedShapes());
     }
 }

@@ -123,7 +123,7 @@ public sealed class PythonFontWorker : IDisposable
         }
     }
 
-    public async Task<byte[]> SendRequest(char name, Segment[] segs, int advanceWidth = 100,
+    public async Task<byte[]> SendRequest(char name, Segment[][] segLists, int advanceWidth = 100,
                               int upm = 1000, int ascent = 750, int descent = -250, 
                               string familyName = "Preview", string styleName = "Regular")
     {
@@ -131,29 +131,35 @@ public sealed class PythonFontWorker : IDisposable
 
         float minX = 10000;
         float maxX = -10000;
-        foreach (Segment seg in segs)
+        foreach (Segment[] segs in segLists)
         {
-            float x = seg.InPoint.X;
-            minX = x < minX ? x : minX;
-            maxX = x > maxX ? x : maxX;
+            foreach (Segment seg in segs)
+            {
+                float x = seg.InPoint.X;
+                minX = x < minX ? x : minX;
+                maxX = x > maxX ? x : maxX;
+            }
         }
         int leftsidebearing = 100;
         V2 origin = new(minX - leftsidebearing, 256 / UfoWriterReader.HeightFraction);
 
-        V2 start = SegToGlyph(segs[0].InPoint, origin);
-        commands.Add(new { cmd = "M", to = new[]{start.X, start.Y} });
-        foreach (Segment seg in segs)
+        foreach (Segment[] segs in segLists)
         {
-            V2 c1 = SegToGlyph(seg.InHandle, origin);
-            V2 c2 = SegToGlyph(seg.OutHandle, origin);
-            V2 to = SegToGlyph(seg.OutPoint, origin);
-            commands.Add(new { cmd = "C", 
-                                  c1 = new[]{c1.X, c1.Y},
-                                  c2 = new[]{c2.X, c2.Y},
-                                  to = new[]{to.X, to.Y}
-            });
+            V2 start = SegToGlyph(segs[0].InPoint, origin);
+            commands.Add(new { cmd = "M", to = new[]{start.X, start.Y} });
+            foreach (Segment seg in segs)
+            {
+                V2 c1 = SegToGlyph(seg.InHandle, origin);
+                V2 c2 = SegToGlyph(seg.OutHandle, origin);
+                V2 to = SegToGlyph(seg.OutPoint, origin);
+                commands.Add(new { cmd = "C", 
+                                    c1 = new[]{c1.X, c1.Y},
+                                    c2 = new[]{c2.X, c2.Y},
+                                    to = new[]{to.X, to.Y}
+                });
+            }
+            commands.Add(new { cmd = "Z" });
         }
-        commands.Add(new { cmd = "Z" });
         var request = new
         {
             upm,

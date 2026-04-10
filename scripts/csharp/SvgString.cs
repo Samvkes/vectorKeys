@@ -605,34 +605,19 @@ public class SvgString
             AddSegmentsGroup(shapes.GetMergedShapes());
     }
 
-    // public Image DrawThumbnail(V2 size)
-    // {
-    //     float f = size.Y / Config.WindowSize.Y;
-    //     float margin = .02f;
-    //     f -= margin;
+    public Image RenderThumbnail(V2 size, Shapes shapes, V2 markerPos, V2 cursorOff)
+    {
+        float f = size.Y / Config.WindowSize.Y;
+        float margin = .02f;
+        f -= margin;
 
-    //     SvgString.ClearString(f, (size * (margin / f)) / 2, size, input.MarkerPos, ui.CursorOff);
+        ClearString(f, (size * (margin / f)) / 2, size, markerPos, cursorOff);
 
-    //     DrawPreviewing(true);
-    //     SvgString.Finish();
-    //     Image thumbnail = new();
-    //     thumbnail.LoadSvgFromString(SvgString.CurrentString.ToString());
-    //     return thumbnail;
-    // }
-
-    // public void RenderThumbnails(float delta)
-    // {
-    //     V2 size = new(260, 260);
-    //     Image thumbnail = DrawThumbnail(size);
-    //     Image prevthumb = new();
-    //     prevthumb.CopyFrom(thumbnail);
-
-    //     children.BigPreview.Texture = ImageTexture.CreateFromImage(thumbnail);
-    //     children.BigPreview.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-
-    //     prevthumb.Resize((int)size.X / 3, (int)size.Y / 3);
-    //     prevthumb.AdjustBcs(0.2f, 1, 1);
-    //     PreviewTex = ImageTexture.CreateFromImage(prevthumb);
-    // }
+        DrawPreviewing(shapes, true);
+        Finish();
+        Image thumbnail = new();
+        thumbnail.LoadSvgFromString(String());
+        return thumbnail;
+    }
 }
 

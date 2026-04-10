@@ -254,22 +254,23 @@ x multiple shapes
 ? fix rounding
 
 ? italic angle grid
-- copy paste
 
 - thumbnails sidepanel
 - previews lettermenu
 
+- copy paste
 - scaling / rotating
 
 - show shortcuts
 - broad preview
+- reference
+
+- 6 hours usability
 --- testing handglove ---
+- more usability
 
 - prepare for ui / basic theming
 - ui pass
-- reference
-
-- scrolling in menus / responsiveness in menus
 
 (
 -- workbench

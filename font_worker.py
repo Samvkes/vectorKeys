@@ -178,6 +178,5 @@ def main():
             }
             write_frame(1, json.dumps(err).encode("utf-8"))
 
-
 if __name__ == "__main__":
     main()

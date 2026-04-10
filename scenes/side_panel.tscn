@@ -502,18 +502,18 @@ theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 4
 
-[node name="PreviewContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2" unique_id=1838330403]
+[node name="ThumbnailContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2" unique_id=1838330403]
 layout_mode = 2
 theme_override_constants/separation = 22
 
-[node name="Preview1" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer" unique_id=1417073675]
+[node name="BigThumbnail" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer" unique_id=1417073675]
 z_index = 2
 custom_minimum_size = Vector2(290, 300)
 layout_mode = 2
 size_flags_vertical = 3
 stretch_mode = 5
 
-[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/Preview1" unique_id=1380293937]
+[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/BigThumbnail" unique_id=1380293937]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -523,19 +523,19 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_4p605")
 
-[node name="TinyPreviewContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer" unique_id=350789186]
+[node name="TinyThumbnailContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer" unique_id=350789186]
 custom_minimum_size = Vector2(50, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="TinyPreview" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer" unique_id=1467381105]
+[node name="TinyThumbnail" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer" unique_id=1467381105]
 z_index = 2
 layout_mode = 2
 size_flags_vertical = 3
 stretch_mode = 3
 
-[node name="Panel3" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview" unique_id=1454756488]
+[node name="Panel3" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail" unique_id=1454756488]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -546,7 +546,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lf5p6")
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview" unique_id=576306061]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail" unique_id=576306061]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -558,11 +558,11 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer" unique_id=715308345]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer" unique_id=715308345]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="Size0" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer/VBoxContainer" unique_id=1889622795]
+[node name="Size0" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer/VBoxContainer" unique_id=1889622795]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_colors/default_color = Color(0, 0, 0, 1)
@@ -571,7 +571,7 @@ text = "A"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Size1" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer/VBoxContainer" unique_id=922334461]
+[node name="Size1" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer/VBoxContainer" unique_id=922334461]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_override_colors/default_color = Color(0, 0, 0, 1)
@@ -580,13 +580,13 @@ text = "A"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HSeparator2" type="HSeparator" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer/VBoxContainer" unique_id=1310457428]
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer/VBoxContainer" unique_id=1310457428]
 visible = false
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Size2" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer/VBoxContainer" unique_id=1362216095]
+[node name="Size2" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer/VBoxContainer" unique_id=1362216095]
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 size_flags_vertical = 3
@@ -596,16 +596,16 @@ text = "A"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer/VBoxContainer" unique_id=1259687175]
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer/VBoxContainer" unique_id=1259687175]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Control" type="Control" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer/VBoxContainer" unique_id=1483863272]
+[node name="Control" type="Control" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer/VBoxContainer" unique_id=1483863272]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Size3" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview/MarginContainer/VBoxContainer/Control" unique_id=1074075803]
+[node name="Size3" type="RichTextLabel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyThumbnail/MarginContainer/VBoxContainer/Control" unique_id=1074075803]
 texture_filter = 1
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 1
@@ -627,14 +627,14 @@ text = "A"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TinyPreview2" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer" unique_id=2136132356]
+[node name="TinyPreview2" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer" unique_id=2136132356]
 visible = false
 z_index = 2
 layout_mode = 2
 size_flags_vertical = 3
 stretch_mode = 3
 
-[node name="Panel4" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/TinyPreviewContainer/TinyPreview2" unique_id=1803854810]
+[node name="Panel4" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/TinyThumbnailContainer/TinyPreview2" unique_id=1803854810]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -644,7 +644,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_pn4t7")
 
-[node name="Preview2" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer" unique_id=1486273476]
+[node name="Preview2" type="TextureRect" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer" unique_id=1486273476]
 visible = false
 z_index = 2
 custom_minimum_size = Vector2(200, 320)
@@ -652,7 +652,7 @@ layout_mode = 2
 size_flags_vertical = 3
 stretch_mode = 5
 
-[node name="Panel2" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/PreviewContainer/Preview2" unique_id=1520658991]
+[node name="Panel2" type="Panel" parent="MarginContainer/HBoxContainer/MainPanel/MarginContainer/VBoxContainer/MarginContainer2/ThumbnailContainer/Preview2" unique_id=1520658991]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
