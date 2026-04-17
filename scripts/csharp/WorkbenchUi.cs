@@ -81,7 +81,8 @@ record Children(
     Label CursorLabel,
     ColorRect Background,
     SidePanel SidePanel,
-    TextureRect Tex
+    TextureRect Tex,
+    PasteMenu Paste
 );
 
 // pass along a ui state object?
@@ -134,13 +135,14 @@ public partial class WorkbenchUi : Control
         currentShapeChanged = CreateChangeChecker<Shape>();
         inputModeChanged = CreateChangeChecker<InputMode>();
         Sprite2D _cursor = GetNode<Sprite2D>("Cursor");
-        SidePanel _sidePanel = GetNode<SidePanel>("SidePanel");
+        SidePanel _sidePanel = (SidePanel)FindChild("SidePanel");
         c = new(
             _cursor,
             (Label)_cursor.GetChild(0),
             GetNode<ColorRect>("Background"),
             _sidePanel,
-            (TextureRect)FindChild("Tex")
+            (TextureRect)FindChild("Tex"),
+            (PasteMenu)FindChild("PasteMenu")
         );
         for (int i = 0; i < 10; i++)
         {
@@ -169,7 +171,7 @@ public partial class WorkbenchUi : Control
         SinceLastSelected = 0;
         LastFramesSvg = "";
         LastFramesTexture = new();
-        c.SidePanel.PreviewTask?.Dispose();
+        c.SidePanel.ThumbnailTask?.Dispose();
     }
 
     public async Task UpdateUI(float delta, Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles, InputState i)
@@ -181,10 +183,11 @@ public partial class WorkbenchUi : Control
         c.SidePanel.DrawLayers(delta, currentShape, shapes);
         ProcessInputMode(delta, currentInput.CurrentMode);
         ProcessCursor(delta);
+        // TODO test out caching the shapedrawing
+        UpdateShapeIndicators(shapes);
         RenderSvg(currentShape, shapes, selectedAnchors, selectedHandles);
         if (shapesChanged)
         {
-            UpdateShapeIndicators(shapes);
             c.SidePanel.UpdateThumbnails(delta, shapes, currentInput.MarkerPos, CursorOff);
             Fun.DelayOneFrame(this, () =>{
                 c.SidePanel.UpdateThumbnails(delta, shapes, currentInput.MarkerPos, CursorOff);
@@ -193,7 +196,6 @@ public partial class WorkbenchUi : Control
 
         QueueRedraw();
         await _DrawCommands(currentShape, shapes, selectedAnchors);
-
     }
 
     public void FinishSvg()
@@ -203,11 +205,23 @@ public partial class WorkbenchUi : Control
         c.Tex.Texture = ImageTexture.CreateFromImage(CanvasImage);
     }
 
+    public Pastable? HandlePasteInput(float delta)
+    {
+        return c.Paste.HandleInput(delta);
+    }
+
+    public void Yank(Shape s)
+    {
+        c.Paste.AddYank(s);
+    }
+
     public void RenderSvg(Shape currentShape, Shapes shapes, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
     {
         svgString.ClearString(Zoom, Config.Origin, Config.WindowSize, currentInput.MarkerPos, CursorOff);
-        if (currentInput.CurrentMode == InputMode.Editing) svgString.DrawEditing(
-            currentShape, shapes, Zoom, currentInput.MarkerPos, currentInput.CurrentFocus, selectedAnchors, selectedHandles);
+        if (currentInput.CurrentMode == InputMode.Editing)
+        { 
+            svgString.DrawEditing(currentShape, shapes, Zoom, currentInput.CurrentFocus, selectedAnchors, selectedHandles);
+        }
         else if (currentInput.CurrentMode == InputMode.Previewing) svgString.DrawPreviewing(shapes);
         else if (currentInput.CurrentMode == InputMode.Selecting) svgString.DrawSelecting(currentShape, shapes, Zoom);
         FinishSvg();
@@ -232,11 +246,16 @@ public partial class WorkbenchUi : Control
             c.Background.Color = Config.SelectingColor;
             c.Cursor.Visible = false;
         }
+        else if (m == InputMode.Pasting)
+        {
+            c.Paste.Visible = true;
+        }
         else
         {
             c.Background.Color = Config.BackgroundColor;
             c.SidePanel.Visible = true;
             c.Cursor.Visible = true;
+            c.Paste.Visible = false;
         }
     }
 
@@ -264,14 +283,20 @@ public partial class WorkbenchUi : Control
                 continue;
             }
             Shape s = shapes.S[c];
-            V2 p0 = s.SegList()[0].InPoint;
-            V2 p1 = s.SegList()[0].OutPoint;
-            V2 p2 = s.SegList()[^1].InPoint;
+            // Segment[] slist = s.Negative ? [.. s.SegList().Reverse()] : s.SegList();
+            Segment[] slist = s.SegList();
+            V2 p0 = slist[0].InPoint;
+            V2 p1 = slist[0].OutPoint;
+            V2 p2 = slist[^1].InPoint;
             V2 p3 = p0 - p1;
             V2 p4 = p0 - p2;
             V2 d = (V2.Normalize(p3) + V2.Normalize(p4)) / 2f;
             d = d.Length() > 0 ? d : V2.Transform(p3, Matrix3x2.CreateRotation(MathF.PI / 2));
-            p0 += V2.Normalize(d) * 30;
+            V2 test = p0 + V2.Normalize(d) * 40; 
+            bool flip = Shapes.SegmentListsToSKPath([slist]).Contains(test.X, test.Y) ^ s.Negative;
+            if (flip) d = V2.Transform(d, Matrix3x2.CreateRotation(MathF.PI));
+            p0 += V2.Normalize(d) * 40;
+            
             indicator.Visible = true;
             indicator.Position = Fun.Vtv(p0);
             indicator.SetAngle(Fun.Vtv(d).Angle());
@@ -425,7 +450,7 @@ public partial class WorkbenchUi : Control
         {
             if (!(Zoom < 1 && currentInput.GridModifier < 2f)) _DrawGrid();
             if (currentInput.AngledMoveMode) _DrawAngledMoveGuide(currentShape);
-            if (currentShape.Anchors.Count >= 3) _DrawMeasurements(shapes.GetMergedShapes(), currentInput.MarkerPos);
+            if (currentInput.Measuring && currentShape.Anchors.Count >= 3) _DrawMeasurements(shapes.GetMergedShapes(), currentInput.MarkerPos);
         }
 
         else if (currentInput.CurrentMode != InputMode.Previewing)
@@ -443,55 +468,9 @@ public partial class WorkbenchUi : Control
         return ImageTexture.CreateFromImage(CanvasImage);
     }
 
-    // TODO
-    // public void UpdatePreviews(Shape currentShape, Shapes shapes)
-    // {
-    // if (shapes.S.Count <= 1)
-    //     return;
-    // PreviewTask ??= fontWorker.SendRequest('A', shapes.GetMergedShapes()[0]);
-    // if (!PreviewTask.IsCompleted)
-    //     return;
-    // LatestGlyphPreviewTtf.Data = PreviewTask.Result;
-    // S0.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-    // S1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-    // S2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-    // S3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-    // PreviewTask = fontWorker.SendRequest('A', shapes.GetMergedShapes()[0]);
-    // }
-
-    // public Texture2D CreatePreviewTex(List<Shape> contours)
-    // {
-    //     V2 size = new(100, 100);
-    //     float f = size.Y / Config.WindowSize.Y;
-    //     float margin = .02f;
-    //     f -= margin;
-
-    //     svgString.ClearString(f, (size * (margin / f)) / 2, size, currentInput.MarkerPos, CursorOff);
-    //     svgString.SetStyle(Style.ShapePreviewWhite);
-    //     Shapes.S = contours;
-    //     Shapes.ShapesCached = false;
-    //     svgString.AddSegmentsGroup(Shapes.GetMergedShapes());
-    //     Shapes.S = [];
-    //     svgString.Finish();
-
-    //     Image thumbnail = new();
-    //     thumbnail.LoadSvgFromString(svgString.String());
-    //     thumbnail.AdjustBcs(0.2f, 1, 1);
-    //     return ImageTexture.CreateFromImage(thumbnail);
-    // }
-
-    // public void RenderThumbnails(float delta, Shapes shapes)
-    // {
-    //     V2 size = new(260, 260);
-    //     Image thumbnail = svgString.DrawThumbnail(size, shapes, currentInput.MarkerPos, CursorOff);
-    //     Image prevthumb = new();
-    //     prevthumb.CopyFrom(thumbnail);
-
-    //     c.BigPreview.Texture = ImageTexture.CreateFromImage(thumbnail);
-    //     c.BigPreview.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-
-    //     // prevthumb.Resize((int)size.X / 3, (int)size.Y / 3);
-    //     // prevthumb.AdjustBcs(0.2f, 1, 1);
-    //     // PreviewTex = ImageTexture.CreateFromImage(prevthumb);
-    // }
+    public Texture2D CreatePreviewTex(Shapes shapes)
+    {
+        V2 size = new(100, 140);
+        return ImageTexture.CreateFromImage(svgString.RenderThumbnail(size, false, shapes, currentInput.MarkerPos, CursorOff));
+    }
 }

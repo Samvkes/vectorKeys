@@ -1,6 +1,6 @@
 {
   "$id": "1",
-  "G": "k",
+  "G": "D",
   "Shapes": {
     "$id": "2",
     "ShapesCached": false,
@@ -18,166 +18,220 @@
           "Segments": [
             {
               "InPoint": {
-                "X": 724,
-                "Y": 1024
+                "X": 660,
+                "Y": 896
               },
               "OutPoint": {
-                "X": 404,
-                "Y": 1280
+                "X": 660,
+                "Y": 576
               },
               "InHandle": {
-                "X": 724,
-                "Y": 1024
+                "X": 660,
+                "Y": 896
               },
               "OutHandle": {
-                "X": 404,
-                "Y": 1280
+                "X": 660,
+                "Y": 576
               }
             },
             {
               "InPoint": {
-                "X": 404,
-                "Y": 1280
+                "X": 660,
+                "Y": 576
               },
               "OutPoint": {
-                "X": 468,
-                "Y": 1280
+                "X": 916,
+                "Y": 576
               },
               "InHandle": {
-                "X": 404,
-                "Y": 1280
+                "X": 660,
+                "Y": 576
               },
               "OutHandle": {
-                "X": 468,
-                "Y": 1280
+                "X": 916,
+                "Y": 576
               }
             },
             {
               "InPoint": {
-                "X": 468,
-                "Y": 1280
+                "X": 916,
+                "Y": 576
               },
               "OutPoint": {
-                "X": 724,
-                "Y": 1024
+                "X": 1044,
+                "Y": 832
               },
               "InHandle": {
-                "X": 468,
-                "Y": 1280
+                "X": 916,
+                "Y": 576
               },
               "OutHandle": {
-                "X": 724,
-                "Y": 1024
+                "X": 1044,
+                "Y": 832
+              }
+            },
+            {
+              "InPoint": {
+                "X": 1044,
+                "Y": 832
+              },
+              "OutPoint": {
+                "X": 660,
+                "Y": 896
+              },
+              "InHandle": {
+                "X": 1044,
+                "Y": 832
+              },
+              "OutHandle": {
+                "X": 660,
+                "Y": 896
               }
             }
           ],
           "RoundedSegments": [
             {
               "InPoint": {
-                "X": 723.08276,
-                "Y": 1024.9172
+                "X": 661.2814,
+                "Y": 895.78644
               },
               "OutPoint": {
-                "X": 722.98816,
-                "Y": 1024.8094
+                "X": 660,
+                "Y": 894.70337
               },
               "InHandle": {
-                "X": 723.6343,
-                "Y": 1024.3657
+                "X": 660.51196,
+                "Y": 895.9147
               },
               "OutHandle": {
-                "X": 723.5972,
-                "Y": 1024.3221
+                "X": 660,
+                "Y": 895.4834
               }
             },
             {
               "InPoint": {
-                "X": 722.98816,
-                "Y": 1024.8094
+                "X": 660,
+                "Y": 894.70337
               },
               "OutPoint": {
-                "X": 405.0124,
-                "Y": 1279.1901
+                "X": 660,
+                "Y": 577.2989
               },
               "InHandle": {
-                "X": 704.00305,
-                "Y": 1039.9974
+                "X": 660,
+                "Y": 873.4794
               },
               "OutHandle": {
-                "X": 424.00262,
-                "Y": 1263.9979
+                "X": 660,
+                "Y": 598.54126
               }
             },
             {
               "InPoint": {
-                "X": 405.0124,
-                "Y": 1279.1901
+                "X": 660,
+                "Y": 577.2989
               },
               "OutPoint": {
-                "X": 405.29947,
-                "Y": 1280
+                "X": 661.2976,
+                "Y": 576
               },
               "InHandle": {
-                "X": 404.40332,
-                "Y": 1279.6774
+                "X": 660,
+                "Y": 576.51886
               },
               "OutHandle": {
-                "X": 404.51947,
-                "Y": 1280
+                "X": 660.5176,
+                "Y": 576
               }
             },
             {
               "InPoint": {
-                "X": 405.29947,
-                "Y": 1280
+                "X": 661.2976,
+                "Y": 576
               },
               "OutPoint": {
-                "X": 466.70044,
-                "Y": 1280
+                "X": 914.7012,
+                "Y": 576
               },
               "InHandle": {
-                "X": 413.54135,
-                "Y": 1280
+                "X": 680.04645,
+                "Y": 576
               },
               "OutHandle": {
-                "X": 458.45828,
-                "Y": 1280
+                "X": 895.94415,
+                "Y": 576
               }
             },
             {
               "InPoint": {
-                "X": 466.70044,
-                "Y": 1280
+                "X": 914.7012,
+                "Y": 576
               },
               "OutPoint": {
-                "X": 468.91882,
-                "Y": 1279.0812
+                "X": 916.58093,
+                "Y": 577.16187
               },
               "InHandle": {
-                "X": 467.48044,
-                "Y": 1280
+                "X": 915.4812,
+                "Y": 576
               },
               "OutHandle": {
-                "X": 468.36728,
-                "Y": 1279.6327
+                "X": 916.2321,
+                "Y": 576.46423
               }
             },
             {
               "InPoint": {
-                "X": 468.91882,
-                "Y": 1279.0812
+                "X": 916.58093,
+                "Y": 577.16187
               },
               "OutPoint": {
-                "X": 723.08276,
-                "Y": 1024.9172
+                "X": 1043.4199,
+                "Y": 830.8397
               },
               "InHandle": {
-                "X": 485.0014,
-                "Y": 1262.9987
+                "X": 925.51,
+                "Y": 595.02
               },
               "OutHandle": {
-                "X": 707.014,
-                "Y": 1040.9861
+                "X": 1034.4968,
+                "Y": 812.9935
+              }
+            },
+            {
+              "InPoint": {
+                "X": 1043.4199,
+                "Y": 830.8397
+              },
+              "OutPoint": {
+                "X": 1042.7216,
+                "Y": 832.2131
+              },
+              "InHandle": {
+                "X": 1043.7688,
+                "Y": 831.53735
+              },
+              "OutHandle": {
+                "X": 1043.491,
+                "Y": 832.08484
+              }
+            },
+            {
+              "InPoint": {
+                "X": 1042.7216,
+                "Y": 832.2131
+              },
+              "OutPoint": {
+                "X": 661.2814,
+                "Y": 895.78644
+              },
+              "InHandle": {
+                "X": 1019.40247,
+                "Y": 836.0996
+              },
+              "OutHandle": {
+                "X": 684.6265,
+                "Y": 891.89557
               }
             }
           ],
@@ -188,8 +242,8 @@
               {
                 "$id": "6",
                 "Position": {
-                  "X": 724,
-                  "Y": 1024
+                  "X": 660,
+                  "Y": 896
                 },
                 "SelectionIndex": 0,
                 "MyShape": {
@@ -205,8 +259,8 @@
                   "AdjacentAnchor": {
                     "$ref": "6"
                   },
-                  "DistanceFromAnchor": 139.24565,
-                  "Angle": 2.3561945
+                  "DistanceFromAnchor": 149.72955,
+                  "Angle": 6.1180367
                 },
                 "OutHandle": {
                   "$id": "8",
@@ -217,8 +271,8 @@
                   "AdjacentAnchor": {
                     "$ref": "6"
                   },
-                  "DistanceFromAnchor": 157.61537,
-                  "Angle": 2.4668517
+                  "DistanceFromAnchor": 123.07693,
+                  "Angle": 4.712389
                 },
                 "Sselected": false,
                 "Broken": true,
@@ -229,8 +283,8 @@
               {
                 "$id": "9",
                 "Position": {
-                  "X": 404,
-                  "Y": 1280
+                  "X": 660,
+                  "Y": 576
                 },
                 "SelectionIndex": 0,
                 "MyShape": {
@@ -246,8 +300,8 @@
                   "AdjacentAnchor": {
                     "$ref": "9"
                   },
-                  "DistanceFromAnchor": 157.61537,
-                  "Angle": 5.608444
+                  "DistanceFromAnchor": 123.07693,
+                  "Angle": 1.5707964
                 },
                 "OutHandle": {
                   "$id": "11",
@@ -258,7 +312,7 @@
                   "AdjacentAnchor": {
                     "$ref": "9"
                   },
-                  "DistanceFromAnchor": 24.615385,
+                  "DistanceFromAnchor": 98.46154,
                   "Angle": 6.283185
                 },
                 "Sselected": false,
@@ -270,8 +324,8 @@
               {
                 "$id": "12",
                 "Position": {
-                  "X": 468,
-                  "Y": 1280
+                  "X": 916,
+                  "Y": 576
                 },
                 "SelectionIndex": 0,
                 "MyShape": {
@@ -287,7 +341,7 @@
                   "AdjacentAnchor": {
                     "$ref": "12"
                   },
-                  "DistanceFromAnchor": 24.615385,
+                  "DistanceFromAnchor": 98.46154,
                   "Angle": 3.1415927
                 },
                 "OutHandle": {
@@ -299,8 +353,49 @@
                   "AdjacentAnchor": {
                     "$ref": "12"
                   },
-                  "DistanceFromAnchor": 139.24565,
-                  "Angle": 5.4977875
+                  "DistanceFromAnchor": 110.08335,
+                  "Angle": 1.1071489
+                },
+                "Sselected": false,
+                "Broken": true,
+                "anchorRounding": 1,
+                "intersectionRounding": 1,
+                "Auto": true
+              },
+              {
+                "$id": "15",
+                "Position": {
+                  "X": 1044,
+                  "Y": 832
+                },
+                "SelectionIndex": 0,
+                "MyShape": {
+                  "$ref": "4"
+                },
+                "SubdivType": 0,
+                "InHandle": {
+                  "$id": "16",
+                  "Type": 0,
+                  "Locked": false,
+                  "Selected": false,
+                  "IsInHandle": true,
+                  "AdjacentAnchor": {
+                    "$ref": "15"
+                  },
+                  "DistanceFromAnchor": 110.08335,
+                  "Angle": 4.2487416
+                },
+                "OutHandle": {
+                  "$id": "17",
+                  "Type": 0,
+                  "Locked": false,
+                  "Selected": false,
+                  "IsInHandle": false,
+                  "AdjacentAnchor": {
+                    "$ref": "15"
+                  },
+                  "DistanceFromAnchor": 149.72955,
+                  "Angle": 2.976444
                 },
                 "Sselected": false,
                 "Broken": true,
@@ -310,9 +405,10 @@
               }
             ]
           },
-          "Finished": false,
+          "Finished": true,
           "Negative": false,
           "BeziersPerAnchorPair": [
+            1,
             1,
             1,
             1
@@ -321,7 +417,7 @@
       ]
     }
   },
-  "lastEdit": "2026-04-10T10:23:12.169506+02:00",
+  "lastEdit": "2026-04-10T23:10:42.788789+02:00",
   "minutesSpent": 0,
   "anchorCount": 0
 }

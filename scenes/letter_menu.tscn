@@ -51,15 +51,6 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="Gradient" id="Gradient_d55ov"]
-offsets = PackedFloat32Array(0.16059226, 0.39749432, 0.9977221)
-colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.019607844, 1, 1, 1, 0.12156863)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_ov2ge"]
-gradient = SubResource("Gradient_d55ov")
-fill_from = Vector2(0.55982906, 1)
-fill_to = Vector2(0.59615386, 0)
-
 [node name="LetterMenu" type="Control" unique_id=487394795]
 layout_mode = 3
 anchors_preset = 0
@@ -113,7 +104,7 @@ text = "italic, wide, beautfiful, strange, scary"
 label_settings = SubResource("LabelSettings_ov2ge")
 vertical_alignment = 1
 
-[node name="Panel" type="Panel" parent="." unique_id=542962232]
+[node name="Background" type="Panel" parent="." unique_id=542962232]
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -140,11 +131,11 @@ theme_override_constants/margin_top = 100
 theme_override_constants/margin_right = 100
 theme_override_constants/margin_bottom = 100
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer" unique_id=550137127]
+[node name="GlyphContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer" unique_id=550137127]
 layout_mode = 2
 theme_override_constants/separation = 30
 
-[node name="TextureRect" type="TextureRect" parent="." unique_id=942084907]
+[node name="Vignette" type="TextureRect" parent="." unique_id=942084907]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -154,7 +145,7 @@ grow_vertical = 2
 mouse_filter = 2
 texture = SubResource("GradientTexture2D_yqmqq")
 
-[node name="MarginContainer2" type="MarginContainer" parent="." unique_id=312275531]
+[node name="BigPreview" type="MarginContainer" parent="." unique_id=312275531]
 custom_minimum_size = Vector2(600, 800)
 layout_mode = 1
 anchors_preset = 6
@@ -172,42 +163,24 @@ theme_override_constants/margin_top = 100
 theme_override_constants/margin_right = 100
 theme_override_constants/margin_bottom = 100
 
-[node name="PreviewContainer" type="PanelContainer" parent="MarginContainer2" unique_id=606828721]
+[node name="PreviewContainer" type="PanelContainer" parent="BigPreview" unique_id=606828721]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ov2ge")
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer2/PreviewContainer" unique_id=633064253]
+[node name="MarginContainer" type="MarginContainer" parent="BigPreview/PreviewContainer" unique_id=633064253]
 layout_mode = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="GlyphPreview" type="TextureRect" parent="MarginContainer2/PreviewContainer/MarginContainer" unique_id=878504632]
+[node name="GlyphPreview" type="TextureRect" parent="BigPreview/PreviewContainer/MarginContainer" unique_id=878504632]
 layout_mode = 2
 
 [node name="Selector" type="Panel" parent="." unique_id=1431353534]
 z_index = -2
 layout_mode = 0
 offset_right = 100.0
-offset_bottom = 100.0
+offset_bottom = 140.0
 rotation = -0.00173422
 theme_override_styles/panel = SubResource("StyleBoxFlat_grb7b")
-
-[node name="MarginContainer2" type="MarginContainer" parent="Selector" unique_id=2116815989]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 3
-theme_override_constants/margin_top = 3
-theme_override_constants/margin_right = 3
-theme_override_constants/margin_bottom = 3
-
-[node name="TextureRect" type="TextureRect" parent="Selector/MarginContainer2" unique_id=1231425518]
-z_index = 1
-layout_mode = 2
-texture = SubResource("GradientTexture2D_ov2ge")

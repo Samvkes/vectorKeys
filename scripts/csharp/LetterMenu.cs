@@ -28,37 +28,41 @@ public class Glyph
 
 public partial class LetterMenu : Control
 {
+    public Dictionary<char, GlyphPreview> PreviewDict = [];
     public GlyphPreview CurrentlySelected = null!;
-    Editor Ed = null!;
-    ScrollContainer Scroll = null!;
+    public static Dictionary<char, Glyph> ShapeDict = [];
+    public int CurrentWeight = 500;
+    public List<Axis> CurrentAxes = [];
+    public List<string> allGlyphs = [numberGlyphs, punctuationGlyphs, letterGlyphs, letterGlyphs.ToUpper(), specialGlyphs];
+
     static string numberGlyphs = "1234567890";
     static string letterGlyphs = "abcdefghijklmnopqrstuvwxyz";
     static string punctuationGlyphs = ".,!?'\":;";
     static string specialGlyphs = "-+_=@#$%^&*(){}[]<>\\/|";
-    int MaxGridColumns = 10;
-    V2 CurrentPos = new(0,0);
-    public List<string> allGlyphs = [numberGlyphs, punctuationGlyphs, letterGlyphs, letterGlyphs.ToUpper(), specialGlyphs];
-    List<string> GroupTitles = ["numbers", "punctuation", "lowers", "uppers", "friends"];
-    List<List<GlyphPreview>> Previews = [];
-    public Dictionary<char, GlyphPreview> PreviewDict = [];
-    List<List<int>> Rows = [];
-    List<int> RowsFlat = [];
+
+    Editor Ed = null!;
+    ScrollContainer Scroll = null!;
     Panel Selector = null!;
-    GV2 SelectorGoalPos = GV2.Zero;
-    List<PreviewGrid> PreviewGrids = [];
-    public static Dictionary<char, Glyph> ShapeDict = [];
-    PackedScene PreviewGridScene = GD.Load<PackedScene>("res://scenes/preview_grid.tscn");
-    public int CurrentWeight = 500;
-    public List<Axis> CurrentAxes = [];
     Control CurrentTitle = null!;
     Timer weightPickerSwitchTimer = null!;
+
+    List<string> GroupTitles = ["numbers", "punctuation", "lowers", "uppers", "friends"];
+    List<List<int>> Rows = [];
+    List<int> RowsFlat = [];
+    List<PreviewGrid> PreviewGrids = [];
+    List<List<GlyphPreview>> Previews = [];
+
+    GV2 SelectorGoalPos = GV2.Zero;
+    int MaxGridColumns = 10;
+    V2 CurrentPos = new(0,0);
+    PackedScene PreviewGridScene = GD.Load<PackedScene>("res://scenes/preview_grid.tscn");
 
     public override void _Ready()
     {
         Ed = (Editor)GetParent();
         Selector = (Panel)FindChild("Selector");
         Selector.PivotOffsetRatio = new GV2(.5f,.5f);
-        VBoxContainer glyphContainer = (VBoxContainer)FindChild("VBoxContainer");
+        VBoxContainer glyphContainer = (VBoxContainer)FindChild("GlyphContainer");
         PackedScene glyphScene = GD.Load<PackedScene>("res://scenes/glyph_preview.tscn");
         CurrentTitle = (Control)FindChild("CurrentTitle");
         weightPickerSwitchTimer = new();
@@ -112,12 +116,24 @@ public partial class LetterMenu : Control
             }
         }
     }
-        
-    public int CeilDiv(int num, int den)
+
+    public void ClearPlaceholderPreviews()
     {
-        return (int)MathF.Ceiling((float)num / den);
+        foreach (GlyphPreview g in PreviewDict.Values)
+        {
+            g.SetPreviewTexture();
+        }
     }
 
+    public void ClearShapeDict()
+    {
+        foreach (char c in ShapeDict.Keys)
+        {
+            ShapeDict[c] = new();
+            ShapeDict[c].G = c;
+            ShapeDict[c].Shapes = new();
+        }
+    }
 
     public override void _Process(double delta)
     {
@@ -238,6 +254,4 @@ public partial class LetterMenu : Control
         n.SetFSep(100, false);
 
     }
-
-
 }

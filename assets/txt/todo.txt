@@ -255,17 +255,21 @@ x multiple shapes
 
 ? italic angle grid
 
-- thumbnails sidepanel
-- previews lettermenu
+x thumbnails sidepanel
+x previews lettermenu
 
-- copy paste
-- scaling / rotating
+x scaling / rotating
+- copy paste / paste window
 
-- show shortcuts
-- broad preview
+- broad preview / context window
 - reference
 
-- 6 hours usability
+{
+- layer moving
+- show shortcuts
+- 6 hours usability: 
+}
+
 --- testing handglove ---
 - more usability
 

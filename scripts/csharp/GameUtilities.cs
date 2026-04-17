@@ -130,12 +130,6 @@ static class StringNamesList
     public static readonly StringName shape_negative = "shape_negative";
     public static readonly StringName undo = "undo";
     public static readonly StringName redo = "redo";
-    public static readonly StringName xscale_up_points = "xscale_up_points";
-    public static readonly StringName xscale_down_points = "xscale_down_points";
-    public static readonly StringName yscale_up_points = "yscale_up_points";
-    public static readonly StringName yscale_down_points = "yscale_down_points";
-    public static readonly StringName rotate_cw_points = "rotate_cw_points";
-    public static readonly StringName rotate_ccw_points = "rotate_ccw_points";
     public static readonly StringName move_focus = "move_focus";
     public static readonly StringName curve_points_mode = "curve_points_mode";
     public static readonly StringName auto_move_mode = "auto_move_mode";
@@ -147,6 +141,9 @@ static class StringNamesList
     public static readonly StringName escape = "escape";
     public static readonly StringName export_ufo = "export_ufo";
     public static readonly StringName semicolon = "semicolon";
+    public static readonly StringName toggle_transform = "toggle_transform";
+    public static readonly StringName paste_toggle = "paste_toggle";
+    public static readonly StringName yank = "yank";
     public static readonly StringName f1 = "f1";
     public static readonly StringName f2 = "f2";
     public static readonly StringName f3 = "f3";

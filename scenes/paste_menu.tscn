@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://dva2g2y2ah4dv"]
+
+[ext_resource type="Script" uid="uid://cf6tng1h3m672" path="res://scenes/PasteMenu.cs" id="1_566t7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n1qdu"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.8116613, 0.7952825, 0.8007292, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4410a"]
+bg_color = Color(0.5411783, 0.4961679, 0.58665544, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="PasteMenu" type="Control" unique_id=1857563844]
+z_index = 4
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_566t7")
+
+[node name="Background" type="Panel" parent="." unique_id=421560196]
+z_index = -3
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_n1qdu")
+metadata/_edit_lock_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=283811940]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -540.0
+offset_right = 680.0
+offset_bottom = 540.0
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="GlyphContainer" type="GridContainer" parent="MarginContainer" unique_id=182972855]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 10
+
+[node name="Selector" type="Panel" parent="." unique_id=1911327005]
+z_index = -1
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 140.0
+rotation = -0.00173422
+theme_override_styles/panel = SubResource("StyleBoxFlat_4410a")

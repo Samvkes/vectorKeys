@@ -3,6 +3,7 @@
 [ext_resource type="FontFile" uid="uid://bp6obah0nqddo" path="res://assets/fonts/DepartureMono-Regular.otf" id="1_nopgj"]
 [ext_resource type="PackedScene" uid="uid://bipx46f180kxs" path="res://scenes/workbench_undo_redo.tscn" id="2_8j27g"]
 [ext_resource type="PackedScene" uid="uid://behp5yap87vq" path="res://scenes/side_panel.tscn" id="4_8j27g"]
+[ext_resource type="PackedScene" uid="uid://dva2g2y2ah4dv" path="res://scenes/paste_menu.tscn" id="4_iaqss"]
 [ext_resource type="Script" uid="uid://d20302hrpuwr7" path="res://scripts/csharp/WorkbenchUi.cs" id="5_8j27g"]
 [ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://scripts/csharp/Workbench.cs" id="5_nopgj"]
 [ext_resource type="Texture2D" uid="uid://cvnp47h0jkfrx" path="res://assets/fonts/DraftingMono/Star 1.png" id="5_swcnr"]
@@ -40,8 +41,24 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("5_8j27g")
 
-[node name="SidePanel" parent="WorkbenchUi" unique_id=1931935459 instance=ExtResource("4_8j27g")]
+[node name="HBoxContainer" type="HBoxContainer" parent="WorkbenchUi" unique_id=1729548086]
 layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 2
+
+[node name="PasteMenu" parent="WorkbenchUi/HBoxContainer" unique_id=487394795 instance=ExtResource("4_iaqss")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SidePanel" parent="WorkbenchUi/HBoxContainer" unique_id=1931935459 instance=ExtResource("4_8j27g")]
+layout_mode = 2
+size_flags_horizontal = 1
 
 [node name="Background" type="ColorRect" parent="WorkbenchUi" unique_id=2084373001]
 z_index = -10

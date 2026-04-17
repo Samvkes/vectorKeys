@@ -343,11 +343,13 @@ public partial class Editor : CanvasLayer
 
     public void SwitchToLettermenu()
     {
+        LetterMenu.ClearPlaceholderPreviews();
+        LetterMenu.ClearShapeDict();
         if (CurrentFocus == EditorFocus.Workbench)
         {
             CurrentGlyph.Shapes = Workbench.Close();
-            // Texture2D t = Workbench.PreviewTex;
-            // LetterMenu.CurrentlySelected.SetPreviewTexture(t);
+            Texture2D t = Workbench.GetCurrentPreviewTexture();
+            LetterMenu.CurrentlySelected.SetPreviewTexture(t);
             SaveGlyph(CurrentGlyph);
         }
         foreach (string glyphs in LetterMenu.allGlyphs)
@@ -361,8 +363,8 @@ public partial class Editor : CanvasLayer
                 {
                     Glyph g = LoadGlyph(filePath);
                     LetterMenu.ShapeDict[glyph] = g;
-                    // Texture2D t = Workbench.ui.CreatePreviewTex(g.Shapes.S);
-                    // LetterMenu.PreviewDict[glyph].SetPreviewTexture(t);
+                    Texture2D t = Workbench.CreatePreviewTexture(g.Shapes);
+                    LetterMenu.PreviewDict[glyph].SetPreviewTexture(t);
                 }
             }
         }
@@ -381,9 +383,7 @@ public partial class Editor : CanvasLayer
         ProjectPicker.ProcessMode = ProcessModeEnum.Pausable;
         LetterMenu.ProcessMode = ProcessModeEnum.Pausable;
         Workbench.ProcessMode = ProcessModeEnum.WhenPaused;
-        // (Workbench.Shapes, Workbench.UndoRedo) = (CurrentGlyph.Contours, CurrentGlyph.Undos);
         Workbench.Initialize(shapes);
-        GD.Print("testing");
         Fun.Delayed(this, 0.1f, () =>
         {
             Workbench.Visible = true;

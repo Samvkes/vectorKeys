@@ -16,16 +16,26 @@ public record struct InputState()
     public V2 MarkerPos = UIConfig.Default.Origin;
     public InputMode CurrentMode = InputMode.Editing;
     public EditingFocus CurrentFocus = EditingFocus.Anchor;
+    public TransformMode CurrentTransformMode = TransformMode.Moving;
     public bool AngledMoveMode = false;
     public bool JustUnpaused = false;
+    public bool Measuring = false;
     public float GridModifier = 4;
 };
+
+public enum TransformMode
+{
+    Moving,
+    Scaling,
+    Rotating,
+}
 
 public enum InputMode
 {
     Editing,
     Selecting,
     Previewing,
+    Pasting,
 }
 
 public enum EditingFocus
@@ -138,6 +148,16 @@ public partial class Workbench : Control
         }
     }
 
+    public Texture2D GetCurrentPreviewTexture()
+    {
+        return Ui.CreatePreviewTex(Shapes);
+    }
+
+    public Texture2D CreatePreviewTexture(Shapes shapes)
+    {
+        return Ui.CreatePreviewTex(shapes);
+    }
+
     public void HandleSelectionText(string s)
     {
         Anker a = CurrentShape.GetAnchorFromLabel(s.ToLower());
@@ -152,44 +172,27 @@ public partial class Workbench : Control
         }
     }
 
-    public void HiRotation(float delta, bool rotationInputPressed)
+    public void HiRotation(float delta, V2 movementInput)
     {
-        if (!rotationInputPressed) return;
         float rotationAmount = 0.05f;
-        float ang = rotationAmount * 2 * MathF.PI * delta;
+        float ang = rotationAmount * 2 * MathF.PI * delta * movementInput.X;
         Uts();
-        if (Input.IsActionPressed(Snl.rotate_cw_points)) ang *= -1;
         foreach (Anker a in SelectedAnchors)
         {
             V2 spot = a.Position - input.MarkerPos;
             V2 displacement = new(MathF.Cos(ang) * spot[0] - MathF.Sin(ang) * spot[1], MathF.Sin(ang) * spot[0] + MathF.Cos(ang) * spot[1]);
             a.Position += displacement - spot;
+            a.MyShape.AnchorsChanged();
         }
     }
 
-    public void HiScaling(float delta)
+    public void HiScaling(float delta, V2 movementInput)
     {
-        float scalingAmount = .01f;
-        float xScalingAmount = scalingAmount;
-        float yScalingAmount = scalingAmount;
+        float scalingAmount = (Input.IsKeyPressed(Key.A) ? .1f : 1.0f) * delta;
         float xScalar = 1;
         float yScalar = 1;
-        if (Input.IsActionPressed(Snl.xscale_up_points) || Input.IsActionPressed(Snl.xscale_down_points))
-        {
-            if (Input.IsActionPressed(Snl.xscale_down_points))
-            {
-                xScalingAmount *= -1;
-            }
-            xScalar += xScalingAmount;
-        }
-        if (Input.IsActionPressed(Snl.yscale_up_points) || Input.IsActionPressed(Snl.yscale_down_points))
-        {
-            if (Input.IsActionPressed(Snl.yscale_down_points))
-            {
-                yScalingAmount *= -1;
-            }
-            yScalar += yScalingAmount;
-        }
+        xScalar += movementInput.X * scalingAmount;
+        yScalar += -movementInput.Y * scalingAmount;
         if (xScalar != 1 || yScalar != 1)
         {
             Uts();
@@ -198,11 +201,12 @@ public partial class Workbench : Control
                 V2 spot = a.Position - input.MarkerPos;
                 V2 displacement = new(spot[0] * xScalar, spot[1] * yScalar);
                 a.Position += displacement - spot;
+                a.MyShape.AnchorsChanged();
             }
         }
     }
 
-    public void HiMovement(float delta)
+    public void HiMovement(float delta, V2 movementInput)
     {
         int movementAmount = (int)(config.GridSize * input.GridModifier);
         if (Input.IsKeyPressed(Key.A))
@@ -210,19 +214,21 @@ public partial class Workbench : Control
             movementAmount = 1;
         }
 
-        V2 movInput = Ed.GetMovementInput(delta, OnGuide: OnGuide());
         float radGA = config.GridAngle / 360f * MathF.Tau;
-        if (movInput.Y > 0)
+        float xInput = movementInput.X;
+        if (movementInput.Y > 0)
         {
-            movInput = V2.Transform(new(0,1), Matrix3x2.CreateRotation(radGA));
-            movInput*= 1/movInput.Y;
+            movementInput = V2.Transform(new(0,1), Matrix3x2.CreateRotation(radGA));
+            movementInput*= 1/movementInput.Y;
+            movementInput.X += xInput;
         }
-        if (movInput.Y < 0)
+        if (movementInput.Y < 0)
         {
-            movInput = V2.Transform(new(0,-1), Matrix3x2.CreateRotation(radGA));
-            movInput*= -1/movInput.Y;
+            movementInput = V2.Transform(new(0,-1), Matrix3x2.CreateRotation(radGA));
+            movementInput*= -1/movementInput.Y;
+            movementInput.X += xInput;
         }
-        V2 movingSelected = movInput * movementAmount;
+        V2 movingSelected = movementInput * movementAmount;
 
         if (movingSelected != V2.Zero)
         {
@@ -556,6 +562,17 @@ public partial class Workbench : Control
             return;
         }
 
+        if (Input.IsActionJustPressed(Snl.paste_toggle))
+        {
+            if (input.CurrentMode == InputMode.Editing)
+            {
+                input.CurrentMode = InputMode.Pasting;
+            }
+            else if (input.CurrentMode == InputMode.Pasting)
+            {
+                input.CurrentMode = InputMode.Editing;
+            }
+        }
         if (Input.IsActionJustPressed(Snl.shape_negative))
         {
             Uts();
@@ -597,6 +614,12 @@ public partial class Workbench : Control
             }
         }
 
+        if (Input.IsActionJustPressed(Snl.toggle_transform))
+        {
+            TransformMode ct = input.CurrentTransformMode;
+            input.CurrentTransformMode = ct == TransformMode.Rotating ? TransformMode.Moving : ct + 1; 
+        }
+
         if (Input.IsActionJustPressed(Snl.select_mode))
         {
             input.CurrentMode = InputMode.Selecting;
@@ -613,11 +636,24 @@ public partial class Workbench : Control
 
         if (input.CurrentMode == InputMode.Editing || input.CurrentMode == InputMode.Previewing)
         {
-            HiMovement(delta);
+            V2 movementInput = Ed.GetMovementInput(delta, OnGuide: OnGuide());
             HiPointAdding(delta);
-            // HiScaling(delta);
-            // HiRotation(delta, (Input.IsActionPressed(Snl.rotate_cw_points) || 
-            //                    Input.IsActionPressed(Snl.rotate_ccw_points)));
+            if (input.CurrentTransformMode == TransformMode.Moving)
+            {
+                HiMovement(delta, movementInput);
+            }
+            else if (input.CurrentTransformMode == TransformMode.Scaling)
+            {
+                HiScaling(delta, movementInput);
+            }
+            else if (input.CurrentTransformMode == TransformMode.Rotating)
+            {
+                HiRotation(delta, movementInput); 
+            }
+            if (Input.IsActionJustPressed(Snl.yank))
+            {
+                Ui.Yank(CurrentShape);
+            }
 
             {
                 foreach (Anker a in CurrentShape.Anchors)
@@ -638,6 +674,14 @@ public partial class Workbench : Control
         {
             if (R.LetterJustPressed is not null)
                 HandleSelectionText(R.LetterJustPressed);
+        }
+        else if (input.CurrentMode == InputMode.Pasting)
+        {
+            Pastable? toPaste = Ui.HandlePasteInput(delta);
+            if (toPaste is not null)
+            {
+                Shapes.LoadOneShapeState(toPaste.ToPaste);
+            }
         }
 
         if (Input.IsActionJustPressed(Snl.semicolon))

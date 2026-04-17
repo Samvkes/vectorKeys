@@ -6,7 +6,7 @@ using GV2 = Godot.Vector2;
 using V2 = System.Numerics.Vector2;
 using System.Threading.Tasks;
 
-record Children(
+public record Children(
     VBoxContainer VBox,
     TextureRect BigThumbnail,
     RichTextLabel SmallThumbnail0,
@@ -20,16 +20,16 @@ public partial class SidePanel : Control
     Label layerSelector = null!;
     WorkbenchUi workbenchUi = null!;
     UIConfig config = null!;
-    Children c = null!;
-    public Task<byte[]>? PreviewTask = null;
+    public Children c = null!;
+    public Task<byte[]>? ThumbnailTask = null;
     PythonFontWorker fontWorker = new("/Users/sam/Documents/vectorkeys/vectorKeys/.venv/bin/python3",
                                       "/Users/sam/Documents/vectorkeys/vectorKeys/font_worker.py");
-    FontFile LatestGlyphPreviewTtf = new();
+    FontFile LatestGlyphThumbnail = new();
 
     public override void _Ready()
     {
+        workbenchUi = GetParent().GetParent<WorkbenchUi>();
         layerSelector = (Label)FindChild("LayerSelector");
-        workbenchUi = GetParent<WorkbenchUi>();
         config = workbenchUi.Config;
         c = new(
             (VBoxContainer)FindChild("VBoxContainer_Layers"),
@@ -108,7 +108,6 @@ public partial class SidePanel : Control
                     currentString += " fill =\"red\" stroke =\"red\" fill-opacity=\"0.2\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
                 else
                     currentString += " fill =\"gray\" stroke =\"black\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
-                currentString += shapes.S[shapeCounter];
             }
             currentString += (
                 "</g></g></svg>"
@@ -130,10 +129,7 @@ public partial class SidePanel : Control
     public void UpdateBigThumbnail(float delta, Shapes shapes, V2 markerPos, V2 cursorOff)
     {
         V2 size = new(260, 260);
-        Image thumbnail = workbenchUi.svgString.RenderThumbnail(size, shapes, markerPos, cursorOff);
-        Image prevthumb = new();
-        prevthumb.CopyFrom(thumbnail);
-
+        Image thumbnail = workbenchUi.svgString.RenderThumbnail(size, true, shapes, markerPos, cursorOff);
         c.BigThumbnail.Texture = ImageTexture.CreateFromImage(thumbnail);
         c.BigThumbnail.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
     }
@@ -142,14 +138,14 @@ public partial class SidePanel : Control
     {
         if (shapes.S.Count <= 1)
             return;
-        PreviewTask ??= fontWorker.SendRequest('A', shapes.GetMergedShapes());
-        if (!PreviewTask.IsCompleted)
+        ThumbnailTask ??= fontWorker.SendRequest('A', shapes.GetMergedShapes());
+        if (!ThumbnailTask.IsCompleted)
             return;
-        LatestGlyphPreviewTtf.Data = PreviewTask.Result;
-        c.SmallThumbnail0.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        c.SmallThumbnail1.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        c.SmallThumbnail2.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        c.SmallThumbnail3.AddThemeFontOverride("normal_font", LatestGlyphPreviewTtf);
-        PreviewTask = fontWorker.SendRequest('A', shapes.GetMergedShapes());
+        LatestGlyphThumbnail.Data = ThumbnailTask.Result;
+        c.SmallThumbnail0.AddThemeFontOverride("normal_font", LatestGlyphThumbnail);
+        c.SmallThumbnail1.AddThemeFontOverride("normal_font", LatestGlyphThumbnail);
+        c.SmallThumbnail2.AddThemeFontOverride("normal_font", LatestGlyphThumbnail);
+        c.SmallThumbnail3.AddThemeFontOverride("normal_font", LatestGlyphThumbnail);
+        ThumbnailTask = fontWorker.SendRequest('A', shapes.GetMergedShapes());
     }
 }

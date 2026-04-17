@@ -757,10 +757,46 @@ public class Shape
             else return segments;
         }
     }
+
+    public Texture2D ShapeTexture()
+    {
+        V2 windowSize = UIConfig.Default.WindowSize;
+        Image tempImage = new();
+        V2 size = new(90, 90);
+        float f = size.Y / windowSize.Y;
+        string currentString = (
+            $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{size.X}\" height=\"{size.Y}\" >" +
+            $"<g transform=\"scale({f}) translate(0,0) rotate(0)\">" +
+            $"<g transform=\"scale(1) translate(0,0) rotate(0)\">");
+
+        Segment[] s = SegList();
+        float[] startSeg = s[0].Flat();
+        currentString += $"<path d=\"M {startSeg[0]} {startSeg[1]} C ";
+        int innerCounter = 0;
+        foreach (Segment seg in s)
+        {
+            float[] flatSeg = seg.Flat();
+            currentString += $"{flatSeg[2]} {flatSeg[3]}, {flatSeg[4]} {flatSeg[5]}, {flatSeg[6]} {flatSeg[7]}";
+            if (innerCounter != s.Length - 1)
+            {
+                currentString += ",";
+            }
+            currentString += " ";
+            innerCounter += 1;
+        }
+        currentString += $"Z\" ";
+        currentString += " fill =\"gray\" stroke =\"black\" fill-opacity=\"0.0\" stroke-opacity=\"1.0\" stroke-width=\"30\"/>";
+        currentString += (
+            "</g></g></svg>"
+        );
+        tempImage.LoadSvgFromString(currentString);
+        return ImageTexture.CreateFromImage(tempImage);
+    }
 }
 
 public class Shapes
 {
+    public static readonly int MAX_SHAPES = 10;
     public bool ShapesCached = false;
     public Segment[][] CachedShapes = [];
     public List<Shape> S = [];
@@ -793,6 +829,28 @@ public class Shapes
         last.AnchorsChanged();
     }
 
+    public static string SaveOneShapeState(Shape s)
+    {
+        return JsonSerializer.Serialize(s, JsonOpts);
+    }
+
+    public void LoadOneShapeState(string serialized)
+    {
+        Shape s = JsonSerializer.Deserialize<Shape>(serialized, JsonOpts);
+
+        Fun.Break(s is null);
+        Debug.Assert(s is not null);
+
+        s.AnchorsCached = false;
+        s.MyShapes = this;
+        s.Finished = true;
+        if (S.Count < MAX_SHAPES)
+            S.Add(s);
+        else
+            S[MAX_SHAPES - 1] = s;
+        ShapesCached = false;
+    }
+
     public string SaveState()
     {
         return JsonSerializer.Serialize(S, JsonOpts);
@@ -801,6 +859,10 @@ public class Shapes
     public void LoadState(string serialized)
     {
         S = JsonSerializer.Deserialize<List<Shape>>(serialized, JsonOpts);
+
+        Fun.Break(S is null);
+        Debug.Assert(S is not null);
+
         foreach (Shape s in S)
         {
             s.AnchorsCached = false;

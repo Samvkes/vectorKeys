@@ -128,6 +128,7 @@ public class SvgString
     Dictionary<string, string> CurrentStyle = Styles.S[0];
     readonly StringBuilder CurrentString = new();
     UIConfig Config = UIConfig.Default;
+    string CachedEditingString = "";
 
     public void SetStyle(Style s)
     {
@@ -477,7 +478,7 @@ public class SvgString
             foreach (Anker a in s.Anchors)
             {
                 DrawAnchor(a, selectedAnchors.Contains(a), selectedHandles, radiusSizes, widths);
-                if (s == currentShape)
+                if (s == currentShape && !s.IsHyperBezier)
                 {
                     DrawHandle(a, focus == EditingFocus.Handle, selectedHandles, radiusSizes, widths);
                 }
@@ -485,12 +486,18 @@ public class SvgString
         }
     }
 
-    public void DrawEditing(Shape currentShape, Shapes shapes, float zoom, V2 markerPos, EditingFocus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
+    public void DrawEditing(Shape currentShape, Shapes shapes, float zoom, EditingFocus focus, HashSet<Anker> selectedAnchors, HashSet<HandlePointer> selectedHandles)
     {
         DrawGuides(zoom, opac: 0.3f, fwi: 3f);
-
+        DrawShapesEditing(currentShape, shapes);
+        DrawAnchorsHandles(shapes, currentShape, zoom, focus, selectedAnchors, selectedHandles);
+    }
+    
+    public void DrawShapesEditing(Shape currentShape, Shapes shapes)
+    {
         if (currentShape.Anchors.Count == 0) return;
 
+        int cStringLength = CurrentString.Length;
         Segment[][] mergedShapes = shapes.GetMergedShapes();
 
         // underlay shapes
@@ -537,8 +544,6 @@ public class SvgString
                 AddSegments(currentShape.SegList(true));
             }
         }
-
-        DrawAnchorsHandles(shapes, currentShape, zoom, focus, selectedAnchors, selectedHandles);
     }
 
     public void DrawSelecting(Shape currentShape, Shapes shapes, float zoom)
@@ -605,15 +610,13 @@ public class SvgString
             AddSegmentsGroup(shapes.GetMergedShapes());
     }
 
-    public Image RenderThumbnail(V2 size, Shapes shapes, V2 markerPos, V2 cursorOff)
+    public Image RenderThumbnail(V2 size, bool white, Shapes shapes, V2 markerPos, V2 cursorOff)
     {
         float f = size.Y / Config.WindowSize.Y;
         float margin = .02f;
         f -= margin;
-
-        ClearString(f, (size * (margin / f)) / 2, size, markerPos, cursorOff);
-
-        DrawPreviewing(shapes, true);
+        ClearString(f, (size * (margin / f)) / 2 - new V2(20,0), size, markerPos, cursorOff);
+        DrawPreviewing(shapes, white);
         Finish();
         Image thumbnail = new();
         thumbnail.LoadSvgFromString(String());

@@ -1,0 +1,35 @@
+{
+  "$id": "1",
+  "G": ":",
+  "Shapes": {
+    "$id": "2",
+    "ShapesCached": false,
+    "CachedShapes": [],
+    "S": {
+      "$id": "3",
+      "$values": [
+        {
+          "$id": "4",
+          "IsHyperBezier": true,
+          "MyShapes": {
+            "$ref": "2"
+          },
+          "AnchorsCached": true,
+          "Segments": [],
+          "RoundedSegments": [],
+          "Ssselected": false,
+          "Anchors": {
+            "$id": "5",
+            "$values": []
+          },
+          "Finished": false,
+          "Negative": false,
+          "BeziersPerAnchorPair": []
+        }
+      ]
+    }
+  },
+  "lastEdit": "2026-04-10T23:19:33.132624+02:00",
+  "minutesSpent": 0,
+  "anchorCount": 0
+}
