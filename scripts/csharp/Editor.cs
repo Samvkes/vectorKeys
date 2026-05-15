@@ -68,6 +68,7 @@ public partial class Editor : CanvasLayer
     public RawInput R = new();
     EditorFocus currentFocus = EditorFocus.ProjectPicker;
     List<float> DeltaTimeList = new();
+
     public EditorFocus CurrentFocus
     {
         get { return currentFocus;}
@@ -120,10 +121,16 @@ public partial class Editor : CanvasLayer
         Workbench.ProcessMode = ProcessModeEnum.Pausable;
         LetterMenu.ProcessMode = ProcessModeEnum.WhenPaused;
         GetWindow().Size = new Vector2I((int)Workbench.config.WindowSize.X, (int)Workbench.config.WindowSize.Y);
+        GetWindow().MinSize = new Vector2I(1600, 1300);
+        DisplayServer.WindowSetWindowButtonsOffset(new(50,30));
     }
     
     public override void _Process(double delta)
     {
+        if (Input.IsMouseButtonPressed(MouseButton.Left) && GetWindow().GetMousePosition().Y < 60)
+        {
+            DisplayServer.WindowStartDrag();
+        }
         Counter += (float)delta;
         FrameCounter += 1;
         UpdateFpsLabel((float)delta);

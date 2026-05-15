@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://bvggvdr238tay"
-path="res://.godot/imported/DraftingMono-Light.otf-234a6e7e52424122262ec362489b1cff.fontdata"
+uid="uid://j66ccue68or3"
+path="res://.godot/imported/IBMPlexSans-Text.ttf-0c8f94b4c76f27ebb02dd9cde6c42281.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/DraftingMono/DraftingMono-Light.otf"
-dest_files=["res://.godot/imported/DraftingMono-Light.otf-234a6e7e52424122262ec362489b1cff.fontdata"]
+source_file="res://assets/fonts/ibmPlex/sans/IBMPlexSans-Text.ttf"
+dest_files=["res://.godot/imported/IBMPlexSans-Text.ttf-0c8f94b4c76f27ebb02dd9cde6c42281.fontdata"]
 
 [params]
 
@@ -16,7 +16,7 @@ Rendering=null
 antialiasing=1
 generate_mipmaps=false
 disable_embedded_bitmaps=true
-multichannel_signed_distance_field=true
+multichannel_signed_distance_field=false
 msdf_pixel_range=8
 msdf_size=48
 allow_system_fallback=true

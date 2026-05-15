@@ -90,6 +90,7 @@ theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_4phwr")
 text = "adsf"
 vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
 
 [node name="Tex" type="TextureRect" parent="WorkbenchUi" unique_id=1147840497]
 z_index = -1

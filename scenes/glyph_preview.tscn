@@ -3,23 +3,25 @@
 [ext_resource type="Script" uid="uid://cgskdcnix2su5" path="res://scripts/csharp/GlyphPreview.cs" id="1_5nua3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mu7r8"]
-bg_color = Color(0.8001508, 0.8001509, 0.8001508, 0)
+bg_color = Color(0.6, 0.6, 0.6, 0)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0, 0, 0, 0.23529412)
+border_color = Color(0.55, 0.55, 0.55, 0)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
+anti_aliasing = false
+anti_aliasing_size = 2.588
 
 [node name="GlyphPreview" type="TextureRect" unique_id=212032547]
 z_index = 1
-custom_minimum_size = Vector2(100, 140)
-offset_right = 100.0
-offset_bottom = 100.0
-pivot_offset = Vector2(51, 53)
+custom_minimum_size = Vector2(60, 80)
+offset_right = 60.0
+offset_bottom = 80.0
+pivot_offset_ratio = Vector2(0.5, 0.5)
 size_flags_horizontal = 3
 size_flags_vertical = 3
 stretch_mode = 3
@@ -28,7 +30,7 @@ script = ExtResource("1_5nua3")
 [node name="Background" type="Panel" parent="." unique_id=269135151]
 z_index = -1
 layout_mode = 0
-offset_right = 100.0
-offset_bottom = 140.0
+offset_right = 60.0
+offset_bottom = 80.0
 rotation = -0.00173422
 theme_override_styles/panel = SubResource("StyleBoxFlat_mu7r8")

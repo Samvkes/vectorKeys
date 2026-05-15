@@ -303,3 +303,20 @@ file / project operations
 exporting
 testing
 [] sensible keymap
+
+
+### ui
+- finish workbench setup
+- adjust project list to work like glyph-list
+- connect new versions in code.
+- Get glyph-texture rendering and caching working
+- Get color-theming working
+- test on windows / laptop
+- second draft of keymap
+- first draft shortcut window
+- copy-paste window
+- layer moving /adjusting
+- broad preview / context window
+- real simple reference of fonts / existing project glyphs
+
+Handglove

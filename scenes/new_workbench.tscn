@@ -1,0 +1,201 @@
+[gd_scene format=3 uid="uid://buyw2f1mobg7"]
+
+[ext_resource type="StyleBox" uid="uid://dl4100fbadgwl" path="res://assets/styleboxes/lineSeperator.tres" id="1_k4ejs"]
+[ext_resource type="Script" uid="uid://7j08pwjtkt0a" path="res://scripts/csharp/Workbench.cs" id="1_rjrkg"]
+[ext_resource type="Script" uid="uid://d20302hrpuwr7" path="res://scripts/csharp/WorkbenchUi.cs" id="2_05wwb"]
+[ext_resource type="PackedScene" uid="uid://dva2g2y2ah4dv" path="res://scenes/paste_menu.tscn" id="3_v87r7"]
+[ext_resource type="Texture2D" uid="uid://cvnp47h0jkfrx" path="res://assets/fonts/DraftingMono/Star 1.png" id="5_vb01t"]
+[ext_resource type="Script" uid="uid://bwewqxkc60bbb" path="res://scripts/csharp/SidePanel.cs" id="6_05wwb"]
+[ext_resource type="FontFile" uid="uid://bp6obah0nqddo" path="res://assets/fonts/DepartureMono-Regular.otf" id="6_35ul8"]
+[ext_resource type="PackedScene" uid="uid://co4c3ox8dmmjg" path="res://scenes/new_side_panel.tscn" id="7_dwbut"]
+[ext_resource type="Script" uid="uid://mlikt7xk4omk" path="res://scripts/csharp/Player.cs" id="10_pfmnv"]
+[ext_resource type="PackedScene" uid="uid://bipx46f180kxs" path="res://scenes/workbench_undo_redo.tscn" id="11_30jkn"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kf1en"]
+bg_color = Color(0.19215687, 0.18431373, 0.21176471, 1)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_rokmx"]
+color = Color(0, 0, 0, 0.6666667)
+thickness = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_alj8o"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.32846218, 0.31446362, 0.33312902, 1)
+shadow_offset = Vector2(0, 28.39)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2f126"]
+content_margin_left = 6.0
+content_margin_top = 0.0
+content_margin_right = 6.0
+content_margin_bottom = 0.0
+bg_color = Color(0.802956, 0.802956, 0.799312, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="SystemFont" id="SystemFont_76l08"]
+font_names = PackedStringArray("Iosevka")
+font_weight = 250
+subpixel_positioning = 0
+
+[sub_resource type="SystemFont" id="SystemFont_e0vcb"]
+font_names = PackedStringArray("Poppins")
+font_weight = 600
+subpixel_positioning = 0
+
+[node name="Workbench" type="Control" unique_id=154709704]
+z_index = 10
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rjrkg")
+
+[node name="Background" type="Panel" parent="." unique_id=914359354]
+z_index = -2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_kf1en")
+
+[node name="HSeparator" type="HSeparator" parent="Background" unique_id=373759917]
+z_index = 5
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_top = 60.0
+offset_bottom = 64.0
+grow_horizontal = 2
+theme_override_styles/separator = ExtResource("1_k4ejs")
+
+[node name="HSeparator2" type="HSeparator" parent="Background" unique_id=1540017970]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_left = 1.0
+offset_top = 63.0
+offset_right = -1.0
+offset_bottom = 67.0
+grow_horizontal = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_rokmx")
+
+[node name="WorkBenchUi" type="PanelContainer" parent="." unique_id=2031343143]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 63.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_05wwb")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="WorkBenchUi" unique_id=668527929]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="MainCanvas" type="MarginContainer" parent="WorkBenchUi/HBoxContainer" unique_id=1103756244]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="WorkBenchUi/HBoxContainer/MainCanvas" unique_id=524218097]
+layout_mode = 2
+size_flags_horizontal = 3
+ratio = 0.707
+
+[node name="MarginContainer" type="MarginContainer" parent="WorkBenchUi/HBoxContainer/MainCanvas/AspectRatioContainer" unique_id=756628934]
+layout_mode = 2
+
+[node name="TextureContainer" type="PanelContainer" parent="WorkBenchUi/HBoxContainer/MainCanvas/AspectRatioContainer/MarginContainer" unique_id=622321378]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_alj8o")
+
+[node name="Tex" type="TextureRect" parent="WorkBenchUi/HBoxContainer/MainCanvas/AspectRatioContainer/MarginContainer/TextureContainer" unique_id=1054975729]
+layout_mode = 2
+
+[node name="PasteMenu" parent="WorkBenchUi/HBoxContainer" unique_id=1103800595 instance=ExtResource("3_v87r7")]
+visible = false
+layout_mode = 2
+
+[node name="SidePanel" parent="WorkBenchUi/HBoxContainer" unique_id=1926607740 instance=ExtResource("7_dwbut")]
+layout_mode = 2
+size_flags_horizontal = 8
+script = ExtResource("6_05wwb")
+
+[node name="Cursor" type="Sprite2D" parent="WorkBenchUi" unique_id=607791435]
+top_level = true
+z_index = 10
+position = Vector2(100, 100)
+texture = ExtResource("5_vb01t")
+
+[node name="Label" type="Label" parent="WorkBenchUi/Cursor" unique_id=2125581142]
+top_level = true
+offset_left = 16.0
+offset_top = 34.0
+offset_right = 74.0
+offset_bottom = 70.0
+size_flags_horizontal = 0
+size_flags_vertical = 6
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("6_35ul8")
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2f126")
+text = "adsf"
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Seraf" type="Label" parent="." unique_id=2134307853]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_right = 150.0
+offset_bottom = 60.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.28627452)
+theme_override_fonts/font = SubResource("SystemFont_76l08")
+theme_override_font_sizes/font_size = 45
+text = "seraf"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Settings" type="Label" parent="." unique_id=1285334501]
+custom_minimum_size = Vector2(200, 30)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -240.0
+offset_top = 15.0
+offset_right = -40.0
+offset_bottom = 50.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 0.6666667)
+theme_override_fonts/font = SubResource("SystemFont_e0vcb")
+theme_override_font_sizes/font_size = 24
+text = "settings"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Player" type="Player" parent="." unique_id=495314053]
+position = Vector2(477, 214)
+script = ExtResource("10_pfmnv")
+
+[node name="WorkbenchUndoRedo" parent="." unique_id=1059376587 instance=ExtResource("11_30jkn")]

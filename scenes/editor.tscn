@@ -8,6 +8,9 @@
 [ext_resource type="PackedScene" uid="uid://cwalmnm10vq61" path="res://scenes/weight_picker.tscn" id="6_1ys5w"]
 [ext_resource type="PackedScene" uid="uid://bfmr5rxaagrc" path="res://scenes/text_input.tscn" id="9_3btpq"]
 [ext_resource type="PackedScene" uid="uid://bdby0vtv3lnms" path="res://scenes/project_picker.tscn" id="9_8yjtx"]
+[ext_resource type="PackedScene" uid="uid://cfqcb654ny2nw" path="res://scenes/new_letter_menu.tscn" id="9_j8y2p"]
+[ext_resource type="PackedScene" uid="uid://btykkt4pj3icr" path="res://scenes/new_project_picker.tscn" id="10_o435n"]
+[ext_resource type="PackedScene" uid="uid://buyw2f1mobg7" path="res://scenes/new_workbench.tscn" id="11_3vi5u"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0a35"]
 bg_color = Color(0.8, 0.8, 0.8, 1)
@@ -104,6 +107,8 @@ icon = ExtResource("5_4s0cy")
 icon_alignment = 1
 
 [node name="ProjectPicker" parent="." unique_id=1114109679 instance=ExtResource("9_8yjtx")]
+process_mode = 4
+visible = false
 z_index = -1
 
 [node name="WeightPicker" parent="." unique_id=1711986609 instance=ExtResource("6_1ys5w")]
@@ -115,14 +120,29 @@ offset_top = 88.0
 offset_right = 1678.0
 offset_bottom = 321.0
 
+[node name="NewLetterMenu" parent="." unique_id=154709704 instance=ExtResource("9_j8y2p")]
+visible = false
+
+[node name="NewProjectPicker" parent="." unique_id=1411016698 instance=ExtResource("10_o435n")]
+visible = false
+
+[node name="NewWorkbench" parent="." unique_id=1374674233 instance=ExtResource("11_3vi5u")]
+
 [node name="FpsLabel" type="RichTextLabel" parent="." unique_id=1727623965]
 z_index = 1000
 clip_contents = false
 custom_minimum_size = Vector2(600, 0)
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 620.0
-offset_bottom = 54.0
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -125.0
+offset_top = -47.0
+offset_right = 475.0
+offset_bottom = -2.0
+grow_horizontal = 0
+grow_vertical = 0
 size_flags_horizontal = 3
 theme_override_colors/default_color = Color(0, 0, 0, 0.49803922)
 theme_override_font_sizes/normal_font_size = 32

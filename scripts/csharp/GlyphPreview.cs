@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Concurrent;
+using System.Text;
 using GV2 = Godot.Vector2;
 using V2 = System.Numerics.Vector2;
 
@@ -8,13 +9,15 @@ namespace Vectordrawing;
 
 public partial class GlyphPreview : TextureRect
 {
+    static int c = 0;
     Panel Background = null!;
     Panel BackgroundSelected = null!;
     bool Selected = false;
     char MyGlyph = 'j';
+    string alfabet = "abcdefghilmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-=_+[]{};:\\|,.<>/?01234567890";
     bool ShowPlaceholder = true;
-    FontFile MediumFontFile = GD.Load<FontFile>("res://assets/fonts/DraftingMono/DraftingMono-Medium.otf");
-    Font MediumFont = GD.Load<Font>("res://assets/fonts/DraftingMono/DraftingMono-Medium.otf");
+    FontFile MediumFontFile = GD.Load<FontFile>("res://assets/fonts/DraftingMono/DraftingMono-Regular.otf");
+    Font MediumFont = GD.Load<Font>("res://assets/fonts/DraftingMono/DraftingMono-Regular.otf");
     Godot.Vector2I FontSize = new(60, 0);
     Color placeholderColor = Color.Color8(120,120,120,255);
     Color placeholderColorSelected = Color.Color8(250,180,180,255);
@@ -22,6 +25,7 @@ public partial class GlyphPreview : TextureRect
 
     public override void _Ready()
     {
+        MyGlyph = alfabet[(int)GD.RandRange(0,alfabet.Length)];
         Background = (Panel)FindChild("Background");
         BackgroundSelected = (Panel)FindChild("BackgroundSelected");
         QueueRedraw();
